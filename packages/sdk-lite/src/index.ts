@@ -25,6 +25,8 @@ export * from "./http/respond";
 
 // Command blueprints (CRUD + ES)
 export * from "./application/command";
+export * from "./application/command/command";
+export * from "./application/command/handler";
 
 // Policies (application-layer contextual rules)
 export * from "./application/policies";
