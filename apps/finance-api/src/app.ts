@@ -1,9 +1,16 @@
 import { OpenAPIHono, createRoute, z as zopenapi } from "@hono/zod-openapi";
 import { Hono } from "hono";
+import { ulid } from "ulid";
+import { Vars } from "./adapters/hono/types";
 import { env } from "./config";
+import { DrizzleUoW } from "./infra/uow.drizzle";
+import { realEstateRoutes } from "./routes/real-estate.routes";
 
 // Use OpenAPIHono so we can define routes + serve the spec
 const app = new OpenAPIHono<{ Variables: Vars }>();
+
+// Instantiate our repository. In a real app, you might manage this with a DI container.
+const reRepo = new RealEstateDrizzleRepo();
 
 // Example auth stub (replace with your real auth)
 app.use("*", async (c, next) => {
@@ -12,9 +19,10 @@ app.use("*", async (c, next) => {
 
   // set uow + env for commands
   c.set("uow", DrizzleUoW);
+  c.set("reRepo", reRepo); // Set the repository instance on the context
   c.set("env", {
-    newId: () => `re_${ulid()}`,
-    now: () => new Date(),
+    newId: () => ulid(), // Generate a new ID with prefix
+    now: () => new Date(), // Current timestamp
   });
   await next();
 });
@@ -68,10 +76,7 @@ app.doc("/openapi.json", {
 
 // --- docs UI (Swagger-like via Scalar) ---
 import { Scalar } from "@scalar/hono-api-reference";
-import { ulid } from "zod";
-import { Vars } from "./adapters/hono/types";
-import { DrizzleUoW } from "./infra/uow.drizzle";
-import { realEstateRoutes } from "./routes/real-estate.routes";
+import { RealEstateDrizzleRepo } from "./infra/repo.real-estate.drizzle";
 app.get(
   "/docs",
   Scalar({

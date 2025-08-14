@@ -35,7 +35,7 @@ importers:
         specifier: ^8.12.0
         version: 8.16.3
       ulid:
-        specifier: ^2.3.0
+        specifier: ^2.4.0
         version: 2.4.0
       zod:
         specifier: ^3.23.0

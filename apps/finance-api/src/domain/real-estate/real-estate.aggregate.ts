@@ -127,20 +127,20 @@ export class RealEstate extends AggregateRoot {
       id: this.id,
     })
       .must(
+        "La data di perizia deve essere una data valida ISO-8601.",
         "real_estate.appraisal_date_valid",
-        "La data di perizia deve essere una data valida ISO‑8601.",
         () => !Number.isNaN(Date.parse(p.date)),
         { date: p.date }
       )
       .ensure(
-        "real_estate.appraisal_not_before_purchase",
         "La perizia non può essere antecedente alla data di acquisto.",
+        "real_estate.appraisal_not_before_purchase",
         new Date(p.date) >= new Date(this._purchase.date),
         { appraisalAt: p.date, purchaseAt: this._purchase.date }
       )
       .ensure(
-        "real_estate.appraisal_currency_matches_base",
         "La valuta della perizia deve coincidere con la baseCurrency.",
+        "real_estate.appraisal_currency_matches_base",
         p.value.props.currency === this._details.baseCurrency,
         {
           appraisalCurrency: p.value.props.currency,
@@ -166,20 +166,20 @@ export class RealEstate extends AggregateRoot {
       id: this.id,
     })
       .must(
+        "La data di valutazione deve essere una data valida ISO-8601.",
         "real_estate.market_value_date_valid",
-        "La data di valutazione deve essere una data valida ISO‑8601.",
         () => !Number.isNaN(Date.parse(p.date)),
         { date: p.date }
       )
       .ensure(
-        "real_estate.market_value_not_before_purchase",
         "La valutazione non può essere antecedente alla data di acquisto.",
+        "real_estate.market_value_not_before_purchase",
         new Date(p.date) >= new Date(this._purchase.date),
         { valuationAt: p.date, purchaseAt: this._purchase.date }
       )
       .ensure(
-        "real_estate.market_value_currency_matches_base",
         "La valuta della valutazione deve coincidere con la baseCurrency.",
+        "real_estate.market_value_currency_matches_base",
         p.value.props.currency === this._details.baseCurrency,
         {
           valuationCurrency: p.value.props.currency,
@@ -205,8 +205,8 @@ export class RealEstate extends AggregateRoot {
       id: this.id,
     })
       .ensure(
-        "real_estate.name_required",
         "Il nome è obbligatorio.",
+        "real_estate.name_required",
         next.name === undefined ? true : next.name.trim().length > 0,
         { name: next.name }
       )

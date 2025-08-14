@@ -79,7 +79,7 @@ export async function createRealEstate(
   tx: Tx,
   cmd: CreateRealEstateCmd
 ): Promise<CreateRealEstateRes> {
-  const id = env.newId();
+  const id = `re_${env.newId()}`;
 
   const agg = RealEstate.create({
     id,
