@@ -1,4 +1,7 @@
-import type { z } from "zod";
+// sdk-lite/src/http/request-handler.ts
+
+import type * as Z from "zod";
+import type { SafeParseReturnType, ZodTypeAny } from "zod";
 import type { EdgeError } from "../shared/errors";
 import { err, ok, type Result } from "../shared/result";
 
@@ -10,8 +13,8 @@ import { err, ok, type Result } from "../shared/result";
  * - ok(payload) on success (e.g., { userId })
  * - err({ kind: "Unauthorized" }) if not authenticated
  */
-export type AuthFn<A> = (
-  c: any
+export type AuthFn<C, A> = (
+  c: C
 ) => Result<A, EdgeError> | Promise<Result<A, EdgeError>>;
 
 /**
@@ -19,35 +22,48 @@ export type AuthFn<A> = (
  * ------
  * an overridable function to read the request body
  */
-export type BodyReader = (c: any) => Promise<unknown>;
+export type BodyReader<C> = (c: C) => Promise<unknown>;
 
 /**
  * makeRequestHandler
  * ------------------
  * A small reusable wrapper for HTTP request handling.
+ *
  * It does three things in order:
  *  1) Auth check
- *  2) Parse + validate JSON body with Zod
- *  3) Map ({ auth, body }) → your executor's DTO (Result again)
+ *  2) JSON body parse + Zod validate
+ *  3) Map ({ c, auth, body }) -> your DTO/result
+ *
+ * Generics:
+ *   C = framework context type (e.g., Hono Context<{ Variables: Vars }>)
+ *   A = Auth payload type (e.g., { userId: string })
+ *   S = Zod schema type
+ *   O = Output payload type
  *
  * Why this pattern?
  * - Keeps all edge concerns in one place and consistent across routes.
  * - Makes your route handlers tiny and easy to read.
+ *
  */
-export function makeRequestHandler<A, B, O>(opts: {
-  auth: AuthFn<A>;
-  bodySchema: z.ZodType<B>;
+export function makeRequestHandler<
+  C = any,
+  A = unknown,
+  S extends ZodTypeAny = ZodTypeAny,
+  O = unknown
+>(opts: {
+  auth: AuthFn<C, A>;
+  bodySchema: S; // any Zod schema
   map: (ctx: {
-    c: any;
+    c: C;
     auth: A;
-    body: B;
+    body: Z.infer<S>; // <- body type derives from schema
   }) => Result<O, EdgeError> | Promise<Result<O, EdgeError>>;
-  readBody?: BodyReader;
+  readBody?: BodyReader<C>;
 }) {
-  const readBody: BodyReader =
-    opts.readBody ?? (async (c) => await c.req.json()); // default keeps Hono happy
+  const readBody: BodyReader<C> =
+    opts.readBody ?? (async (c) => (c as any).req.json()); // default keeps Hono happy
 
-  return async function requestHandler(c: any): Promise<Result<O, EdgeError>> {
+  return async function requestHandler(c: C): Promise<Result<O, EdgeError>> {
     // 1) IAM / auth
     const auth = await opts.auth(c);
     if (!auth.ok) return auth;
@@ -65,7 +81,10 @@ export function makeRequestHandler<A, B, O>(opts: {
     }
 
     // 3) Zod validation
-    const parsed = opts.bodySchema.safeParse(raw);
+    const parsed = opts.bodySchema.safeParse(raw) as SafeParseReturnType<
+      unknown,
+      Z.infer<S>
+    >;
     if (!parsed.success) {
       return err({
         kind: "BadRequest",
@@ -85,9 +104,12 @@ export function makeRequestHandler<A, B, O>(opts: {
  * Convenience for reading a simple identity from the request context.
  * If the context doesn't have that key → Unauthorized.
  */
+/** authFromContext("userId"): read a simple identity from c.get(key) */
+type HasGet = { get: (key: string) => unknown };
+
 export const authFromContext =
-  <K extends string = "userId">(key: K = "userId" as K) =>
-  (c: any): Result<{ [P in K]: string }, EdgeError> => {
+  <C extends HasGet, K extends string = "userId">(key: K = "userId" as K) =>
+  (c: C): Result<{ [P in K]: string }, EdgeError> => {
     const uid = c.get(key) as string | undefined;
     return uid ? ok({ [key]: uid } as any) : err({ kind: "Unauthorized" });
   };

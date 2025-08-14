@@ -22,15 +22,26 @@
             "types": "./dist/index.d.ts",
             "import": "./dist/index.js",
             "require": "./dist/index.cjs"
+        },
+        "./domain": {
+            "types": "./dist/domain/index.d.ts",
+            "import": "./dist/domain/index.js",
+            "require": "./dist/domain/index.cjs"
+        },
+        "./infra": {
+            "types": "./dist/infra/index.d.ts",
+            "import": "./dist/infra/index.js",
+            "require": "./dist/infra/index.cjs"
         }
     },
     "sideEffects": false,
     "files": [
-        "dist"
+        "dist",
+        "README.md"
     ],
     "scripts": {
-        "build": "tsup",
-        "dev": "tsup --watch",
+        "build": "tsup src/index.ts src/domain/index.ts src/infra/index.ts --dts --format esm,cjs",
+        "dev": "tsup src/index.ts src/domain/index.ts src/infra/index.ts --dts --format esm,cjs --watch",
         "clean": "rimraf dist",
         "typecheck": "tsc --noEmit",
         "lint": "echo \"(add eslint if you want)\"",

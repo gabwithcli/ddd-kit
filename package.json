@@ -8,5 +8,10 @@
     ],
     "scripts": {
         "build": "pnpm -w -r --filter ./packages... run build"
+    },
+    "pnpm": {
+        "overrides": {
+            "zod": "^3.23.0"
+        }
     }
 }

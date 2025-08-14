@@ -1,5 +1,5 @@
-import type { UnitOfWork } from "../infra/unit-of-work";
 import type { IdempotencyStore } from "../infra/idempotency-store";
+import type { UnitOfWork } from "../infra/unit-of-work";
 
 /** Provide your own stable hash function (e.g., sha256). */
 export type Hasher = (s: string) => string;
