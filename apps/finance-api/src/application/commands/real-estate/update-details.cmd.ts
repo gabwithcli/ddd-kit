@@ -7,7 +7,7 @@
  */
 import { AggregateCrudRepository, Tx } from "@acme/sdk-lite";
 import { z } from "zod";
-import { RealEstate } from "../../../domain/real-estate/aggregate";
+import { RealEstate } from "../../../domain/real-estate/real-estate.aggregate";
 import { Address } from "../../../domain/real-estate/types";
 
 /**

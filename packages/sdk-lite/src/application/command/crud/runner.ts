@@ -10,7 +10,7 @@
 
 import type { Tx } from "../../../infra/unit-of-work";
 import { err, ok, type Result } from "../../../shared/result";
-import type { Policy } from "../policies";
+import type { Policy } from "../../policies";
 import type { CrudLoader, CrudPublisher, CrudRunner, CrudSaver } from "./types";
 
 export function makeCrudCommand<TEnv, TCmd, TAgg, TOut>(deps: {

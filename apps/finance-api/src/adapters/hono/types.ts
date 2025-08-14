@@ -1,6 +1,6 @@
 import { AggregateCrudRepository } from "@acme/sdk-lite";
 import type { UnitOfWork } from "@acme/sdk-lite/infra";
-import { RealEstate } from "../../domain/real-estate/aggregate";
+import { RealEstate } from "../../domain/real-estate/real-estate.aggregate";
 
 // What commands need from the app (clock + id factory)
 export type AppEnv = { newId(): string; now(): Date };

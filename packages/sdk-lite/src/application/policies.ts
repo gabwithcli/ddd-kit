@@ -1,4 +1,4 @@
-import { err, ok, type Result } from "../../shared/result";
+import { err, ok, type Result } from "../shared/result";
 
 /**
  * A Policy is a small function that checks a single rule.

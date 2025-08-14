@@ -1,7 +1,8 @@
 import type { Tx } from "@acme/sdk-lite/infra";
 import { and, eq } from "drizzle-orm";
-import { RealEstate } from "../domain/real-estate/aggregate";
-import { Address, Money } from "../domain/real-estate/types";
+import { RealEstate } from "../domain/real-estate/real-estate.aggregate";
+import { Address } from "../domain/real-estate/types";
+import { Money } from "../domain/shared/money";
 import {
   realEstateAppraisals,
   realEstateMarketVals,
@@ -46,15 +47,15 @@ export async function loadRealEstate(tx: Tx, id: string) {
     },
     purchase: {
       date: root.purchaseDate,
-      value: Money.of(Number(root.purchaseValue), root.baseCurrency),
+      value: Money.from(Number(root.purchaseValue), root.baseCurrency),
     },
     appraisals: apps.map((r) => ({
       date: r.date,
-      value: Money.of(Number(r.value), root.baseCurrency),
+      value: Money.from(Number(r.value), root.baseCurrency),
     })),
     marketVals: mvals.map((r) => ({
       date: r.date,
-      value: Money.of(Number(r.value), root.baseCurrency),
+      value: Money.from(Number(r.value), root.baseCurrency),
     })),
   });
 

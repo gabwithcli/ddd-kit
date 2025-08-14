@@ -23,15 +23,18 @@ export * from "./idempotency/with-idempotency";
 export * from "./http/request-handler";
 export * from "./http/respond";
 
-// Command blueprints (CRUD + ES) + policies
+// Command blueprints (CRUD + ES)
 export * from "./application/command";
 
-// Aggregare primitives
+// Policies (application-layer contextual rules)
+export * from "./application/policies";
+
+// Aggregate primitives
 export * from "./application/repos";
 
 // Test doubles
 export * from "./memory/idempotency-store.memory";
 export * from "./memory/unit-of-work.memory";
 
-// NOTE: we do NOT re-export "domain" folder here to avoid naming collisions
+// NOTE: we do NOT re-export the "domain" folder here to avoid naming collisions.
 // Apps can import domain primitives via the subpath: @acme/sdk-lite/domain

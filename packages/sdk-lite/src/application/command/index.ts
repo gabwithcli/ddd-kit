@@ -8,4 +8,3 @@ export * from "./crud/runner";
 export * from "./crud/types";
 export * from "./es/runner";
 export * from "./es/types";
-export * from "./policies";

@@ -9,7 +9,7 @@
 
 import type { Tx } from "../../../infra/unit-of-work";
 import { err, ok, type Result } from "../../../shared/result";
-import type { Policy } from "../policies";
+import type { Policy } from "../../policies";
 import type { EsAppender, EsLoader, EsPublisher, EsRunner } from "./types";
 
 export function makeEsCommand<TEnv, TCmd, TOut>(deps: {

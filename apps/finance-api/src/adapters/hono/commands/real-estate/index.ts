@@ -1,4 +1,4 @@
-export { addAppraisalHandler } from "./add-appraisal.handler";
-export { addMarketValuationHandler } from "./add-market-valuation.handler";
-export { createRealEstateHandler } from "./create.handler";
-export { updateRealEstateDetailsHandler } from "./update-details.handler";
+export { addAppraisalHandler } from "./appraisal-add.handler";
+export { addMarketValuationHandler } from "./market-valuation-add.handler";
+export { createRealEstateHandler } from "./root-create.handler";
+export { updateRealEstateDetailsHandler } from "./root-update.handler";

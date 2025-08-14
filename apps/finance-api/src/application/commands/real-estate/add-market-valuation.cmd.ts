@@ -7,7 +7,10 @@
  */
 import { AggregateCrudRepository, Tx } from "@acme/sdk-lite";
 import { z } from "zod";
-import { RealEstate, pp } from "../../../domain/real-estate/aggregate";
+import {
+  RealEstate,
+  pp,
+} from "../../../domain/real-estate/real-estate.aggregate";
 
 /**
  * Zod body schema used by the request-handler at the edge.

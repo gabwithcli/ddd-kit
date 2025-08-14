@@ -10,15 +10,25 @@ import type { Vars } from "../adapters/hono/types";
 
 export const realEstateRoutes = new Hono<{ Variables: Vars }>();
 
-realEstateRoutes.post("/", async (c) =>
+realEstateRoutes.post("/create", async (c) =>
   respond(c, await createRealEstateHandler(c), 201)
 );
-realEstateRoutes.post("/:id/appraisals", async (c) =>
+/**
+ * route to add: "/:id/delete/"
+ */
+realEstateRoutes.post("/:id/appraisals/add", async (c) =>
   respond(c, await addAppraisalHandler(c), 200)
 );
-realEstateRoutes.post("/:id/market-valuations", async (c) =>
+/**
+ * route to add: "/:id/appraisals/remove"
+ */
+realEstateRoutes.post("/:id/market-valuations/add", async (c) =>
   respond(c, await addMarketValuationHandler(c), 200)
 );
-realEstateRoutes.patch("/:id", async (c) =>
+/**
+ * route to add: "/:id/market-valuations/remove"
+ */
+realEstateRoutes.patch("/:id/details", async (c) =>
   respond(c, await updateRealEstateDetailsHandler(c), 200)
 );
+

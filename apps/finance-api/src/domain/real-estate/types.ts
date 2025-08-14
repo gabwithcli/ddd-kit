@@ -1,10 +1,5 @@
 import { ValueObject } from "@acme/sdk-lite/domain";
-
-export class Money extends ValueObject<{ amount: number; currency: string }> {
-  static of(amount: number, currency: string) {
-    return new Money({ amount, currency });
-  }
-}
+import { Money } from "../shared/money";
 
 export class Address extends ValueObject<{
   line1: string;
