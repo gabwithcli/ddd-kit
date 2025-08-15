@@ -6,7 +6,7 @@ import { type Context } from "hono";
 import {
   UpdateRealEstateDetailsBody,
   updateRealEstateDetails,
-} from "../../../../application/commands/real-estate/update-details.cmd";
+} from "../../../../application/commands.old/real-estate/update-details.cmd";
 import { Vars } from "../../types";
 
 type Ctx = Context<{ Variables: Vars }>;

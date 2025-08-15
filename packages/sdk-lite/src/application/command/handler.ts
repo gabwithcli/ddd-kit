@@ -1,3 +1,5 @@
+// packages/sdk-lite/src/application/command/handler.ts
+
 /**
  * Abstract Command Handler
  * This class provides a reusable, transactional pipeline for executing commands against an aggregate.
@@ -50,10 +52,10 @@ export abstract class CommandHandler<
     }
 
     return this.uow.withTransaction(async (tx) => {
-      // 1. LOAD - FIX for Error 1: More explicit loading logic.
+      // 1. LOAD: Explicitly handle loading for existing aggregates.
+      // For creation commands, the aggregate correctly starts as `undefined`.
       let aggregate: TAggregate | undefined = undefined;
       if (data.aggregateId) {
-        // We load the aggregate using the provided ID.
         const loadedAggregate = await this.repo.load(tx, data.aggregateId);
         if (!loadedAggregate) {
           return err(
@@ -67,17 +69,20 @@ export abstract class CommandHandler<
       const result = await command.execute(data.payload, aggregate);
 
       if (!result.ok) {
+        // If the command's invariants fail, we forward the error.
         return err(result.error);
       }
 
-      // 3. DESTRUCTURE - FIX for Error 2: This now works because `response` is on the type.
+      // 3. DESTRUCTURE: The command output contains the next state and the response.
       const { aggregate: nextAggregate, response } = result.value;
 
       // 4. SAVE: Persist the new state of the aggregate.
+      // This works for both creations and updates.
       await this.repo.save(tx, nextAggregate);
 
       // 5. PUBLISH (Future): You would pull and publish domain events here.
       // const events = nextAggregate.pullEvents();
+      // await this.eventPublisher.publish(events);
 
       // 6. RETURN: Return the successful response DTO.
       return ok(response);

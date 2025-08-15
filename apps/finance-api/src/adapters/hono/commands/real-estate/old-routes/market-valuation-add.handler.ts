@@ -1,28 +1,28 @@
 /**
- * Hono handler for AddAppraisal
+ * Hono handler for AddMarketValuation
  */
 import { authFromContext, makeRequestHandler, ok } from "@acme/sdk-lite";
 import { type Context } from "hono";
 import {
-  AddAppraisalBody,
-  addAppraisal,
-} from "../../../../application/commands/real-estate/add-appraisal.cmd";
+  AddMarketValuationBody,
+  addMarketValuation,
+} from "../../../../application/commands.old/real-estate/add-market-valuation.cmd";
 import { Vars } from "../../types";
 
 type Ctx = Context<{ Variables: Vars }>;
 
-export const addAppraisalHandler = makeRequestHandler<
+export const addMarketValuationHandler = makeRequestHandler<
   Ctx,
   { userId: string },
-  typeof AddAppraisalBody,
+  typeof AddMarketValuationBody,
   { ok: true }
 >({
   auth: authFromContext<Ctx>("userId"),
-  bodySchema: AddAppraisalBody,
+  bodySchema: AddMarketValuationBody,
   map: ({ c, auth, body }) =>
     c.var.uow
       .withTransaction((tx) =>
-        addAppraisal({ repo: c.var.reRepo }, tx, {
+        addMarketValuation({ repo: c.var.reRepo }, tx, {
           id: c.req.param("id"),
           userId: auth.userId,
           ...body,

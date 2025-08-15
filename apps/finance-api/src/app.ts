@@ -9,21 +9,32 @@ import { realEstateRoutes } from "./routes/real-estate.routes";
 // Use OpenAPIHono so we can define routes + serve the spec
 const app = new OpenAPIHono<{ Variables: Vars }>();
 
-// Instantiate our repository. In a real app, you might manage this with a DI container.
+// Instantiate dependencies once
 const reRepo = new RealEstateDrizzleRepo();
+const uow = DrizzleUoW;
+const appEnv = {
+  newId: () => ulid(),
+  now: () => new Date(),
+};
+
+// Create an instance of our new command handler.
+const reCmdHandler = new RealEstateCommandHandler({
+  repo: reRepo,
+  uow,
+  ...appEnv,
+});
 
 // Example auth stub (replace with your real auth)
 app.use("*", async (c, next) => {
   // set an authenticated user id for demo; replace with your auth middleware
   // c.set("userId", "demo-user-123");
 
-  // set uow + env for commands
-  c.set("uow", DrizzleUoW);
-  c.set("reRepo", reRepo); // Set the repository instance on the context
-  c.set("env", {
-    newId: () => ulid(), // Generate a new ID with prefix
-    now: () => new Date(), // Current timestamp
-  });
+  // set uow + env + handlers for commands
+  c.set("uow", uow);
+  c.set("reRepo", reRepo);
+  c.set("env", appEnv);
+  c.set("reCmdHandler", reCmdHandler); // Inject the handler instance
+
   await next();
 });
 
@@ -76,6 +87,7 @@ app.doc("/openapi.json", {
 
 // --- docs UI (Swagger-like via Scalar) ---
 import { Scalar } from "@scalar/hono-api-reference";
+import { RealEstateCommandHandler } from "./application/real-estate/real-estate.handler";
 import { RealEstateDrizzleRepo } from "./infra/repo.real-estate.drizzle";
 app.get(
   "/docs",

@@ -9,8 +9,8 @@ import { type Context } from "hono";
 import {
   CreateRealEstateBody,
   createRealEstate,
-} from "../../../../application/commands/real-estate/create.cmd";
-import { Vars } from "../../types";
+} from "../../../../../application/real-estate/commands/create.command";
+import { Vars } from "../../../types";
 
 type Ctx = Context<{ Variables: Vars }>;
 
