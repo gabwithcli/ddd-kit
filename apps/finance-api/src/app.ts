@@ -1,39 +1,32 @@
 import { OpenAPIHono, createRoute, z as zopenapi } from "@hono/zod-openapi";
 import { Hono } from "hono";
 import { ulid } from "ulid";
-import { Vars } from "./adapters/hono/types";
+import { AppEnv, Vars } from "./adapters/hono/types";
 import { env } from "./config";
-import { DrizzleUoW } from "./infra/uow.drizzle";
 import { realEstateRoutes } from "./routes/real-estate.routes";
 
 // Use OpenAPIHono so we can define routes + serve the spec
 const app = new OpenAPIHono<{ Variables: Vars }>();
 
-// Instantiate dependencies once
-const reRepo = new RealEstateDrizzleRepo();
-const uow = DrizzleUoW;
-const appEnv = {
+// Configure global environment helpers
+const app_env = {
   newId: () => ulid(),
   now: () => new Date(),
-};
+  now_iso: () => new Date().toISOString(),
+} satisfies AppEnv;
 
-// Create an instance of our new command handler.
-const reCmdHandler = new RealEstateCommandHandler({
-  repo: reRepo,
-  uow,
-  ...appEnv,
-});
+// Instantiate dependencies once
+const persistance_layer = getPersistenceLayer();
 
-// Example auth stub (replace with your real auth)
+// Instantiate handlers once
+const handlers = getCommandLayer({ persistance_layer, app_env });
+
 app.use("*", async (c, next) => {
-  // set an authenticated user id for demo; replace with your auth middleware
+  // set an authenticated user id for demo; replace with your a real auth middleware
   // c.set("userId", "demo-user-123");
 
-  // set uow + env + handlers for commands
-  c.set("uow", uow);
-  c.set("reRepo", reRepo);
-  c.set("env", appEnv);
-  c.set("reCmdHandler", reCmdHandler); // Inject the handler instance
+  c.set("env", app_env);
+  c.set("handlers", handlers);
 
   await next();
 });
@@ -87,8 +80,8 @@ app.doc("/openapi.json", {
 
 // --- docs UI (Swagger-like via Scalar) ---
 import { Scalar } from "@scalar/hono-api-reference";
-import { RealEstateCommandHandler } from "./application/real-estate/real-estate.handler";
-import { RealEstateDrizzleRepo } from "./infra/repo.real-estate.drizzle";
+import { getCommandLayer } from "./application/commands";
+import { getPersistenceLayer } from "./infra/persistence";
 app.get(
   "/docs",
   Scalar({

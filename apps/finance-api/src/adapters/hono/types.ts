@@ -1,18 +1,14 @@
 // apps/finance-api/src/adapters/hono/types.ts
 
-import { AggregateCrudRepository } from "@acme/sdk-lite";
-import type { UnitOfWork } from "@acme/sdk-lite/infra";
-import { RealEstateCommandHandler } from "../../application/real-estate/real-estate.handler";
-import { RealEstate } from "../../domain/real-estate/real-estate.aggregate";
+import { CommandLayer } from "../../application/commands";
 
 // What commands need from the app (clock + id factory)
-export type AppEnv = { newId(): string; now(): Date };
+export type AppEnv = { newId(): string; now(): Date; now_iso(): string };
 
 // Variables we store on Hono's context (c.var)
 export type Vars = {
-  uow: UnitOfWork;
+  // userId: string; // TBI: Auth To-Be-Implemented
   env: AppEnv;
-  reRepo: AggregateCrudRepository<RealEstate>;
-  // Add the new handler for injection
-  reCmdHandler: RealEstateCommandHandler;
+  // Adding the command handlers layer here for injection
+  handlers: CommandLayer;
 };

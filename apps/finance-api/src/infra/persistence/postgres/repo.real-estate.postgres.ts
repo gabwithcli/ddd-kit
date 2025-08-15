@@ -1,40 +1,41 @@
 /**
- * Drizzle CRUD Repository for the RealEstate Aggregate.
+ * Postgres CRUD Repository for the RealEstate Aggregate (PostgreSQL).
  * This class implements the full contract for loading and saving the aggregate,
- * handling both creation of new entities and updates to existing ones.
+ * handling creation, updates, and optimistic concurrency.
  */
 import { AggregateCrudRepository, Tx } from "@acme/sdk-lite";
 import { and, eq } from "drizzle-orm";
-import { RealEstate } from "../domain/real-estate/real-estate.aggregate";
-import { Address } from "../domain/real-estate/types";
-import { Money } from "../domain/shared/money";
+import { RealEstate } from "../../../domain/real-estate/real-estate.aggregate";
+import { Address } from "../../../domain/real-estate/types";
+import { Money } from "../../../domain/shared/money";
 import {
   realEstateAppraisals,
   realEstateMarketVals,
   realEstates,
-} from "./schema";
-import { asDrizzle } from "./uow.drizzle";
+} from "./real-estate.schema.postgres";
+import { asPostgres } from "./uow.postgres";
 
-export class RealEstateDrizzleRepo
+export class RealEstatePostgresRepo
   implements AggregateCrudRepository<RealEstate>
 {
   /**
    * Loads a RealEstate aggregate and all its child entities from the database.
-   * This method rehydrates the full aggregate root.
+   * It rehydrates the full aggregate root from the raw data.
    * @param tx - The database transaction handle.
    * @param id - The ID of the aggregate to load.
    * @returns The rehydrated RealEstate aggregate, or null if not found.
    */
   async load(tx: Tx, id: string): Promise<RealEstate | null> {
-    const dtx = asDrizzle(tx);
+    const dtx = asPostgres(tx);
 
+    // 1. Fetch the root record from the 'real_estates' table.
     const root = await dtx.query.realEstates.findFirst({
       where: eq(realEstates.id, id),
     });
 
     if (!root) return null;
 
-    // Load child entities in parallel for efficiency.
+    // 2. Fetch all child records (appraisals and market valuations) in parallel.
     const [apps, mvals] = await Promise.all([
       dtx.query.realEstateAppraisals.findMany({
         where: eq(realEstateAppraisals.realEstateId, id),
@@ -44,11 +45,13 @@ export class RealEstateDrizzleRepo
       }),
     ]);
 
-    // Rehydrate the aggregate from its raw state using the static factory.
+    // 3. Reconstruct the domain object using the static `fromState` factory.
+    // This is the "rehydration" step, turning raw data back into a smart domain model.
     const agg = RealEstate.fromState({
       id,
       userId: root.userId,
       version: root.version,
+      deletedAt: root.deletedAt,
       details: {
         name: root.name,
         address: Address.of({
@@ -80,13 +83,10 @@ export class RealEstateDrizzleRepo
   }
 
   /**
-   * Persists the RealEstate aggregate. It intelligently handles both
-   * creating a new record and updating an existing one based on the aggregate's version.
-   * @param tx - The database transaction handle.
-   * @param agg - The RealEstate aggregate to persist.
+   * Persists the aggregate. It automatically detects if this is a new aggregate
+   * (version 0) or an existing one and calls the appropriate private method.
    */
   async save(tx: Tx, agg: RealEstate): Promise<void> {
-    // A version of 0 indicates a newly created aggregate that needs to be inserted.
     if (agg.version === 0) {
       await this.insert(tx, agg);
     } else {
@@ -95,13 +95,12 @@ export class RealEstateDrizzleRepo
   }
 
   /**
-   * Inserts a new RealEstate aggregate into the database.
-   * This is called for brand new aggregates (version 0).
+   * Inserts a brand new aggregate (version 0) into the database.
    */
   private async insert(tx: Tx, agg: RealEstate): Promise<void> {
-    const dtx = asDrizzle(tx);
+    const dtx = asPostgres(tx);
 
-    // Insert the root aggregate record.
+    // Insert the root record.
     await dtx.insert(realEstates).values({
       id: agg.id,
       userId: agg.userId,
@@ -116,10 +115,11 @@ export class RealEstateDrizzleRepo
       baseCurrency: agg.details.baseCurrency,
       purchaseDate: agg.purchase.date,
       purchaseValue: agg.purchase.value.props.amount,
-      version: 1, // Set initial version to 1 after creation.
+      deletedAt: agg.deletedAt,
+      version: 1, // Set initial version to 1.
     });
 
-    // NOTE: For a create command, appraisals and market valuations will be empty,
+    // On creation, appraisals and market valuations are always empty,
     // so these inserts will be no-ops, which is correct.
     if (agg.appraisals.length > 0) {
       await dtx.insert(realEstateAppraisals).values(
@@ -141,19 +141,19 @@ export class RealEstateDrizzleRepo
       );
     }
 
-    // After a successful save, the in-memory aggregate's version is bumped.
+    // Bump the in-memory version to match the newly saved state.
     agg.version = 1;
   }
 
   /**
-   * Updates an existing RealEstate aggregate in the database.
-   * This uses optimistic concurrency control based on the version number.
+   * Updates an existing aggregate and its child collections in the database.
    */
   private async update(tx: Tx, agg: RealEstate): Promise<void> {
-    const dtx = asDrizzle(tx);
+    const dtx = asPostgres(tx);
     const nextVersion = agg.version + 1;
 
-    // Update the root aggregate record, checking the version to prevent conflicts.
+    // 1. Update the root record with an optimistic concurrency check.
+    // The `where` clause ensures we only update the row if the version matches.
     const result = await dtx
       .update(realEstates)
       .set({
@@ -165,24 +165,22 @@ export class RealEstateDrizzleRepo
         state: agg.details.address.props.state ?? null,
         country: agg.details.address.props.country,
         notes: agg.details.notes ?? null,
-        baseCurrency: agg.details.baseCurrency, // Note: Domain logic prevents this from changing.
-        purchaseDate: agg.purchase.date,
-        purchaseValue: agg.purchase.value.props.amount,
+        deletedAt: agg.deletedAt,
         version: nextVersion,
       })
       .where(
         and(eq(realEstates.id, agg.id), eq(realEstates.version, agg.version))
       );
 
-    // If no rows were affected, it means the version was stale (optimistic lock failed).
+    // If no rows were affected, another process changed the data. Throw an error.
     if (result.rowCount === 0) {
       throw new Error(
-        `Optimistic concurrency conflict. RealEstate aggregate ${agg.id} with version ${agg.version} not found.`
+        `Optimistic concurrency conflict. RealEstate ${agg.id} with version ${agg.version} not found.`
       );
     }
 
-    // For child collections, the simplest strategy is to delete and re-insert.
-    // This is robust and easy to implement.
+    // 2. For child collections, the simplest strategy is to delete and re-insert all of them.
+    // This is robust and avoids complex diffing logic.
     await dtx
       .delete(realEstateAppraisals)
       .where(eq(realEstateAppraisals.realEstateId, agg.id));
@@ -209,7 +207,7 @@ export class RealEstateDrizzleRepo
       );
     }
 
-    // Increment the in-memory version to match the database.
+    // 3. Bump the in-memory version to match the database.
     agg.version = nextVersion;
   }
 }

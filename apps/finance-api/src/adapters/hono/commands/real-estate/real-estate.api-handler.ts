@@ -2,8 +2,8 @@
 
 import { authFromContext, makeRequestHandler } from "@acme/sdk-lite";
 import { type Context } from "hono";
+import { RealEstateCommandRequest } from "../../../../application/commands/real-estate/commands.schema";
 import { Vars } from "../../types";
-import { RealEstateCommandRequest } from "./real-estate.commands";
 
 type Ctx = Context<{ Variables: Vars }>;
 
@@ -19,7 +19,7 @@ export const realEstateApiHandler = makeRequestHandler<
   bodySchema: RealEstateCommandRequest,
   // 3. Map the request to the application layer.
   map: ({ c, auth, body }) => {
-    const handler = c.var.reCmdHandler;
+    const handler = c.var.handlers.real_estate;
     const aggregateId = c.req.param("id");
 
     // Enrich the client payload with the authenticated userId.
@@ -28,7 +28,7 @@ export const realEstateApiHandler = makeRequestHandler<
     // Execute the command.
     return handler.execute(body.command, {
       aggregateId,
-      payload: payloadWithAuth, 
+      payload: payloadWithAuth,
     });
   },
 });

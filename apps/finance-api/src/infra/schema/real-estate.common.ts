@@ -1,6 +1,15 @@
-import { date, integer, numeric, pgTable, varchar } from "drizzle-orm/pg-core";
+// apps/finance-api/src/infra/schema/real-estate.common.ts
 
-export const realEstates = pgTable("real_estates", {
+import {
+  date,
+  integer,
+  numeric,
+  timestamp,
+  varchar,
+} from "drizzle-orm/pg-core";
+
+// Defines the columns for the real_estates table in a database-agnostic way.
+export const realEstatesColumns = {
   id: varchar("id", { length: 40 }).primaryKey(),
   userId: varchar("user_id", { length: 40 }).notNull(),
   name: varchar("name", { length: 256 }).notNull(),
@@ -20,20 +29,22 @@ export const realEstates = pgTable("real_estates", {
     .$type<number>()
     .notNull(),
   version: integer("version").notNull().default(0),
-});
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+};
 
-export const realEstateAppraisals = pgTable("real_estate_appraisals", {
+// We do the same for the child tables.
+export const realEstateAppraisalsColumns = {
   realEstateId: varchar("real_estate_id", { length: 40 }).notNull(),
   date: date("date").notNull(),
   value: numeric("value", { precision: 14, scale: 2 })
     .$type<number>()
     .notNull(),
-});
+};
 
-export const realEstateMarketVals = pgTable("real_estate_market_vals", {
+export const realEstateMarketValsColumns = {
   realEstateId: varchar("real_estate_id", { length: 40 }).notNull(),
   date: date("date").notNull(),
   value: numeric("value", { precision: 14, scale: 2 })
     .$type<number>()
     .notNull(),
-});
+};

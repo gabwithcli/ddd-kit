@@ -23,6 +23,7 @@ export type CommandHandlerPayload<T> = {
 export abstract class CommandHandler<
   TAggregate extends AggregateRoot,
   TRepo extends AggregateCrudRepository<TAggregate>
+  // ^^ TBI: to later extend to enable AggregateEsRepository
 > {
   // The concrete handler will provide a map of command names to command implementations.
   protected abstract commands: Record<string, ICommand<any, any, TAggregate>>;
