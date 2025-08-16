@@ -1,4 +1,4 @@
-// apps/finance-api/src/application/commands/real-estate/create.command.ts
+// apps/finance-api/src/application/commands/real-estate/create/create.command.ts
 
 import { CommandOutput, ICommand, ok, Result } from "@acme/sdk-lite";
 import { z } from "zod";
@@ -28,16 +28,33 @@ export class CreateRealEstateCommand
 
   public execute(
     payload: CommandPayload,
-    aggregate?: RealEstate
+    aggregate?: RealEstate // Will be undefined for a create command
   ): Result<CommandOutput<RealEstate, CommandResponse>> {
+    // A create command should never be called on an existing aggregate.
     if (aggregate) {
       throw new Error("Cannot create a RealEstate that already exists.");
     }
 
-    // The aggregate's factory enforces all business invariants.
+    // ## Refactoring Note ##
+    // This is where the Command takes on its orchestration role (the "Project Manager").
+    // It interacts with infrastructure-level dependencies (`newId`, `now`) to gather
+    // all the necessary data *before* calling the domain model.
+
+    // 1. Generate the unique ID for the new aggregate.
+    // The domain model is no longer responsible for its own ID format or generation.
+    const newId = `re_${this.deps.newId()}`;
+
+    // 2. Get the current timestamp.
+    // This is another infrastructure concern handled here, not in the aggregate.
+    const createdAt = this.deps.now().toISOString();
+
+    // 3. Call the refactored aggregate factory.
+    // We now pass the generated ID and timestamp as plain data. The aggregate's
+    // `create` method is now a pure function, focused solely on enforcing
+    // business rules on the data it receives.
     const newAggregate = RealEstate.create({
-      id: `re_${this.deps.newId()}`,
-      userId: payload.userId, // userId is now passed directly
+      id: newId,
+      userId: payload.userId,
       details: {
         name: payload.details.name,
         address: Address.of(payload.details.address),
@@ -49,9 +66,10 @@ export class CreateRealEstateCommand
         payload.purchase.value,
         payload.details.baseCurrency
       ),
-      now: () => this.deps.now().toISOString(),
+      createdAt: createdAt, // Pass the generated timestamp.
     });
 
+    // The rest of the logic is unchanged.
     // On success, we wrap the new aggregate and response DTO in a `Result.ok`.
     return ok({
       aggregate: newAggregate,

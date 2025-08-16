@@ -6,8 +6,8 @@
  * - load(tx, id): returns the *fully rehydrated* aggregate (root + children) or null.
  * - save(tx, agg): persists root + children and enforces optimistic concurrency.
  */
-import type { AggregateRoot } from "../../domain/aggregate";
-import type { Tx } from "../../infra/unit-of-work";
+import type { AggregateRoot } from "../../../domain/aggregate";
+import type { Tx } from "../../../infra/unit-of-work";
 
 export interface AggregateCrudRepository<AR extends AggregateRoot> {
   load(tx: Tx, id: string): Promise<AR | null>;

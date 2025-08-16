@@ -4,7 +4,7 @@ export const realEstateCommandsList = [
   // real-estate (root) commands
   "create-real-estate",
   // "update-real-estate",
-  // "delete-real-estate",
+  "delete-real-estate",
   // appraisal commands
   // "add-appraisal",
   // "edit-appraisal",

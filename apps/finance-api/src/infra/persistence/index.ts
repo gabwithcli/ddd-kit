@@ -1,6 +1,6 @@
 // apps/finance-api/src/infra/persistence/index.ts
 
-import { AggregateCrudRepository, UnitOfWork } from "@acme/sdk-lite";
+import { AggregateRepository, UnitOfWork } from "@acme/sdk-lite";
 
 // Import both implementations
 import { RealEstate } from "../../domain/real-estate/real-estate.aggregate";
@@ -13,7 +13,7 @@ import { SqliteUoW } from "./sqlite/uow.sqlite";
 export interface PersistenceLayer {
   uow: UnitOfWork;
   repos: {
-    real_estate: AggregateCrudRepository<RealEstate>;
+    real_estate: AggregateRepository<RealEstate>;
     // add other repos here...
   };
 }
@@ -21,9 +21,7 @@ export interface PersistenceLayer {
 export function getPersistenceLayer(): PersistenceLayer {
   const client = process.env.DATABASE_CLIENT || "postgres";
 
-  // using SQLite for local development !
   if (client === "sqlite") {
-    console.log("✅ Using SQLite for persistence.");
     return {
       uow: SqliteUoW,
       repos: {
@@ -32,8 +30,6 @@ export function getPersistenceLayer(): PersistenceLayer {
     };
   }
 
-  // Default to PostgreSQL
-  console.log("✅ Using PostgreSQL for persistence.");
   return {
     uow: PostgresUoW,
     repos: {

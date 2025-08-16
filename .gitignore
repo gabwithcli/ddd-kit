@@ -27,6 +27,7 @@ lerna-debug.log*
 
 # misc
 .DS_Store
+repomix-output.*
 
 # db
 local-development.db

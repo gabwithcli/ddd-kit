@@ -3,7 +3,7 @@
  * This class implements the full contract for loading and saving the aggregate,
  * handling creation, updates, and optimistic concurrency.
  */
-import { AggregateCrudRepository, Tx } from "@acme/sdk-lite";
+import { AggregateRepository, Tx } from "@acme/sdk-lite";
 import { and, eq } from "drizzle-orm";
 import { RealEstate } from "../../../domain/real-estate/real-estate.aggregate";
 import { Address } from "../../../domain/real-estate/types";
@@ -15,17 +15,16 @@ import {
 } from "./real-estate.schema.postgres";
 import { asPostgres } from "./uow.postgres";
 
-export class RealEstatePostgresRepo
-  implements AggregateCrudRepository<RealEstate>
-{
+export class RealEstatePostgresRepo implements AggregateRepository<RealEstate> {
   /**
-   * Loads a RealEstate aggregate and all its child entities from the database.
-   * It rehydrates the full aggregate root from the raw data.
+   * Finds a RealEstate aggregate by its ID and rehydrates it.
+   * This method was formerly named `load`. We've renamed it to `findById`
+   * to conform to the generic `AggregateRepository` interface.
    * @param tx - The database transaction handle.
    * @param id - The ID of the aggregate to load.
    * @returns The rehydrated RealEstate aggregate, or null if not found.
    */
-  async load(tx: Tx, id: string): Promise<RealEstate | null> {
+  async findById(tx: Tx, id: string): Promise<RealEstate | null> {
     const dtx = asPostgres(tx);
 
     // 1. Fetch the root record from the 'real_estates' table.

@@ -1,4 +1,4 @@
-// finance-api/src/domain/real-estate/aggregate.ts
+// apps/finance-api/src/domain/real-estate/real-estate.aggregate.ts
 // -----------------------------------------------------------------------------
 // RealEstate aggregate with "English-like" invariants.
 // - Intrinsic rules (no I/O) are expressed via the invariants DSL and thrown
@@ -21,30 +21,46 @@ export const pp = (
 });
 
 export class RealEstate extends AggregateRoot {
+  // private property to track the deleted state in memory.
+  private _deletedAt: Date | null = null;
+
   private constructor(
     id: string,
     public readonly userId: string,
     private _details: RealEstateDetails,
     private _purchase: PricePoint,
     private _appraisals: PricePoint[],
-    private _marketVals: PricePoint[]
+    private _marketVals: PricePoint[],
+    deletedAt: Date | null = null // Add to constructor for rehydration
   ) {
     super(id);
+    this._deletedAt = deletedAt; // Initialize the property
   }
 
   // Factory
   // -------
-  // Enforces intrinsic rules about initial state, then emits RealEstateCreated.
+  // This factory is responsible for creating a new, valid RealEstate aggregate.
+  // It enforces all the intrinsic business rules (invariants) for a valid creation.
+  //
+  // ## Refactoring Note ##
+  // We've changed this method's signature to make the Aggregate's dependencies
+  // more explicit. It no longer generates its own ID prefix or the creation timestamp.
+  // Instead, it receives them as plain data. This reinforces a key DDD principle:
+  // The domain model should not be concerned with infrastructure tasks like
+  // generating IDs or getting the current time. That responsibility belongs to the
+  // application layer (the `ICommand` implementation), which orchestrates the process.
   static create(args: {
-    id: string;
+    id: string; // The full, unique ID is now passed in.
     userId: string;
     details: RealEstateDetails;
     purchase: PricePoint;
-    now?: () => string; // ISO string producer (override for testing)
+    createdAt: string; // The creation timestamp is now a required argument.
   }) {
-    const { id, userId, details, purchase } = args;
+    const { id, userId, details, purchase, createdAt } = args;
 
-    // Domain invariants (no I/O), expressed "in English"
+    // We run our set of business rules, or "invariants", before we even try
+    // to create the object. If any rule is violated, this will throw a
+    // `DomainInvariantError`, preventing an invalid object from ever existing.
     invariants({ aggregate: "RealEstate", operation: "create", id })
       .ensure(
         "Il nome è obbligatorio.",
@@ -54,7 +70,7 @@ export class RealEstate extends AggregateRoot {
       )
       .ensure(
         "La valuta dell'acquisto deve coincidere con la baseCurrency.",
-        "real_estate.name_required",
+        "real_estate.purchase_currency_mismatch",
         purchase.value.props.currency === details.baseCurrency,
         {
           purchaseCurrency: purchase.value.props.currency,
@@ -69,18 +85,25 @@ export class RealEstate extends AggregateRoot {
       )
       .throwIfAny("RealEstate.Invalid");
 
+    // If all invariants pass, we can safely construct the new aggregate instance.
     const agg = new RealEstate(id, userId, details, purchase, [], []);
 
+    // After creation, we record a domain event. This event captures the fact
+    // that a new RealEstate was created. In an Event Sourcing model, this is
+    // the source of truth. In a CRUD model, this can be used for an outbox
+    // pattern to notify other systems.
     agg.record("RealEstateCreated", {
       id,
       userId,
-      at: args.now?.() ?? new Date().toISOString(),
+      at: createdAt, // We use the timestamp that was passed in.
     });
 
     return agg;
   }
 
   // Rehydration from persisted state
+  // This method remains unchanged. It's used by the repository to reconstruct
+  // the aggregate from raw database data.
   static fromState(s: {
     id: string;
     userId: string;
@@ -89,6 +112,7 @@ export class RealEstate extends AggregateRoot {
     purchase: PricePoint;
     appraisals: PricePoint[];
     marketVals: PricePoint[];
+    deletedAt?: Date | null; // This field comes from the database
   }) {
     const agg = new RealEstate(
       s.id,
@@ -96,7 +120,9 @@ export class RealEstate extends AggregateRoot {
       s.details,
       s.purchase,
       s.appraisals,
-      s.marketVals
+      s.marketVals,
+      // It's good practice to also rehydrate soft-delete status
+      s.deletedAt ?? null // Pass the deletedAt status to the constructor
     );
     agg.version = s.version;
     return agg;
@@ -115,9 +141,38 @@ export class RealEstate extends AggregateRoot {
   get marketValuations() {
     return [...this._marketVals];
   }
+  get deletedAt(): Date | null {
+    return this._deletedAt;
+  }
 
   // Command handlers (mutations)
-  // ----------------------------
+  // These methods remain unchanged as their logic was already sound.
+
+  delete(deletedAt: Date) {
+    // This is our core business rule (invariant) for this operation.
+    // An aggregate that is already deleted cannot be deleted again.
+    invariants({
+      aggregate: "RealEstate",
+      operation: "delete",
+      id: this.id,
+    })
+      .ensure(
+        "Cannot delete an already deleted asset.",
+        "real_estate.already_deleted",
+        this._deletedAt === null, // The condition must be true to pass
+        { currentDeletedAt: this._deletedAt }
+      )
+      .throwIfAny("RealEstate.Invalid");
+
+    // If the invariant passes, we mutate the aggregate's state.
+    this._deletedAt = deletedAt;
+
+    // And we record a domain event to capture this important business fact.
+    this.record("RealEstateDeleted", {
+      id: this.id,
+      at: deletedAt.toISOString(),
+    });
+  }
 
   addAppraisal(p: PricePoint) {
     // Intrinsic rules for a new appraisal relative to the purchase
