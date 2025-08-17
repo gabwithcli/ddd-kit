@@ -1,4 +1,4 @@
-// apps/finance-api/src/infra/schema/real-estate.common.ts
+// apps/finance-api/src/infra/persistence/postgres/real-estate/real-estate.schema.postgres.ts
 
 import {
   date,

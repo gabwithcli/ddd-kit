@@ -4,36 +4,28 @@ import { AggregateRepository, UnitOfWork } from "@acme/sdk-lite";
 
 // Import both implementations
 import { RealEstate } from "../../domain/real-estate/real-estate.aggregate";
-import { RealEstatePostgresRepo } from "./postgres/repo.real-estate.postgres";
+import { RealEstatePostgresRepo } from "./postgres/real-estate/real-estate.repo.postgres";
 import { PostgresUoW } from "./postgres/uow.postgres";
-import { RealEstateSqliteRepo } from "./sqlite/real-estate.repo.sqlite";
-import { SqliteUoW } from "./sqlite/uow.sqlite";
 
 // Define the shape of the object our factory will return.
+// we explicitly define each repository, preserving its specific aggregate type.
 export interface PersistenceLayer {
   uow: UnitOfWork;
   repos: {
     real_estate: AggregateRepository<RealEstate>;
-    // add other repos here...
+    // If you add a portfolio aggregate, you would add its repo here:
+    // portfolio: AggregateRepository<Portfolio>;
   };
 }
 
 export function getPersistenceLayer(): PersistenceLayer {
-  const client = process.env.DATABASE_CLIENT || "postgres";
-
-  if (client === "sqlite") {
-    return {
-      uow: SqliteUoW,
-      repos: {
-        real_estate: new RealEstateSqliteRepo(),
-      },
-    };
-  }
+  const client = process.env.DATABASE_CLIENT || "postgres"; // or "dynamodb"
 
   return {
     uow: PostgresUoW,
     repos: {
       real_estate: new RealEstatePostgresRepo(),
+      // add other repositories here...
     },
   };
 }

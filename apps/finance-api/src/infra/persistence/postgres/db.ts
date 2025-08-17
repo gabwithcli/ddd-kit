@@ -2,7 +2,7 @@
 
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
-import * as schema from "./real-estate.schema.postgres";
+import * as schema from "./schema.postgres";
 
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
