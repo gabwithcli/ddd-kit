@@ -23,7 +23,7 @@ const handlers = getCommandLayer({ persistance_layer, app_env });
 
 app.use("*", async (c, next) => {
   // set an authenticated user id for demo; replace with your a real auth middleware
-  // c.set("userId", "demo-user-123");
+  c.set("userId", "usr_demo123");
 
   c.set("env", app_env);
   c.set("handlers", handlers);

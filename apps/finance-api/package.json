@@ -4,12 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "pnpm db:start && tsx watch --env-file .env src/server.ts",
     "build": "tsup src/server.ts --format esm,cjs",
     "start": "node dist/server.js",
     "db:start": "docker-compose up -d",
-    "db:generate": "drizzle-kit generate",
-    "db:push": "drizzle-kit push"
+    "db:stop": "docker-compose down --volumes",
+    "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config=drizzle.config.ts"
   },
   "dependencies": {
     "@acme/sdk-lite": "workspace:*",

@@ -30,6 +30,8 @@ export const realEstatesColumns = {
     .notNull(),
   version: integer("version").notNull().default(0),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  // ADD THIS LINE TEMPORARILY
+  sanityCheck: varchar("sanity_check"),
 };
 
 // We do the same for the child tables.

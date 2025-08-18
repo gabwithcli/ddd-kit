@@ -1,5 +1,5 @@
 {
-  "id": "3c5b8998-7942-477a-9acd-28a11772f993",
+  "id": "c70d2fcb-5c55-4c10-b292-d0745972caf1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -158,6 +158,12 @@
         "deleted_at": {
           "name": "deleted_at",
           "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sanity_check": {
+          "name": "sanity_check",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": false
         }

@@ -27,5 +27,6 @@ CREATE TABLE "real_estate"."real_estates" (
 	"purchase_date" date NOT NULL,
 	"purchase_value" numeric(14, 2) NOT NULL,
 	"version" integer DEFAULT 0 NOT NULL,
-	"deleted_at" timestamp with time zone
+	"deleted_at" timestamp with time zone,
+	"sanity_check" varchar
 );
