@@ -4,10 +4,10 @@
  * Abstract Command Handler
  * ========================
  * This class provides a reusable, transactional pipeline for executing commands
- * against an aggregate. It automates the "load -> execute -> save" flow, ensuring
+ * against an aggregate. It automates the "load -> execute -> save -> publish" flow, ensuring
  * that every business operation is handled consistently and atomically.
  *
- * This revised version is now decoupled from a specific persistence strategy (like CRUD)
+ * This revised version is now decoupled from a specific persistence strategy (like CRUD or Event Sourcing).
  * by depending on a generic `AggregateRepository` interface. This allows you to
  * inject either a CRUD-based repository or an Event Sourcing-based repository
  * without changing any of the command handling logic.
