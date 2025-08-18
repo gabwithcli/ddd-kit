@@ -13,7 +13,7 @@
  * without changing any of the command handling logic.
  */
 
-import { AggregateRoot } from "../../domain/aggregate";
+import { AggregateRoot, DomainInvariantError } from "../../domain/aggregate";
 import type { UnitOfWork } from "../../infra";
 import { err, ok, type Result } from "../../shared/result";
 // We now import the new, generic repository interface.
@@ -66,67 +66,82 @@ export abstract class CommandHandler<
     // This allows a single handler to manage multiple operations for an aggregate.
     const command = this.commands[commandName];
     if (!command) {
-      return err(
-        new Error(`Command "${commandName}" not found on this handler.`)
-      );
+      // Return a structured error if the command doesn't exist.
+      return err({
+        kind: "BadRequest",
+        message: `Command "${commandName}" not found on this handler.`,
+      });
     }
 
     // The entire process is wrapped in a transaction managed by the Unit of Work.
     // If any step fails, the entire transaction is rolled back, ensuring data consistency.
     return this.uow.withTransaction(async (tx) => {
-      // Step 1: LOAD
-      // We need to fetch the current state of the aggregate if we're updating it.
-      // For creation commands, `data.aggregateId` will be undefined, so the
-      // aggregate correctly starts as `undefined`.
-      let aggregate: TAggregate | undefined = undefined;
-      if (data.aggregateId) {
-        // We now use the generic `findById` method from our new repository interface.
-        // This abstracts away how the aggregate is loaded.
-        // - For a CRUD repo, this will be a `SELECT` from a table.
-        // - For an ES repo, this will involve reading all events for a stream and replaying them.
-        const loadedAggregate = await this.repo.findById(tx, data.aggregateId);
-        if (!loadedAggregate) {
-          // It's crucial to ensure the aggregate exists before trying to modify it.
-          return err(
-            new Error(`Aggregate with id ${data.aggregateId} not found.`)
+      // We wrap the core logic in a try/catch block to handle domain errors gracefully.
+      try {
+        // Step 1: LOAD
+        // We need to fetch the current state of the aggregate if we're updating it.
+        // For creation commands, `data.aggregateId` will be undefined, so the
+        // aggregate correctly starts as `undefined`.
+        let aggregate: TAggregate | undefined = undefined;
+        if (data.aggregateId) {
+          // We now use the generic `findById` method from our new repository interface.
+          // This abstracts away how the aggregate is loaded.
+          const loadedAggregate = await this.repo.findById(
+            tx,
+            data.aggregateId
           );
+          if (!loadedAggregate) {
+            // It's crucial to ensure the aggregate exists before trying to modify it.
+            return err({
+              kind: "NotFound",
+              message: `Aggregate with id ${data.aggregateId} not found.`,
+            });
+          }
+          aggregate = loadedAggregate;
         }
-        aggregate = loadedAggregate;
+
+        // Step 2: EXECUTE
+        // We delegate the core business logic to the specific command object.
+        // This is where a DomainInvariantError might be thrown.
+        const result = await command.execute(data.payload, aggregate);
+
+        if (!result.ok) {
+          // If the command's invariants or business rules fail by returning an error,
+          // we immediately stop and forward the error.
+          return err(result.error);
+        }
+
+        // Step 3: DESTRUCTURE
+        const { aggregate: nextAggregate, response } = result.value;
+
+        // Step 4: SAVE
+        await this.repo.save(tx, nextAggregate);
+
+        // Step 5: PUBLISH (Future Enhancement)
+        // After successfully saving, you would publish any domain events for other
+        // parts of the system to react to (e.g., updating read models, sending notifications).
+        // const events = nextAggregate.pullEvents();
+        // await this.eventPublisher.publish(events);
+
+        // Step 6: RETURN
+        // Finally, we return the successful response DTO to the caller.
+        return ok(response);
+      } catch (e) {
+        // Step 7: CATCH & TRANSFORM
+        // If a DomainInvariantError was thrown during execution, we catch it here.
+        if (e instanceof DomainInvariantError) {
+          // We transform it into a structured 'InvariantViolation' error that
+          // our API's `respond` helper can understand and map to a 422 status code.
+          return err({
+            kind: "InvariantViolation",
+            message: e.message,
+            details: e.details,
+          });
+        }
+        // For any other unexpected error, we re-throw it to let it be handled
+        // as a true 500 Internal Server Error.
+        throw e;
       }
-
-      // Step 2: EXECUTE
-      // We delegate the core business logic to the specific command object.
-      // The command receives the payload and the current state of the aggregate (if any).
-      // It contains the domain expertise to decide if the operation is valid.
-      const result = await command.execute(data.payload, aggregate);
-
-      if (!result.ok) {
-        // If the command's invariants or business rules fail, we immediately
-        // stop and forward the error. The transaction will be rolled back.
-        return err(result.error);
-      }
-
-      // Step 3: DESTRUCTURE
-      // On success, the command returns the new state of the aggregate and a response DTO.
-      const { aggregate: nextAggregate, response } = result.value;
-
-      // Step 4: SAVE
-      // We persist the new state of the aggregate using the generic `save` method.
-      // This again abstracts away the persistence mechanism.
-      // - For a CRUD repo, this will `UPDATE` the row and increment its version number.
-      // - For an ES repo, this will pull the new events from the aggregate (`.pullEvents()`)
-      //   and append them to the event stream.
-      await this.repo.save(tx, nextAggregate);
-
-      // Step 5: PUBLISH (Future Enhancement)
-      // After successfully saving, you would publish any domain events for other
-      // parts of the system to react to (e.g., updating read models, sending notifications).
-      // const events = nextAggregate.pullEvents();
-      // await this.eventPublisher.publish(events);
-
-      // Step 6: RETURN
-      // Finally, we return the successful response DTO to the caller (e.g., the API handler).
-      return ok(response);
     });
   }
 }

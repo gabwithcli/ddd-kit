@@ -1,4 +1,6 @@
-import { ValueObject } from "@acme/sdk-lite/domain";
+// apps/finance-api/src/domain/shared/money.ts
+
+import { DomainInvariantError, ValueObject } from "@acme/sdk-lite/domain";
 
 /**
  * Money
@@ -26,20 +28,21 @@ export class Money extends ValueObject<{ amount: number; currency: string }> {
   private static create(amount: number, currency: string) {
     // 1) amount deve essere un numero finito (niente NaN/Infinity)
     if (!Number.isFinite(amount)) {
-      throw new Error("Amount must be a finite number");
+      // MODIFIED: Use DomainInvariantError for consistency
+      throw new DomainInvariantError("Amount must be a finite number");
     }
 
     // 2) normalizza e valida il formato della currency (tre lettere A-Z)
     const cur = currency.toUpperCase();
     if (!/^[A-Z]{3}$/.test(cur)) {
-      throw new Error(`Invalid currency format: ${currency}`);
+      // MODIFIED: Use DomainInvariantError for consistency
+      throw new DomainInvariantError(`Invalid currency format: ${currency}`);
     }
 
     // 3) vincolo di lista ammessa (business rule locale all'app)
     if (!Money.ALLOWED.includes(cur as (typeof Money.ALLOWED)[number])) {
-      // Nota: se vuoi separare "formato valido" da "valuta non permessa",
-      // puoi usare errori diversi (es. DomainInvariantError) e mapparli a 422.
-      throw new Error(`Currency not allowed: ${cur}`);
+      // MODIFIED: Use DomainInvariantError for consistency
+      throw new DomainInvariantError(`Currency not allowed: ${cur}`);
     }
 
     return new Money({ amount, currency: cur });
@@ -92,7 +95,8 @@ export class Money extends ValueObject<{ amount: number; currency: string }> {
   /** Garantisce che le valute coincidano prima di operazioni aritmetiche. */
   private ensureSameCurrency(other: Money, op: "add" | "subtract") {
     if (this.currency !== other.currency) {
-      throw new Error(
+      // This could also be a DomainInvariantError if you prefer
+      throw new DomainInvariantError(
         `Currency mismatch in ${op}(): ${this.currency} vs ${other.currency}`
       );
     }
