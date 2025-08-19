@@ -1,3 +1,7 @@
+// ## File: packages/sdk-lite/src/shared/errors.ts
+
+import { z } from "zod";
+
 /**
  * DomainInvariantError
  * --------------------
@@ -32,3 +36,4 @@ export type EdgeError =
   | { kind: "InvariantViolation"; message: string; details?: unknown }
   | { kind: "Conflict"; message: string }
   | { kind: "Infrastructure"; message: string };
+

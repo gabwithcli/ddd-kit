@@ -1,10 +1,12 @@
 // apps/finance-api/src/application/commands/real-estate/delete/delete.command.ts
 
 import { CommandOutput, ICommand, ok, Result } from "@acme/sdk-lite";
+import z from "zod";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
+import { deleteRealEstatePayloadSchema } from "./delete.schema";
 
-// The payload received by `execute` includes the userId from the auth context.
-type CommandPayload = {
+// The full payload for the command's execute method, including the userId.
+type CommandPayload = z.infer<typeof deleteRealEstatePayloadSchema> & {
   userId: string;
 };
 

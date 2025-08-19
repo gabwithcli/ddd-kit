@@ -3,7 +3,7 @@
  *
  * Why a single "index" file?
  * - Consumers can import everything from one place:
- *     import { ok, withIdempotency } from "@acme/sdk-lite";
+ * import { ok, withIdempotency } from "@acme/sdk-lite";
  * - Internally we keep small modules (single responsibility) and re-export them here.
  */
 
@@ -22,6 +22,7 @@ export * from "./idempotency/with-idempotency";
 // HTTP edge helpers
 export * from "./http/request-handler";
 export * from "./http/respond";
+export * from "./http/status";
 
 // Command blueprints (CRUD + ES)
 export * from "./application/command";

@@ -20,6 +20,9 @@ importers:
       '@hono/node-server':
         specifier: ^1.4.0
         version: 1.18.2(hono@4.9.1)
+      '@hono/swagger-ui':
+        specifier: ^0.5.2
+        version: 0.5.2(hono@4.9.1)
       '@hono/zod-openapi':
         specifier: ^0.16.0
         version: 0.16.4(hono@4.9.1)(zod@3.25.76)
@@ -35,6 +38,9 @@ importers:
       pg:
         specifier: ^8.12.0
         version: 8.16.3
+      stoker:
+        specifier: ^2.0.1
+        version: 2.0.1(@asteasolutions/zod-to-openapi@7.3.4(zod@3.25.76))(@hono/zod-openapi@0.16.4(hono@4.9.1)(zod@3.25.76))(hono@4.9.1)(openapi3-ts@4.5.0)
       ulid:
         specifier: ^2.4.0
         version: 2.4.0
@@ -68,6 +74,10 @@ importers:
         version: 5.9.2
 
   packages/sdk-lite:
+    dependencies:
+      stoker:
+        specifier: ^2.0.1
+        version: 2.0.1(@asteasolutions/zod-to-openapi@7.3.4(zod@3.25.76))(@hono/zod-openapi@0.16.4(hono@4.9.1)(zod@3.25.76))(hono@4.9.1)(openapi3-ts@4.5.0)
     devDependencies:
       '@types/node':
         specifier: ^20.14.0
@@ -396,6 +406,11 @@ packages:
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: ^4
+
+  '@hono/swagger-ui@0.5.2':
+    resolution: {integrity: sha512-7wxLKdb8h7JTdZ+K8DJNE3KXQMIpJejkBTQjrYlUWF28Z1PGOKw6kUykARe5NTfueIN37jbyG/sBYsbzXzG53A==}
+    peerDependencies:
+      hono: '*'
 
   '@hono/zod-openapi@0.16.4':
     resolution: {integrity: sha512-mnF6GthBaKex0D5PsY/4lYNtkaGJNE38bjeUI//EUqq7Ee4TNm2su35IUiFH4HcmJp5fWYMLyOJOpjnkClzEGw==}
@@ -1141,6 +1156,21 @@ packages:
     resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
     engines: {node: '>= 10.x'}
 
+  stoker@2.0.1:
+    resolution: {integrity: sha512-liSQNnJmn8fWSEan7sVaFe6iSHuN3X02fDGLS6snwW+FUuKi5HmKUHm3P+Kzr5xiDPqRpmSTtmGEBbSL9H2zkQ==}
+    peerDependencies:
+      '@asteasolutions/zod-to-openapi': ^8.0.0
+      '@hono/zod-openapi': '>=1.0.0'
+      hono: ^4.0.0
+      openapi3-ts: ^4.5.0
+    peerDependenciesMeta:
+      '@asteasolutions/zod-to-openapi':
+        optional: true
+      '@hono/zod-openapi':
+        optional: true
+      openapi3-ts:
+        optional: true
+
   string-width@4.2.3:
     resolution: {integrity: sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==}
     engines: {node: '>=8'}
@@ -1443,6 +1473,10 @@ snapshots:
     optional: true
 
   '@hono/node-server@1.18.2(hono@4.9.1)':
+    dependencies:
+      hono: 4.9.1
+
+  '@hono/swagger-ui@0.5.2(hono@4.9.1)':
     dependencies:
       hono: 4.9.1
 
@@ -2114,6 +2148,14 @@ snapshots:
       whatwg-url: 7.1.0
 
   split2@4.2.0: {}
+
+  stoker@2.0.1(@asteasolutions/zod-to-openapi@7.3.4(zod@3.25.76))(@hono/zod-openapi@0.16.4(hono@4.9.1)(zod@3.25.76))(hono@4.9.1)(openapi3-ts@4.5.0):
+    dependencies:
+      hono: 4.9.1
+    optionalDependencies:
+      '@asteasolutions/zod-to-openapi': 7.3.4(zod@3.25.76)
+      '@hono/zod-openapi': 0.16.4(hono@4.9.1)(zod@3.25.76)
+      openapi3-ts: 4.5.0
 
   string-width@4.2.3:
     dependencies:

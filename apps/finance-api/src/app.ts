@@ -1,87 +1,102 @@
-import { OpenAPIHono, createRoute, z as zopenapi } from "@hono/zod-openapi";
-import { Hono } from "hono";
+// ## File: apps/finance-api/src/app.ts
+
+import { cors } from "hono/cors";
+import { HTTPException } from "hono/http-exception";
+import { logger } from "hono/logger";
+import { prettyJSON } from "hono/pretty-json";
+import { secureHeaders } from "hono/secure-headers";
+
+import { swaggerUI } from "@hono/swagger-ui";
+import { OpenAPIHono } from "@hono/zod-openapi";
+import { Scalar } from "@scalar/hono-api-reference";
+import defaultHook from "stoker/openapi/default-hook";
 import { ulid } from "ulid";
+
+// Local application imports
 import { AppEnv, Vars } from "./adapters/hono/types";
+import { getCommandLayer } from "./application/commands";
 import { env } from "./config";
-import { realEstateRoutes } from "./routes/real-estate.routes";
+import { getPersistenceLayer } from "./infra/persistence";
+import { realEstateRoutes } from "./routes/real-estate/real-estate.routes";
 
-// Use OpenAPIHono so we can define routes + serve the spec
-const app = new OpenAPIHono<{ Variables: Vars }>();
+// We'll use OpenAPIHono and provide the `Vars` type to ensure our context is strongly typed.
+const app = new OpenAPIHono<{ Variables: Vars }>({
+  defaultHook,
+});
 
-// Configure global environment helpers
+// --- Dependency Injection Setup ---
+// This block is crucial for making our application's core logic
+// available to the web framework layer.
+
+// First, we configure environment-specific helpers like ID generation and timestamps.
 const app_env = {
   newId: () => ulid(),
   now: () => new Date(),
   now_iso: () => new Date().toISOString(),
 } satisfies AppEnv;
 
-// Instantiate dependencies once
+// Then, we instantiate our persistence layer (repositories and Unit of Work).
 const persistance_layer = getPersistenceLayer();
 
-// Instantiate handlers once
+// Next, we create the command layer, injecting the persistence and env dependencies.
+// This gives us our command handlers.
 const handlers = getCommandLayer({ persistance_layer, app_env });
 
+// Finally, we create a middleware that runs for every request.
+// It injects the dependencies into Hono's context (`c.var`), making them
+// accessible in our route handlers.
 app.use("*", async (c, next) => {
-  // set an authenticated user id for demo; replace with your a real auth middleware
+  // For demonstration, we set a static user ID. In a real app, this would
+  // be replaced by your authentication middleware.
   c.set("userId", "usr_demo123");
 
   c.set("env", app_env);
-  c.set("handlers", handlers);
+  c.set("handlers", handlers); // This makes the command handlers available.
 
   await next();
 });
+// --- End of Dependency Injection Setup ---
 
-// --- DOMAIN: mount real-estate routes ---
-app.route("/v1/real-estates", realEstateRoutes);
+// Standard Hono middlewares for logging, security, and CORS.
+app.use("*", logger());
+app.use("*", prettyJSON());
+app.use(secureHeaders());
+app.use("/", cors({ origin: "*" }));
 
-// --- health ---
-app.on(["GET", "HEAD"], "/healthz", (c) => {
-  if (c.req.method === "HEAD") return c.body(null, 200); // empty body for HEAD
-  return c.text("system healthy");
+// A custom error handler to catch unexpected errors and return a clean JSON response.
+app.onError((err, c) => {
+  if (err instanceof HTTPException) {
+    return err.getResponse();
+  }
+  console.error(err); // Log the full error server-side for debugging.
+  return c.json({ message: "An internal server error occurred" }, 500);
 });
 
-// --- root ---
+// --- Application Routes ---
 app.get("/", (c) => c.text(`API v1.0: ${env.NODE_ENV} is running`));
 
-// --- typed /hello with OpenAPI ---
-const HelloQuery = zopenapi.object({
-  name: zopenapi.string().optional().openapi({ example: "world" }),
-});
-const HelloResp = zopenapi.object({
-  message: zopenapi.string(),
+// --- Health Check ---
+app.on(["GET", "HEAD"], "/healthcheck", (c) => {
+  if (c.req.method === "HEAD") return c.body(null, 200); // empty body for HEAD
+  return c.text("System Healthy");
 });
 
-app.openapi(
-  createRoute({
-    method: "get",
-    path: "/hello",
-    request: { query: HelloQuery },
-    responses: {
-      200: {
-        description: "Greets the user",
-        content: { "application/json": { schema: HelloResp } },
-      },
-    },
-    tags: ["demo"],
-  }),
-  (c) => {
-    const { name = "world" } = Object.fromEntries(
-      new URL(c.req.url).searchParams
-    ) as { name?: string };
-    return c.json({ message: `Hello, ${name}!` });
-  }
-);
+// We mount our domain-specific routes under a versioned path.
+// OpenAPIHono will automatically discover the route definitions within `realEstateRoutes`.
+app.route("/v1/real-estates", realEstateRoutes);
 
-// --- serve OpenAPI JSON ---
+// --- OpenAPI and Documentation UI ---
+
+// This endpoint serves the raw OpenAPI 3.0 specification as a JSON file.
 app.doc("/openapi.json", {
-  openapi: "3.1.0",
-  info: { title: "Hono API", version: "1.0.0" },
+  openapi: "3.0.0",
+  info: {
+    version: "0.0.1",
+    title: "Finance API",
+  },
 });
 
-// --- docs UI (Swagger-like via Scalar) ---
-import { Scalar } from "@scalar/hono-api-reference";
-import { getCommandLayer } from "./application/commands";
-import { getPersistenceLayer } from "./infra/persistence";
+// This sets up the modern Scalar UI for browsing the API documentation.
 app.get(
   "/docs",
   Scalar({
@@ -91,40 +106,12 @@ app.get(
   })
 );
 
-// --- PostHog proxy: /ph/* -> POSTHOG_HOST/* ---
-const proxy = new Hono();
-proxy.all("/ph/*", async (c) => {
-  const incoming = new URL(c.req.url);
-  const upstreamPath = incoming.pathname.replace(/^\/ph/, "") || "/";
-  const upstreamUrl = new URL(upstreamPath + incoming.search, env.POSTHOG_HOST);
-
-  const method = c.req.method.toUpperCase();
-  const headers = new Headers(c.req.raw.headers);
-  headers.delete("host");
-  headers.delete("content-length");
-
-  const body =
-    method === "GET" || method === "HEAD"
-      ? undefined
-      : await c.req.arrayBuffer();
-
-  const resp = await fetch(upstreamUrl, {
-    method,
-    headers,
-    body,
-    redirect: "manual",
-  });
-
-  const respHeaders = new Headers(resp.headers);
-  respHeaders.set("access-control-allow-origin", "*"); // optional
-
-  return new Response(resp.body, {
-    status: resp.status,
-    statusText: resp.statusText,
-    headers: respHeaders,
-  });
-});
-
-app.route("/", proxy);
+// This sets up the classic Swagger UI.
+app.get(
+  "/swagger",
+  swaggerUI({
+    url: "/openapi.json",
+  })
+);
 
 export default app;

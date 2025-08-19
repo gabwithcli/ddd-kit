@@ -20,10 +20,14 @@ export const realEstateApiHandler = makeRequestHandler<
   // 3. Map the request to the application layer.
   map: ({ c, auth, body }) => {
     const handler = c.var.handlers.real_estate;
-    const aggregateId = c.req.param("id");
+    const payload: Record<string, any> = body.payload;
 
     // Enrich the client payload with the authenticated userId.
     const payloadWithAuth = { ...body.payload, userId: auth.userId };
+
+    // If the command requires an aggregate ID, we extract it from the body payload.
+    // This is typically the case for commands that operate on existing aggregates.
+    const aggregateId = payload?.id ?? ""; // ugly, we assume the ID is always present for commands that require it.
 
     // Execute the command.
     return handler.execute(body.command, {

@@ -1,6 +1,6 @@
 {
     "name": "@acme/sdk-lite",
-    "version": "0.1.0",
+    "version": "0.0.1",
     "private": false,
     "description": "Lightweight CQRS/DDD helpers: Result, domain errors, idempotency orchestration, request handler, and test doubles.",
     "license": "MIT",
@@ -46,6 +46,9 @@
         "typecheck": "tsc --noEmit",
         "lint": "echo \"(add eslint if you want)\"",
         "prepublishOnly": "npm run clean && npm run build && npm run typecheck"
+    },
+    "dependencies": {
+        "stoker": "^2.0.1"
     },
     "peerDependencies": {
         "zod": "^3.23.0"

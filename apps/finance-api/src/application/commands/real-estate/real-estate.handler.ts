@@ -8,8 +8,8 @@ import {
 } from "@acme/sdk-lite";
 import { RealEstate } from "../../../domain/real-estate/real-estate.aggregate";
 import { RealEstateCommandsList } from "./commands.names";
-import { CreateRealEstateCommand } from "./create/create.command";
-import { DeleteRealEstateCommand } from "./delete/delete.command";
+import { CreateRealEstateCommand } from "./create-real-estate/create.command";
+import { DeleteRealEstateCommand } from "./delete-real-estate/delete.command";
 
 // The dependencies for our handler now rely on the generic repository interface.
 // This means we can pass in a CRUD repo, an ES repo, or even an in-memory repo
