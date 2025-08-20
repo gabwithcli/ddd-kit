@@ -1,4 +1,4 @@
-// apps/finance-api/src/adapters/hono/commands/real-estate/real-estate.api-handler.ts
+// apps/finance-api/src/adapters/hono/commands/real-estate/real-estate.commands.api-handler.ts
 
 import { authFromContext, makeRequestHandler } from "@acme/sdk-lite";
 import { type Context } from "hono";
@@ -15,9 +15,36 @@ export const realEstateApiHandler = makeRequestHandler<
 >({
   // 1. Authenticate the request.
   auth: authFromContext<Ctx>("userId"),
-  // 2. Validate the request body.
+
+  // 2. Define a custom body reader.
+  // This function intercepts the request body, combines it with the
+  // command name from the URL, and constructs the object that our
+  // application layer's validation schema (`RealEstateCommandRequest`) expects.
+  readBody: async (c: Ctx) => {
+    // Extract the command name from the last segment of the URL path.
+    // e.g., for "/v1/commands/real-estate/create-real-estate-asset", this gets "create-real-estate-asset".
+    const path = c.req.path;
+    const commandName = path.substring(path.lastIndexOf("/") + 1);
+
+    // Read the raw JSON payload sent by the client.
+    const payload = await c.req.json();
+
+    // Construct the full command object that the application layer expects.
+    // This decouples the client's simpler API call (sending only the payload)
+    // from the internal command structure.
+    return {
+      command: commandName,
+      payload: payload,
+    };
+  },
+
+  // 3. Validate the reconstructed request body.
+  // The `RealEstateCommandRequest` schema is a discriminated union that
+  // validates the `command` name and the corresponding `payload` shape.
   bodySchema: RealEstateCommandRequest,
-  // 3. Map the request to the application layer.
+
+  // 4. Map the request to the application layer.
+  // The `body` parameter here is the fully validated command object.
   map: ({ c, auth, body }) => {
     const handler = c.var.handlers.real_estate;
     const payload: Record<string, any> = body.payload;

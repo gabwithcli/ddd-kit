@@ -5,7 +5,7 @@ export const realEstateCommandsList = [
   "create-real-estate-asset",
   // "update-real-estate-asset",
   "delete-real-estate-asset",
-  // "add-price-update"
+  "add-appraisal",
   // "edit-price-update",
   // "delete-price-update",
 ] as const;

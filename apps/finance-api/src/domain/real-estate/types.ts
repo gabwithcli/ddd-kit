@@ -14,7 +14,33 @@ export class Address extends ValueObject<{
   }
 }
 
-export type PricePoint = { date: string; value: Money };
+/**
+ * PricePoint represents the immutable purchase fact.
+ */
+export type PricePoint = {
+  date: string;
+  value: Money;
+};
+
+/**
+ * Defines the structure for a Valuation (informal estimate).
+ * This is a less formal assessment of the property's value, often used for quick evaluations.
+ */
+export type Appraisal = {
+  id: string;
+  date: string;
+  value: Money;
+};
+
+/**
+ * Defines the structure for a Valuation (formal report).
+ * This is a more formal and detailed assessment of the property's value.
+ */
+export type Valuation = {
+  id: string;
+  date: string;
+  value: Money;
+};
 
 export type RealEstateDetails = {
   name: string;

@@ -20,8 +20,8 @@ import { Address } from "../../../../domain/real-estate/types";
 import { Money } from "../../../../domain/shared/money";
 import {
   realEstateAppraisals,
+  realEstateAssets,
   realEstateMarketVals,
-  realEstates,
 } from "../schema.postgres";
 import { asPostgres } from "../uow.postgres";
 
@@ -46,8 +46,8 @@ export class RealEstatePostgresRepo implements AggregateRepository<RealEstate> {
 
     // Step 1: Fetch the main record for the aggregate from the `real_estates` table.
     // This is the "root" of our aggregate.
-    const root = await dtx.query.realEstates.findFirst({
-      where: eq(realEstates.id, id),
+    const root = await dtx.query.realEstateAssets.findFirst({
+      where: eq(realEstateAssets.id, id),
     });
 
     // If the root doesn't exist, we can't build the aggregate. Simple as that.
@@ -128,7 +128,7 @@ export class RealEstatePostgresRepo implements AggregateRepository<RealEstate> {
 
     // We "dehydrate" the aggregate's state, flattening its properties (including
     // those from Value Objects like Address and Money) into the columns of our `real_estates` table.
-    await dtx.insert(realEstates).values({
+    await dtx.insert(realEstateAssets).values({
       id: agg.id,
       userId: agg.userId,
       name: agg.details.name,
@@ -187,7 +187,7 @@ export class RealEstatePostgresRepo implements AggregateRepository<RealEstate> {
     // If another process updated the record in the meantime, its version would have
     // been incremented, and our `UPDATE` statement will affect zero rows.
     const result = await dtx
-      .update(realEstates)
+      .update(realEstateAssets)
       .set({
         // We only update fields that are allowed to change.
         // Immutable properties like `purchaseDate` or `baseCurrency` are omitted.

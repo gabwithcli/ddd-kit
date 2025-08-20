@@ -1,27 +1,21 @@
 // apps/finance-api/src/domain/real-estate/real-estate.aggregate.ts
-// -----------------------------------------------------------------------------
-// RealEstate aggregate with "English-like" invariants.
-// - Intrinsic rules (no I/O) are expressed via the invariants DSL and thrown
-//   as DomainInvariantError (HTTP 422 at the edge).
-// - Events are recorded for each mutation (append-only event buffer).
-// -----------------------------------------------------------------------------
 
-import { AggregateRoot, invariants } from "@acme/sdk-lite/domain";
+import {
+  AggregateRoot,
+  DomainInvariantError,
+  invariants,
+} from "@acme/sdk-lite/domain";
 import { Money } from "../shared/money";
-import type { PricePoint, RealEstateDetails } from "./types";
-
-/** Helper to build a PricePoint (date + monetary value) */
-export const pp = (
-  date: string,
-  amount: number,
-  currency: string
-): PricePoint => ({
-  date,
-  value: Money.from(amount, currency),
-});
+// ## CHANGE ##: We now import our new, type-safe event definition.
+import { RealEstateEvent } from "./real-estate.events";
+import type {
+  Appraisal,
+  PricePoint,
+  RealEstateDetails,
+  Valuation,
+} from "./types";
 
 export class RealEstate extends AggregateRoot {
-  // private property to track the deleted state in memory.
   private _deletedAt: Date | null = null;
 
   private constructor(
@@ -29,254 +23,253 @@ export class RealEstate extends AggregateRoot {
     public readonly userId: string,
     private _details: RealEstateDetails,
     private _purchase: PricePoint,
-    private _appraisals: PricePoint[],
-    private _marketVals: PricePoint[],
-    deletedAt: Date | null = null // Add to constructor for rehydration
+    private _appraisals: Appraisal[],
+    private _valuations: Valuation[],
+    deletedAt: Date | null = null
   ) {
     super(id);
-    this._deletedAt = deletedAt; // Initialize the property
+    this._deletedAt = deletedAt;
   }
 
-  // Factory
-  // -------
-  // This factory is responsible for creating a new, valid RealEstate aggregate.
-  // It enforces all the intrinsic business rules (invariants) for a valid creation.
-  //
-  // ## Refactoring Note ##
-  // We've changed this method's signature to make the Aggregate's dependencies
-  // more explicit. It no longer generates its own ID prefix or the creation timestamp.
-  // Instead, it receives them as plain data. This reinforces a key DDD principle:
-  // The domain model should not be concerned with infrastructure tasks like
-  // generating IDs or getting the current time. That responsibility belongs to the
-  // application layer (the `ICommand` implementation), which orchestrates the process.
+  // --- Factory and Rehydration ---
+
   static createAsset(args: {
-    id: string; // The full, unique ID is now passed in.
+    id: string;
     userId: string;
     details: RealEstateDetails;
     purchase: PricePoint;
     createdAt: Date;
   }) {
-    const { id, userId, details, purchase, createdAt } = args;
+    const agg = new RealEstate(
+      args.id,
+      args.userId,
+      args.details,
+      args.purchase,
+      [],
+      [],
+      null
+    );
 
-    // We run our set of business rules, or "invariants", before we even try
-    // to create the object. If any rule is violated, this will throw a
-    // `DomainInvariantError`, preventing an invalid object from ever existing.
-    invariants({ aggregate: "RealEstate", operation: "create", id })
-      .ensure(
-        "Il nome è obbligatorio.",
-        "real_estate.name_required",
-        details.name?.trim().length > 0,
-        { name: details.name }
-      )
-      .ensure(
-        "La valuta dell'acquisto deve coincidere con la baseCurrency.",
-        "real_estate.purchase_currency_mismatch",
-        purchase.value.props.currency === details.baseCurrency,
-        {
-          purchaseCurrency: purchase.value.props.currency,
-          baseCurrency: details.baseCurrency,
-        }
-      )
-      .must(
-        "La data di acquisto deve essere una data valida ISO-8601.",
-        "real_estate.purchase_date_valid",
-        () => !Number.isNaN(Date.parse(purchase.date)),
-        { purchaseDate: purchase.date }
-      )
-      .throwIfAny("RealEstate.Invalid");
-
-    // If all invariants pass, we can safely construct the new aggregate instance.
-    const agg = new RealEstate(id, userId, details, purchase, [], []);
-
-    // After creation, we record a domain event. This event captures the fact
-    // that a new RealEstate was created. In an Event Sourcing model, this is
-    // the source of truth. In a CRUD model, this can be used for an outbox
-    // pattern to notify other systems.
-    agg.record("RealEstateCreated", {
-      id,
-      userId,
-      at: createdAt, // We use the timestamp that was passed in.
+    agg.recordEvent("RealEstateAssetCreated", {
+      id: args.id,
+      userId: args.userId,
+      details: args.details,
+      purchase: args.purchase,
+      at: args.createdAt,
     });
 
     return agg;
   }
 
-  // Rehydration from persisted state
-  // This method remains unchanged. It's used by the repository to reconstruct
-  // the aggregate from raw database data.
   static fromState(s: {
     id: string;
     userId: string;
     version: number;
     details: RealEstateDetails;
     purchase: PricePoint;
-    appraisals: PricePoint[];
-    marketVals: PricePoint[];
-    deletedAt?: Date | null; // This field comes from the database
+    appraisals: Appraisal[];
+    valuations: Valuation[];
+    deletedAt?: Date | null;
   }) {
+    // ... (constructor call is the same)
     const agg = new RealEstate(
       s.id,
       s.userId,
       s.details,
       s.purchase,
       s.appraisals,
-      s.marketVals,
-      // It's good practice to also rehydrate soft-delete status
-      s.deletedAt ?? null // Pass the deletedAt status to the constructor
+      s.valuations,
+      s.deletedAt ?? null
     );
     agg.version = s.version;
     return agg;
   }
 
-  // Read-model-ish getters (immutable views on internal state)
+  // --- Getters ---
+
   get details() {
     return this._details;
   }
   get purchase() {
     return this._purchase;
   }
-  get appraisals() {
+  get appraisals(): Appraisal[] {
     return [...this._appraisals];
   }
-  get marketValuations() {
-    return [...this._marketVals];
+  get valuations(): Valuation[] {
+    return [...this._valuations];
   }
-  get deletedAt(): Date | null {
-    return this._deletedAt;
+  get isDeleted(): boolean {
+    return this._deletedAt !== null;
   }
 
-  // Command handlers (mutations)
-  deleteAsset(deletedAt: Date) {
-    // This is our core business rule (invariant) for this operation.
-    // An aggregate that is already deleted cannot be deleted again.
-    invariants({
-      aggregate: "RealEstate",
-      operation: "delete",
+  // --- Commands ---
+
+  public updateDetails(
+    newDetails: Partial<Omit<RealEstateDetails, "baseCurrency">>
+  ) {
+    this.ensureIsNotDeleted("updateDetails");
+
+    this._details = { ...this._details, ...newDetails };
+    this.recordEvent("RealEstateAssetDetailsUpdated", {
       id: this.id,
-    })
-      .ensure(
-        "Cannot delete an already deleted asset.",
-        "real_estate.already_deleted",
-        this._deletedAt === null, // The condition must be true to pass
-        { currentDeletedAt: this._deletedAt }
-      )
-      .throwIfAny("RealEstate.Invalid");
+      changes: newDetails,
+    });
+  }
 
-    // If the invariant passes, we mutate the aggregate's state.
+  public updatePurchase(newPurchaseData: Partial<PricePoint>) {
+    this.ensureIsNotDeleted("updatePurchase");
+    const proposedPurchase = { ...this._purchase, ...newPurchaseData };
+    this._purchase = proposedPurchase;
+
+    this.recordEvent("RealEstateAssetPurchaseUpdated", {
+      id: this.id,
+      purchase: this._purchase,
+    });
+  }
+
+  public deleteAsset(deletedAt: Date) {
+    if (this.isDeleted) {
+      return;
+    }
     this._deletedAt = deletedAt;
+    this.recordEvent("RealEstateAssetDeleted", { id: this.id, at: deletedAt });
+  }
 
-    // And we record a domain event to capture this important business fact.
-    this.record("RealEstateDeleted", {
+  public addAppraisal(appraisal: Appraisal) {
+    this.ensureIsNotDeleted("addAppraisal");
+    this.runValuationInvariants(appraisal, "addAppraisal");
+    this._appraisals.push(appraisal);
+    this._appraisals.sort((a, b) => a.date.localeCompare(b.date));
+    this.recordEvent("RealEstateAppraisalAdded", { id: this.id, appraisal });
+  }
+
+  public updateAppraisal(
+    appraisalId: string,
+    data: Partial<{ date: string; value: Money }>
+  ) {
+    this.ensureIsNotDeleted("updateAppraisal");
+
+    const appraisalIndex = this._appraisals.findIndex(
+      (a) => a.id === appraisalId
+    );
+    if (appraisalIndex === -1) {
+      throw new DomainInvariantError(
+        `Appraisal with ID ${appraisalId} not found.`
+      );
+    }
+    const updatedAppraisal = { ...this._appraisals[appraisalIndex], ...data };
+    this.runValuationInvariants(updatedAppraisal, "updateAppraisal");
+    this._appraisals[appraisalIndex] = updatedAppraisal;
+    this._appraisals.sort((a, b) => a.date.localeCompare(b.date));
+
+    this.recordEvent("RealEstateAppraisalUpdated", {
       id: this.id,
-      at: deletedAt.toISOString(),
+      appraisal: updatedAppraisal,
     });
   }
 
-  addAppraisal(p: PricePoint) {
-    // Intrinsic rules for a new appraisal relative to the purchase
-    invariants({
-      aggregate: "RealEstate",
-      operation: "addAppraisal",
+  public removeAppraisal(appraisalId: string) {
+    this.ensureIsNotDeleted("removeAppraisal");
+
+    const initialCount = this._appraisals.length;
+    this._appraisals = this._appraisals.filter((a) => a.id !== appraisalId);
+    if (this._appraisals.length === initialCount) {
+      throw new DomainInvariantError(
+        `Appraisal with ID ${appraisalId} not found.`
+      );
+    }
+
+    this.recordEvent("RealEstateAppraisalRemoved", {
       id: this.id,
-    })
-      .must(
-        "La data di perizia deve essere una data valida ISO-8601.",
-        "real_estate.appraisal_date_valid",
-        () => !Number.isNaN(Date.parse(p.date)),
-        { date: p.date }
+      appraisalId,
+    });
+  }
+
+  public addValuation(valuation: Valuation) {
+    this.ensureIsNotDeleted("addValuation");
+    this.runValuationInvariants(valuation, "addValuation");
+    this._valuations.push(valuation);
+    this._valuations.sort((a, b) => a.date.localeCompare(b.date));
+    this.recordEvent("RealEstateValuationAdded", { id: this.id, valuation });
+  }
+
+  public updateValuation(
+    valuationId: string,
+    data: Partial<{ date: string; value: Money }>
+  ) {
+    this.ensureIsNotDeleted("updateValuation");
+
+    const valuationIndex = this._valuations.findIndex(
+      (v) => v.id === valuationId
+    );
+    if (valuationIndex === -1) {
+      throw new DomainInvariantError(
+        `Valuation with ID ${valuationId} not found.`
+      );
+    }
+    const updatedValuation = { ...this._valuations[valuationIndex], ...data };
+    this.runValuationInvariants(updatedValuation, "updateValuation");
+    this._valuations[valuationIndex] = updatedValuation;
+    this._valuations.sort((a, b) => a.date.localeCompare(b.date));
+
+    this.recordEvent("RealEstateValuationUpdated", {
+      id: this.id,
+      valuation: updatedValuation,
+    });
+  }
+
+  public removeValuation(valuationId: string) {
+    this.ensureIsNotDeleted("removeValuation");
+
+    const initialCount = this._valuations.length;
+    this._valuations = this._valuations.filter((v) => v.id !== valuationId);
+    if (this._valuations.length === initialCount) {
+      throw new DomainInvariantError(
+        `Valuation with ID ${valuationId} not found.`
+      );
+    }
+
+    this.recordEvent("RealEstateValuationRemoved", {
+      id: this.id,
+      valuationId,
+    });
+  }
+
+  // --- Private Helpers ---
+
+  /**
+   * ## NEW: A private, type-safe wrapper around the base record method.
+   * This ensures we can only use event names defined in RealEstateEvent.
+   */
+  private recordEvent(type: RealEstateEvent, data: unknown) {
+    // Calls the protected `record` method from the base AggregateRoot class.
+    super.record(type, data);
+  }
+
+  private runValuationInvariants(
+    v: { date: string; value: Money },
+    operation: string
+  ) {
+    invariants({ aggregate: "RealEstate", operation, id: this.id })
+      .ensure(
+        "Valuation date cannot be before purchase date.",
+        "valuation.date_before_purchase",
+        new Date(v.date) >= new Date(this._purchase.date)
       )
       .ensure(
-        "La perizia non può essere antecedente alla data di acquisto.",
-        "real_estate.appraisal_not_before_purchase",
-        new Date(p.date) >= new Date(this._purchase.date),
-        { appraisalAt: p.date, purchaseAt: this._purchase.date }
-      )
-      .ensure(
-        "La valuta della perizia deve coincidere con la baseCurrency.",
-        "real_estate.appraisal_currency_matches_base",
-        p.value.props.currency === this._details.baseCurrency,
-        {
-          appraisalCurrency: p.value.props.currency,
-          baseCurrency: this._details.baseCurrency,
-        }
+        "Valuation currency must match the asset's base currency.",
+        "valuation.currency_mismatch",
+        v.value.currency === this._details.baseCurrency
       )
       .throwIfAny("RealEstate.Invalid");
-
-    this._appraisals = appendSortedByDate(this._appraisals, p);
-
-    this.record("RealEstateAppraised", {
-      id: this.id,
-      date: p.date,
-      value: p.value.props,
-    });
   }
 
-  addMarketValuation(p: PricePoint) {
-    // Intrinsic rules for a new market valuation relative to the purchase
-    invariants({
-      aggregate: "RealEstate",
-      operation: "addMarketValuation",
-      id: this.id,
-    })
-      .must(
-        "La data di valutazione deve essere una data valida ISO-8601.",
-        "real_estate.market_value_date_valid",
-        () => !Number.isNaN(Date.parse(p.date)),
-        { date: p.date }
-      )
-      .ensure(
-        "La valutazione non può essere antecedente alla data di acquisto.",
-        "real_estate.market_value_not_before_purchase",
-        new Date(p.date) >= new Date(this._purchase.date),
-        { valuationAt: p.date, purchaseAt: this._purchase.date }
-      )
-      .ensure(
-        "La valuta della valutazione deve coincidere con la baseCurrency.",
-        "real_estate.market_value_currency_matches_base",
-        p.value.props.currency === this._details.baseCurrency,
-        {
-          valuationCurrency: p.value.props.currency,
-          baseCurrency: this._details.baseCurrency,
-        }
-      )
-      .throwIfAny("RealEstate.Invalid");
-
-    this._marketVals = appendSortedByDate(this._marketVals, p);
-
-    this.record("RealEstateMarketValued", {
-      id: this.id,
-      date: p.date,
-      value: p.value.props,
-    });
+  private ensureIsNotDeleted(operation: string) {
+    if (this.isDeleted) {
+      throw new DomainInvariantError(
+        `Cannot perform '${operation}' on a deleted asset.`
+      );
+    }
   }
-
-  updateDetails(next: Partial<Omit<RealEstateDetails, "baseCurrency">>) {
-    // Only intrinsic checks about new details (no I/O)
-    invariants({
-      aggregate: "RealEstate",
-      operation: "updateDetails",
-      id: this.id,
-    })
-      .ensure(
-        "Il nome è obbligatorio.",
-        "real_estate.name_required",
-        next.name === undefined ? true : next.name.trim().length > 0,
-        { name: next.name }
-      )
-      .throwIfAny("RealEstate.Invalid");
-
-    this._details = { ...this._details, ...next };
-
-    this.record("RealEstateDetailsUpdated", {
-      id: this.id,
-      changed: next,
-    });
-  }
-}
-
-// ---- helpers ----
-
-/** Insert and return a list sorted by ISO date ascending (stable for equal dates). */
-function appendSortedByDate(list: PricePoint[], p: PricePoint) {
-  return [...list, p].sort((a, b) => a.date.localeCompare(b.date));
 }
