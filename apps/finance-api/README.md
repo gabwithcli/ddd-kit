@@ -21,7 +21,15 @@ Navigate to the monorepo root and run:
 pnpm install
 ```
 
-### 2. Set Up Environment Variables
+### 2. Build Packages
+At the monorepo root, run:
+
+```bash
+# This will build all packages (ddd-kit)
+pnpm build
+```
+
+### 3. Set Up Environment Variables
 In the apps/finance-api directory, copy the example environment file:
 
 ```bash
@@ -30,14 +38,14 @@ cp .env.example .env
 
 Make sure the `DATABASE_URL` in the new `.env` file matches the credentials in `docker-compose.yml`. The default values should work out of the box.
 
-### 3. Start the Database
+### 4. Start the Database
 This command uses Docker Compose to start a PostgreSQL database in a container.
 
 ```bash
 pnpm db:start
 ```
 
-### 4. Apply Database Migrations
+### 5. Apply Database Migrations
 This command applies the latest SQL migrations to the database schema using Drizzle Kit.
 
 ```bash
@@ -45,7 +53,7 @@ pnpm db:generate
 pnpm db:migrate
 ```
 
-### 5. Start the Development Server
+### 6. Start the Development Server
 This command starts the Hono server in watch mode. It will automatically restart when you make changes to the code.
 
 ```bash

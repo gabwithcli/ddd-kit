@@ -7,7 +7,7 @@
         "apps/*"
     ],
     "scripts": {
-        "build": "pnpm -w -r --filter ./packages... run build"
+        "build": "pnpm -w -r --filter ./packages/* run build"
     },
     "pnpm": {
         "overrides": {

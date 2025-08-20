@@ -1,5 +1,5 @@
 {
-    "name": "@gbacon/ddd-kit",
+    "name": "@acme/ddd-kit",
     "version": "0.0.1",
     "private": false,
     "description": "Lightweight CQRS/DDD helpers: Result, domain errors, idempotency orchestration, request handler, and test doubles.",
