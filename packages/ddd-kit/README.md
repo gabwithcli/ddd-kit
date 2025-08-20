@@ -1,131 +1,85 @@
-# @acme/ddd-kit
+# @acme/ddd-kit: A Pragmatic DDD Toolkit
 
-**A pragmatic, lightweight toolkit for building robust backend services in TypeScript with Domain-Driven Design principles.**
+A small collection of sharp, focused tools for taming complex business logic in TypeScript. This isn't a framework; it's a set of patterns, inspired by the **Domain-Driven Design (DDD) philosophy**, to help you build robust, maintainable, and testable applications. 
 
-This kit provides a set of small, composable building blocks to help you manage complexity, enforce business rules, and build maintainable systems, especially in small, fast-moving teams.
 
----
+### Philosophy
 
-## 🤔 Why @acme/ddd-kit?
+This kit is built on a few core beliefs: your **domain logic is your most valuable asset**, persistence is a detail, and **testability is a core feature**, not an afterthought.
 
-Building backend services often involves reinventing the wheel for common patterns like transactional command handling, idempotency, and error management. This toolkit provides battle-tested solutions for these problems, letting you focus on what's unique: **your domain logic**.
+In small, fast-moving teams, our code should directly model the business domain, using the same terminology our experts use. This creates a **Ubiquitous Language** that bridges the gap between technical implementation and business reality. 
 
-**Core Philosophy:**
--   **Domain First:** Your business rules are the most important asset. They should be explicit, protected, and easy to test.
--   **Pragmatic, Not Dogmatic:** We provide battle-tested patterns without forcing you into a rigid framework. You choose the approach that fits your needs.
--   **Testability is a Feature:** With clear separation of concerns via interfaces like `UnitOfWork` and `AggregateRepository`, you can write fast, reliable tests for your core logic.
--   **Small & Composable:** Import only what you need. The kit is designed to augment your existing stack (like Hono, Express, or Fastify), not replace it.
 
 ---
 
-## Core Concepts
+### Core Building Blocks
 
-Here's a quick tour of the key building blocks. For detailed guides and examples, please see the `docs/` directory.
+This kit provides a set of composable primitives to structure your application:
 
-| Concept              | Description                                                                                                                      | Learn More                           |
-| :------------------- | :------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------- |
-| **`Result<T, E>`**   | A simple `ok` or `err` wrapper to handle outcomes without throwing exceptions.                                                   | `docs/3-ERRORS.md`                   |
-| **`AggregateRoot`**  | A base class for your domain models, providing an identity, versioning for optimistic concurrency, and an event buffer.          | `src/domain/aggregate.ts`            |
-| **`ICommand`**       | An interface for encapsulating the logic of a single business operation into a dedicated class.                                  | `src/application/command/command.ts` |
-| **`CommandHandler`** | A transactional pipeline that orchestrates the `load -> execute -> save` flow for your commands.                                 | `src/application/command/handler.ts` |
-| **`Unit of Work`**   | An abstraction (`UnitOfWork`) to ensure that all database operations for a command succeed or fail together (atomicity).         | `src/infra/unit-of-work.ts`          |
-| **Idempotency**      | A wrapper (`withIdempotency`) to make your command handlers safe to retry, preventing duplicate operations.                      | `docs/2-IDEMPOTENCY.md`              |
-| **HTTP Helpers**     | Utilities (`makeRequestHandler`, `respond`) to standardize auth, validation (with Zod), and response formatting at the API edge. | `docs/1-REQUEST_HANDLER.md`          |
-| **Test Doubles**     | In-memory implementations (`InMemoryUoW`) so you can test your handlers without a database.                                      | `docs/00-EXAMPLES.md`                |
+* **`AggregateRoot`**: A base class for your domain models that guards business rules (invariants) and manages state changes.
+* **`ICommand` & `CommandHandler`**: A pattern to encapsulate every business operation into a clean, transactional pipeline (`load -> execute -> save`).
+* **`Result<T, E>`**: A simple `ok` or `err` wrapper to handle outcomes without throwing exceptions.
+* **`UnitOfWork`**: An abstraction to ensure that all database operations for a command succeed or fail together (atomicity).
+* **`AggregateRepository`**: A generic port for loading and saving your aggregates, decoupling your domain from the database.
+* **`withIdempotency`**: A wrapper to make your command handlers safe to retry, preventing duplicate operations.
+* **HTTP Helpers**: Utilities (`makeRequestHandler`, `respond`) to standardize auth, validation, and response formatting at the API edge.
 
 ---
 
-## 🚀 Getting Started
+### A 30-Second Tour
 
-### Example: The `CommandHandler` Pattern
+Here's a glimpse of how the pieces fit together.
 
-Here’s how to structure a feature using the class-based command pattern, which is excellent for managing complexity as your application grows.
-
-#### 1. Define your Aggregate
-This is the core of your domain, containing your business rules.
-
+**1. Define a rule in your Aggregate:**
 ```typescript
-// src/domain/order.aggregate.ts
-import { AggregateRoot, DomainInvariantError } from "@acme/ddd-kit/domain";
-
-export class Order extends AggregateRoot {
-  // ... state properties
-
-  static create(id: string, customerId: string): Order {
-    const order = new Order(id);
-    // ... logic
-    return order;
-  }
-
-  public addItem(item: { price: number }) {
-    if (item.price <= 0) {
-      throw new DomainInvariantError("Item price must be positive.");
+class Order extends AggregateRoot {
+  cancel(reason: string) {
+    if (this.status === 'SHIPPED') {
+      throw new DomainInvariantError('Cannot cancel a shipped order.');
     }
-    // ... logic to add item and update total
-    this.version++;
-  }
-} 
-```
-
-### 2. Create ICommand Classes
-Each class represents a single, specific action you can perform.
-
-```typescript
-// src/application/order.commands.ts
-import { ICommand, CommandOutput } from "@acme/ddd-kit";
-import { Order } from "../domain/order.aggregate";
-import { ok } from "@acme/ddd-kit";
-
-// Command for creating an order
-export class CreateOrderCommand implements ICommand<{ customerId: string }, { id: string }, Order> {
-  execute(payload: { customerId: string }) {
-    const order = Order.create("new_id", payload.customerId);
-    const response = { id: order.id };
-    return ok({ aggregate: order, events: [], response });
-  }
-}
-
-// Command for adding an item
-export class AddItemCommand implements ICommand<{ price: number }, void, Order> {
-  execute(payload: { price: number }, aggregate: Order) {
-    aggregate.addItem(payload);
-    return ok({ aggregate, events: [], response: undefined });
+    this.status = 'CANCELLED';
+    this.record('OrderCancelled', { orderId: this.id, reason });
   }
 }
 ```
 
-### 3. Implement the CommandHandler
-This orchestrator ties everything together within a transaction.
-
+**2. Create a Command for the use case:**
 ```typescript
-// src/application/order.handler.ts
-import { CommandHandler } from "@acme/ddd-kit";
-import { Order } from "../domain/order.aggregate";
-import { CreateOrderCommand, AddItemCommand } from "./order.commands";
-
-export class OrderCommandHandler extends CommandHandler<Order, any> {
-  protected commands = {
-    "create-order": new CreateOrderCommand(),
-    "add-item": new AddItemCommand(),
-  };
-  // The constructor injects the repository and UoW from the base class.
+class CancelOrderCommand implements ICommand<{ reason: string }, { ok: boolean }, Order> {
+  execute(payload: { reason: string }, aggregate: Order) {
+    aggregate.cancel(payload.reason);
+    return ok({ aggregate, response: { ok: true }, events: aggregate.pullEvents() });
+  }
 }
 ```
 
-### 4. Execute a Command from your API Layer
+**3. The `CommandHandler` runs the operation in a transaction:**
 ```typescript
-// src/http/order.routes.ts
-// Assuming `orderHandler` is an instantiated OrderCommandHandler.
+const handler = new OrderCommandHandler(/* ...dependencies... */);
 
-// To create an order:
-const result = await orderHandler.execute("create-order", {
-  payload: { customerId: "cust_123" },
-});
-
-// To add an item to an existing order:
-const addResult = await orderHandler.execute("add-item", {
-  aggregateId: "order_abc",
-  payload: { price: 99.99 },
+// This entire operation is atomic and safe.
+const result = await handler.execute('cancel-order', {
+  aggregateId: 'order_123',
+  payload: { reason: 'Customer changed their mind.' },
 });
 ```
-This pattern provides a clean, scalable, and highly testable structure for all your business logic. 
+
+---
+
+## Dive Deeper: The Guides
+This toolkit is small, but the concepts are powerful. To get the most out of it, please read through the guides.
+
+- [00 - Overview](./docs/00-OVERVIEW.md): Start here for the core philosophy.
+- [01 - The Domain Layer](./docs/01-THE-DOMAIN-LAYER.md): Learn about Aggregates, Entities, and guarding invariants.
+- [02 - The Application Layer](./docs/02-THE-APPLICATION-LAYER.md): Master the Command and Command Handler patterns.
+- [03 - The Infrastructure Layer](./docs/03-THE-INFRASTRUCTURE-LAYER.md): Understand how to persist your aggregates with Repositories and the Unit of Work. 
+- [04 - The Interface Layer](./docs/04-THE-INTERFACE-LAYER.md): Connect your core logic to the web with our HTTP helpers.
+- [05 - Idempotency](./docs/05-IDEMPOTENCY.md): Make your API robust and safe to retry. 
+
+## What's Next for ddd-kit?
+This toolkit is actively under development and will continue to evolve. Here are some of the improvements on the horizon:
+
+**Event Sourcing Support**: While the `AggregateRoot` is already capable of producing domain events, we will be introducing an `AbstractEsRepository`. This will provide a clear pattern for teams who want to adopt an event-sourcing persistence strategy without changing their domain logic.
+
+**Read-Side (CQRS) Helpers**: So far, we've focused heavily on the "Command" side of CQRS—making sure writes are safe, transactional, and clear. The next major focus will be on the "Query" side. We plan to add helpers and patterns for building efficient read models through projections, materialized views, and dedicated query handlers.
+
