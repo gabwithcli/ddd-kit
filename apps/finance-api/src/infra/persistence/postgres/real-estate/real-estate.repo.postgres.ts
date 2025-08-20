@@ -14,11 +14,13 @@ export class RealEstatePostgresRepo implements AggregateRepository<RealEstate> {
   async findById(tx: Tx, id: string): Promise<RealEstate | null> {
     const dtx = asPostgres(tx);
 
+    // 1. Fetch the aggregate root data.
     const root = await dtx.query.realEstateAssets.findFirst({
       where: eq(realEstateAssets.id, id),
     });
     if (!root) return null;
 
+    // 2. Fetch all related child entities in parallel.
     const [appraisalsData, valuationsData] = await Promise.all([
       dtx.query.realEstateAppraisals.findMany({
         where: eq(realEstateAppraisals.realEstateId, id),
@@ -28,6 +30,9 @@ export class RealEstatePostgresRepo implements AggregateRepository<RealEstate> {
       }),
     ]);
 
+    // 3. Rehydrate the aggregate from its raw state.
+    // Notice there are no `Number()` calls needed, as our custom schema type
+    // has already handled the conversion from string to number.
     const agg = RealEstate.fromState({
       id,
       userId: root.userId,
@@ -48,17 +53,17 @@ export class RealEstatePostgresRepo implements AggregateRepository<RealEstate> {
       },
       purchase: {
         date: root.purchaseDate,
-        value: Money.from(Number(root.purchaseValue), root.baseCurrency),
+        value: Money.from(root.purchaseValue, root.baseCurrency),
       },
       appraisals: appraisalsData.map((r) => ({
         id: r.id,
         date: r.date,
-        value: Money.from(Number(r.value), root.baseCurrency),
+        value: Money.from(r.value, root.baseCurrency),
       })),
       valuations: valuationsData.map((r) => ({
         id: r.id,
         date: r.date,
-        value: Money.from(Number(r.value), root.baseCurrency),
+        value: Money.from(r.value, root.baseCurrency),
       })),
     });
 
@@ -66,6 +71,7 @@ export class RealEstatePostgresRepo implements AggregateRepository<RealEstate> {
   }
 
   async save(tx: Tx, agg: RealEstate): Promise<void> {
+    // Decide whether to create a new record or update an existing one.
     if (agg.version === 0) {
       await this.insert(tx, agg);
     } else {
@@ -76,6 +82,8 @@ export class RealEstatePostgresRepo implements AggregateRepository<RealEstate> {
   private async insert(tx: Tx, agg: RealEstate): Promise<void> {
     const dtx = asPostgres(tx);
 
+    // Notice we pass `agg.purchase.value.props.amount` (a number) directly.
+    // Our custom schema type's `toDriver` function handles converting it to a string.
     await dtx.insert(realEstateAssets).values({
       id: agg.id,
       userId: agg.userId,
@@ -91,7 +99,7 @@ export class RealEstatePostgresRepo implements AggregateRepository<RealEstate> {
       purchaseDate: agg.purchase.date,
       purchaseValue: agg.purchase.value.props.amount,
       deletedAt: agg.deletedAt,
-      version: 1,
+      version: 1, // Start versioning at 1
     });
 
     if (agg.appraisals.length > 0) {
@@ -116,6 +124,7 @@ export class RealEstatePostgresRepo implements AggregateRepository<RealEstate> {
       );
     }
 
+    // After a successful insert, update the in-memory aggregate's version.
     agg.version = 1;
   }
 
@@ -123,7 +132,7 @@ export class RealEstatePostgresRepo implements AggregateRepository<RealEstate> {
     const dtx = asPostgres(tx);
     const nextVersion = agg.version + 1;
 
-    // ## FIX ##: Update the 'realEstateAssets' table.
+    // Use optimistic concurrency control to prevent race conditions.
     const result = await dtx
       .update(realEstateAssets)
       .set({
@@ -140,7 +149,6 @@ export class RealEstatePostgresRepo implements AggregateRepository<RealEstate> {
         deletedAt: agg.deletedAt,
         version: nextVersion,
       })
-      // ## FIX ##: Use 'realEstateAssets' in the where clause.
       .where(
         and(
           eq(realEstateAssets.id, agg.id),
@@ -148,12 +156,14 @@ export class RealEstatePostgresRepo implements AggregateRepository<RealEstate> {
         )
       );
 
+    // If no rows were affected, another process changed the data.
     if (result.rowCount === 0) {
       throw new Error(
         `Optimistic concurrency conflict on RealEstate ${agg.id}`
       );
     }
 
+    // A simple strategy for updating child collections: delete all and re-insert.
     await dtx
       .delete(realEstateAppraisals)
       .where(eq(realEstateAppraisals.realEstateId, agg.id));
@@ -182,6 +192,7 @@ export class RealEstatePostgresRepo implements AggregateRepository<RealEstate> {
       );
     }
 
+    // Update the in-memory aggregate's version to match the database.
     agg.version = nextVersion;
   }
 }

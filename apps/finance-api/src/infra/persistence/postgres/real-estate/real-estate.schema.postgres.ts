@@ -1,10 +1,5 @@
-import {
-  date,
-  integer,
-  numeric,
-  timestamp,
-  varchar,
-} from "drizzle-orm/pg-core";
+import { date, integer, timestamp, varchar } from "drizzle-orm/pg-core";
+import { numericAsNumber } from "../custom-types";
 
 // Schema for the aggregate root table.
 export const realEstateAssetsColumns = {
@@ -20,10 +15,7 @@ export const realEstateAssetsColumns = {
   notes: varchar("notes", { length: 2000 }),
   baseCurrency: varchar("base_currency", { length: 3 }).notNull(),
   purchaseDate: date("purchase_date").notNull(),
-  purchaseValue: numeric("purchase_value", {
-    precision: 14,
-    scale: 2,
-  }).notNull(),
+  purchaseValue: numericAsNumber("purchase_value").notNull(),
   version: integer("version").notNull().default(0),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
 };
@@ -33,7 +25,7 @@ export const realEstateAppraisalsColumns = {
   id: varchar("id", { length: 40 }).primaryKey(),
   realEstateId: varchar("real_estate_id", { length: 40 }).notNull(),
   date: date("date").notNull(),
-  value: numeric("value", { precision: 14, scale: 2 }).notNull(),
+  value: numericAsNumber("value").notNull(),
 };
 
 // Schema for the valuations child table.
@@ -41,5 +33,5 @@ export const realEstateValuationsColumns = {
   id: varchar("id", { length: 40 }).primaryKey(),
   realEstateId: varchar("real_estate_id", { length: 40 }).notNull(),
   date: date("date").notNull(),
-  value: numeric("value", { precision: 14, scale: 2 }).notNull(),
+  value: numericAsNumber("value").notNull(),
 };

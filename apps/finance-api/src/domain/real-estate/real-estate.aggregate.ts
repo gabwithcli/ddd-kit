@@ -102,6 +102,9 @@ export class RealEstate extends AggregateRoot {
   get isDeleted(): boolean {
     return this._deletedAt !== null;
   }
+  get deletedAt(): Date | null {
+    return this._deletedAt;
+  }
 
   // --- Commands ---
 
@@ -239,7 +242,7 @@ export class RealEstate extends AggregateRoot {
   // --- Private Helpers ---
 
   /**
-   * ## NEW: A private, type-safe wrapper around the base record method.
+   * A private, type-safe wrapper around the base record method.
    * This ensures we can only use event names defined in RealEstateEvent.
    */
   private recordEvent(type: RealEstateEvent, data: unknown) {
