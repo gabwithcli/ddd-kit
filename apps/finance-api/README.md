@@ -1,4 +1,4 @@
-# Finance API
+# Finance API
 
 This is a backend service built with Hono for managing financial data, specifically real estate assets. It follows a Domain-Driven Design (DDD) approach to handle complex business logic.
 
