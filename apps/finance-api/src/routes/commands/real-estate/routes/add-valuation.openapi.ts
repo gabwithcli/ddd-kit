@@ -1,11 +1,11 @@
-import { createRoute } from "@hono/zod-openapi";
-import { jsonContent } from "stoker/openapi/helpers";
 import {
   ErrorResponseSchema,
   HttpPhrases,
   HttpStatus,
+  openapiJsonContent,
   SuccessResponseSchema,
-} from "../../../../../../../packages/ddd-kit/dist";
+} from "@acme/ddd-kit";
+import { createRoute } from "@hono/zod-openapi";
 import { addValuationPayloadSchema } from "../../../../application/commands/real-estate/add-valuation/add-valuation.schema";
 
 export const addValuationRoute = createRoute({
@@ -14,20 +14,20 @@ export const addValuationRoute = createRoute({
   tags: ["Real Estate"],
   summary: "Add a formal valuation to a real estate asset",
   request: {
-    body: jsonContent(
+    body: openapiJsonContent(
       addValuationPayloadSchema,
       "The valuation details to add to the real estate asset."
     ),
   },
   responses: {
     [HttpStatus.CREATED]: {
-      ...jsonContent(
+      ...openapiJsonContent(
         SuccessResponseSchema,
         `${HttpPhrases.CREATED}: Valuation added successfully.`
       ),
     },
     [HttpStatus.NOT_FOUND]: {
-      ...jsonContent(
+      ...openapiJsonContent(
         ErrorResponseSchema,
         `${HttpPhrases.NOT_FOUND}: The asset was not found.`
       ),

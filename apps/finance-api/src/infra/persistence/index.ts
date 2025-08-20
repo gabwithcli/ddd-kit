@@ -1,11 +1,6 @@
 // apps/finance-api/src/infra/persistence/index.ts
 
-import {
-  AbstractCrudRepository,
-  UnitOfWork,
-} from "../../../../../packages/ddd-kit/dist";
-
-// Import both implementations
+import { AbstractCrudRepository, UnitOfWork } from "@acme/ddd-kit";
 import { RealEstate } from "../../domain/real-estate/real-estate.aggregate";
 import { RealEstatePostgresRepo } from "./postgres/real-estate/real-estate.repo.postgres";
 import { PostgresUoW } from "./postgres/uow.postgres";

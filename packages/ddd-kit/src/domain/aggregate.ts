@@ -1,4 +1,5 @@
 import { deepEqual } from "node:assert";
+import type { DomainEvent } from "../application/command";
 
 /**
  * re-export DomainInvariantError and other shared errors,
@@ -72,7 +73,7 @@ export abstract class AggregateRoot<Id extends string = AggregateId<any>>
   public version = 0;
 
   // In-memory event buffer; handlers drain with pullEvents()
-  private readonly _events: Array<{ type: string; data: unknown }> = [];
+  protected readonly _events: Array<DomainEvent> = [];
 
   /**
    * Record a domain event.
@@ -86,10 +87,25 @@ export abstract class AggregateRoot<Id extends string = AggregateId<any>>
   /**
    * Drain and return pending domain events.
    * MUST be called by the application layer (command runner) after successful guards.
+   *
+   * (with simplified comments for clarity below)
+   *
    */
   pullEvents() {
+    // 1. Make a copy of the letters to give to the postman. (Copy the events to be returned)
     const out = [...this._events];
-    this._events.length = 0;
+    // 2. Immediately empty the mailbox so the letters can't be collected again. (handle the clearing of the events)
+    this.clearEvents();
+    // 3. Hand the copied letters to the postman.
     return out;
+  }
+
+  /**
+   * Clears the in-memory event buffer.
+   * This is a private implementation detail to ensure that once events are pulled,
+   * they are not processed again.
+   */
+  private clearEvents() {
+    this._events.length = 0;
   }
 }

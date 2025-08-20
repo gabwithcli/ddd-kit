@@ -1,11 +1,11 @@
 import { createRoute } from "@hono/zod-openapi";
-import { jsonContent } from "stoker/openapi/helpers";
 import {
   ErrorResponseSchema,
   HttpPhrases,
   HttpStatus,
+  openapiJsonContent,
   SuccessResponseSchema,
-} from "../../../../../../../packages/ddd-kit/dist";
+} from "@acme/ddd-kit";
 import { addAppraisalPayloadSchema } from "../../../../application/commands/real-estate/add-appraisal/add-appraisal.schema";
 
 export const addAppraisalRoute = createRoute({
@@ -14,26 +14,26 @@ export const addAppraisalRoute = createRoute({
   tags: ["Real Estate"],
   summary: "Add an appraisal to a real estate asset",
   request: {
-    body: jsonContent(
+    body: openapiJsonContent(
       addAppraisalPayloadSchema,
       "The appraisal details to add to the real estate asset."
     ),
   },
   responses: {
     [HttpStatus.CREATED]: {
-      ...jsonContent(
+      ...openapiJsonContent(
         SuccessResponseSchema,
         `${HttpPhrases.CREATED}: Appraisal added successfully.`
       ),
     },
     [HttpStatus.NOT_FOUND]: {
-      ...jsonContent(
+      ...openapiJsonContent(
         ErrorResponseSchema,
         `${HttpPhrases.NOT_FOUND}: The asset was not found.`
       ),
     },
     [HttpStatus.UNPROCESSABLE_ENTITY]: {
-      ...jsonContent(
+      ...openapiJsonContent(
         ErrorResponseSchema,
         `${HttpPhrases.UNPROCESSABLE_ENTITY}: A business rule was violated.`
       ),

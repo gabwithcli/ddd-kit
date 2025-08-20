@@ -6,7 +6,7 @@ import {
   EventPublisher,
   ICommand,
   UnitOfWork,
-} from "../../../../../../packages/ddd-kit/dist";
+} from "@acme/ddd-kit";
 import { RealEstate } from "../../../domain/real-estate/real-estate.aggregate";
 import { AddAppraisalCommand } from "./add-appraisal/add-appraisal.command";
 import { AddValuationCommand } from "./add-valuation/add-valuation.command";

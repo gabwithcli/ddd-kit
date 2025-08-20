@@ -1,10 +1,5 @@
+import { CommandOutput, ICommand, ok, Result } from "@acme/ddd-kit";
 import z from "zod";
-import {
-  CommandOutput,
-  ICommand,
-  ok,
-  Result,
-} from "../../../../../../../packages/ddd-kit/dist";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
 import { deleteRealEstateAssetPayloadSchema } from "./delete-real-estate-asset.schema";
 

@@ -1,11 +1,11 @@
-import { createRoute } from "@hono/zod-openapi";
-import { jsonContent } from "stoker/openapi/helpers";
 import {
   ErrorResponseSchema,
   HttpPhrases,
   HttpStatus,
+  openapiJsonContent,
   SuccessResponseSchema,
-} from "../../../../../../../packages/ddd-kit/dist";
+} from "@acme/ddd-kit";
+import { createRoute } from "@hono/zod-openapi";
 import { createRealEstateAssetPayloadSchema } from "../../../../application/commands/real-estate/create-real-estate-asset/create-real-estate-asset.schema";
 
 export const createRealEstateAssetRoute = createRoute({
@@ -14,26 +14,26 @@ export const createRealEstateAssetRoute = createRoute({
   tags: ["Real Estate"],
   summary: "Create a new real estate asset",
   request: {
-    body: jsonContent(
+    body: openapiJsonContent(
       createRealEstateAssetPayloadSchema,
       "The details of the new real estate asset to create."
     ),
   },
   responses: {
     [HttpStatus.CREATED]: {
-      ...jsonContent(
+      ...openapiJsonContent(
         SuccessResponseSchema,
         `${HttpPhrases.CREATED}: Asset created successfully.`
       ),
     },
     [HttpStatus.UNPROCESSABLE_ENTITY]: {
-      ...jsonContent(
+      ...openapiJsonContent(
         ErrorResponseSchema,
         `${HttpPhrases.UNPROCESSABLE_ENTITY}: A business rule was violated.`
       ),
     },
     [HttpStatus.BAD_REQUEST]: {
-      ...jsonContent(
+      ...openapiJsonContent(
         ErrorResponseSchema,
         `${HttpPhrases.BAD_REQUEST}: The request body is invalid.`
       ),

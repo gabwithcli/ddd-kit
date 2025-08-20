@@ -1,10 +1,7 @@
 // apps/finance-api/src/adapters/hono/commands/real-estate/real-estate.commands.api-handler.ts
 
+import { authFromContext, makeRequestHandler } from "@acme/ddd-kit";
 import { type Context } from "hono";
-import {
-  authFromContext,
-  makeRequestHandler,
-} from "../../../../../../../packages/ddd-kit/dist";
 import { RealEstateCommandRequest } from "../../../../application/commands/real-estate/commands.schema";
 import { Vars } from "../../types";
 

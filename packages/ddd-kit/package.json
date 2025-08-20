@@ -40,8 +40,8 @@
         "README.md"
     ],
     "scripts": {
-        "build": "tsup src/index.ts src/domain/index.ts src/infra/index.ts --dts --format esm,cjs",
-        "dev": "tsup src/index.ts src/domain/index.ts src/infra/index.ts --dts --format esm,cjs --watch",
+        "build": "pnpm clean && tsc --project tsconfig.json && tsup",
+        "dev": "tsup --watch",
         "clean": "rimraf dist",
         "typecheck": "tsc --noEmit",
         "lint": "echo \"(add eslint if you want)\"",

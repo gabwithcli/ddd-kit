@@ -1,18 +1,33 @@
 {
   "compilerOptions": {
-    "lib": ["ES2022"],
-    "target": "ES2022",
+    // --- Project Type ---
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "emitDeclarationOnly": true,
+
+    // --- Module System ---
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "declaration": true,
-    "declarationMap": false,
-    "emitDeclarationOnly": false,
-    "outDir": "dist",
-    "rootDir": "src",
+    "target": "ES2022",
+
+    // --- Output ---
+    "outDir": "./dist",
+    "rootDir": "./src",
+
+    // --- Interoperability ---
+    "esModuleInterop": true,
+    "isolatedModules": true,
+
+    // --- Strictness & Best Practices ---
     "strict": true,
-    "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
-    "verbatimModuleSyntax": true
+    "noUncheckedIndexedAccess": true
   },
-  "include": ["src"]
+
+  // This is the most critical part that fixes the "file not listed" error.
+  "include": ["src/**/*"],
+
+  "exclude": ["node_modules", "dist"]
 }

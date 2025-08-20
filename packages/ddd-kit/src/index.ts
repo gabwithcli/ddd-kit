@@ -35,6 +35,9 @@ export * from "./application/policies";
 // Aggregate primitives
 export * from "./application/repos";
 
+// Exporting domain primitives (like AggregateRoot) from the main entry point.
+export * from "./domain";
+
 // Test doubles
 export * from "./memory/console-event-publisher.memory";
 export * from "./memory/idempotency-store.memory";

@@ -1,11 +1,11 @@
-import { createRoute } from "@hono/zod-openapi";
-import { jsonContent } from "stoker/openapi/helpers";
 import {
   ErrorResponseSchema,
   HttpPhrases,
   HttpStatus,
+  openapiJsonContent,
   SuccessResponseSchema,
-} from "../../../../../../../packages/ddd-kit/dist";
+} from "@acme/ddd-kit";
+import { createRoute } from "@hono/zod-openapi";
 import { deleteValuationPayloadSchema } from "../../../../application/commands/real-estate/delete-valuation/delete-valuation.schema";
 
 export const deleteValuationRoute = createRoute({
@@ -14,20 +14,20 @@ export const deleteValuationRoute = createRoute({
   tags: ["Real Estate"],
   summary: "Delete a formal valuation from an asset",
   request: {
-    body: jsonContent(
+    body: openapiJsonContent(
       deleteValuationPayloadSchema,
       "The ID of the valuation to delete from the real estate asset."
     ),
   },
   responses: {
     [HttpStatus.OK]: {
-      ...jsonContent(
+      ...openapiJsonContent(
         SuccessResponseSchema,
         `${HttpPhrases.OK}: Valuation deleted successfully.`
       ),
     },
     [HttpStatus.NOT_FOUND]: {
-      ...jsonContent(
+      ...openapiJsonContent(
         ErrorResponseSchema,
         `${HttpPhrases.NOT_FOUND}: The asset or valuation was not found.`
       ),
