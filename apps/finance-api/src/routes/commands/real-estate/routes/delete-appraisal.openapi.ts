@@ -1,11 +1,11 @@
+import { createRoute } from "@hono/zod-openapi";
+import { jsonContent } from "stoker/openapi/helpers";
 import {
   ErrorResponseSchema,
   HttpPhrases,
   HttpStatus,
   SuccessResponseSchema,
-} from "@acme/sdk-lite";
-import { createRoute } from "@hono/zod-openapi";
-import { jsonContent } from "stoker/openapi/helpers";
+} from "../../../../../../../packages/ddd-kit/dist";
 import { deleteAppraisalPayloadSchema } from "../../../../application/commands/real-estate/delete-appraisal/delete-appraisal.schema";
 
 export const deleteAppraisalRoute = createRoute({

@@ -8,7 +8,7 @@ import {
   withIdempotency, IdempotencyStore, UnitOfWork,
   makeRequestHandler, authFromContext, respond, ok, err,
   DomainInvariantError, InMemoryUoW, InMemoryIdempotencyStore
-} from "@acme/sdk-lite";
+} from "@acme/ddd-kit";
 import { z } from "zod";
 
 // Prod impls:
@@ -69,7 +69,7 @@ Testing with in‑memory deps in an app:
 
 ```ts
 import { describe, it, expect } from "vitest";
-import { InMemoryUoW, InMemoryIdempotencyStore } from "@acme/sdk-lite";
+import { InMemoryUoW, InMemoryIdempotencyStore } from "@acme/ddd-kit";
 import { makeCreateOrderHandler } from "../src/handlers/orders"; // your app code
 
 describe("CreateOrder", () => {

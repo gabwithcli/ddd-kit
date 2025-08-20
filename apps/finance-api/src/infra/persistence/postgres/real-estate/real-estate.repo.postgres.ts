@@ -1,5 +1,8 @@
-import { AggregateRepository, Tx } from "@acme/sdk-lite";
 import { and, eq } from "drizzle-orm";
+import {
+  AggregateRepository,
+  Tx,
+} from "../../../../../../../packages/ddd-kit/dist";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
 import { Address } from "../../../../domain/real-estate/types";
 import { Money } from "../../../../domain/shared/money";

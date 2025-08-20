@@ -1,4 +1,4 @@
-# @acme/sdk-lite — Overview
+# @acme/ddd-kit — Overview
 
 **Purpose:** give small teams a pragmatic toolkit for:
 - Command execution with idempotency + UoW

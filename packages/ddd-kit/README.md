@@ -1,4 +1,4 @@
-# @acme/sdk-lite
+# @acme/ddd-kit
 
 Lightweight CQRS/DDD helpers for backend services:
 
@@ -12,8 +12,8 @@ Lightweight CQRS/DDD helpers for backend services:
 ## Install
 
 ```bash
-npm i @acme/sdk-lite zod
-# or: pnpm add @acme/sdk-lite zod
+npm i @acme/ddd-kit zod
+# or: pnpm add @acme/ddd-kit zod
 ```
 
 ## Quick Start
@@ -23,7 +23,7 @@ import {
   ok, err,
   withIdempotency,
   InMemoryUoW, InMemoryIdempotencyStore
-} from "@acme/sdk-lite";
+} from "@acme/ddd-kit";
 
 const res = await withIdempotency<{ id: string }>(
   { options: {

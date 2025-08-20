@@ -10,7 +10,7 @@ Centralize edge concerns:
 ## Example with Hono
 
 ```ts
-import { makeRequestHandler, authFromContext, respond, ok } from "@acme/sdk-lite";
+import { makeRequestHandler, authFromContext, respond, ok } from "@acme/ddd-kit";
 import { z } from "zod";
 
 const CreateBody = z.object({

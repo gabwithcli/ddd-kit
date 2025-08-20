@@ -1,11 +1,11 @@
+import { createRoute } from "@hono/zod-openapi";
+import { jsonContent } from "stoker/openapi/helpers";
 import {
   ErrorResponseSchema,
   HttpPhrases,
   HttpStatus,
   SuccessResponseSchema,
-} from "@acme/sdk-lite";
-import { createRoute } from "@hono/zod-openapi";
-import { jsonContent } from "stoker/openapi/helpers";
+} from "../../../../../../../packages/ddd-kit/dist";
 import { createRealEstateAssetPayloadSchema } from "../../../../application/commands/real-estate/create-real-estate-asset/create-real-estate-asset.schema";
 
 export const createRealEstateAssetRoute = createRoute({

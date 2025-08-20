@@ -1,4 +1,4 @@
-// sdk-lite/src/http/request-handler.ts
+// ddd-kit/src/http/request-handler.ts
 
 import type * as Z from "zod";
 import type { SafeParseReturnType, ZodTypeAny } from "zod";

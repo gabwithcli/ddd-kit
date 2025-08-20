@@ -1,4 +1,4 @@
-// sdk-lite/src/domain/invariants.ts
+// ddd-kit/src/domain/invariants.ts
 // -----------------------------------------------------------------------------
 // Invariant DSL for aggregates (domain-only, no I/O)
 //

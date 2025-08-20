@@ -1,5 +1,10 @@
-import { CommandOutput, ICommand, ok, Result } from "@acme/sdk-lite";
 import { z } from "zod";
+import {
+  CommandOutput,
+  ICommand,
+  ok,
+  Result,
+} from "../../../../../../../packages/ddd-kit/dist";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
 import { Money } from "../../../../domain/shared/money";
 import { addAppraisalPayloadSchema } from "./add-appraisal.schema";

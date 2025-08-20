@@ -1,4 +1,4 @@
-# CQRS in @acme/sdk-lite
+# CQRS in @acme/ddd-kit
 
 **Writes:** enact a single aggregate mutation per command.
 **Reads:** shape whatever view you want (joins, projections, caches).

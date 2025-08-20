@@ -1,4 +1,4 @@
-// packages/sdk-lite/src/infra/idempotency-store.ts
+// packages/ddd-kit/src/infra/idempotency-store.ts
 
 import type { Tx } from "./unit-of-work";
 

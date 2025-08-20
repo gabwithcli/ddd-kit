@@ -1,5 +1,5 @@
 {
-    "name": "@acme/sdk-lite",
+    "name": "@acme/ddd-kit",
     "version": "0.0.1",
     "private": false,
     "description": "Lightweight CQRS/DDD helpers: Result, domain errors, idempotency orchestration, request handler, and test doubles.",
@@ -7,11 +7,11 @@
     "author": "Acme",
     "repository": {
         "type": "git",
-        "url": "https://github.com/your-org/sdk-lite.git"
+        "url": "https://github.com/your-org/ddd-kit.git"
     },
-    "homepage": "https://github.com/your-org/sdk-lite#readme",
+    "homepage": "https://github.com/your-org/ddd-kit#readme",
     "bugs": {
-        "url": "https://github.com/your-org/sdk-lite/issues"
+        "url": "https://github.com/your-org/ddd-kit/issues"
     },
     "type": "module",
     "main": "./dist/index.cjs",

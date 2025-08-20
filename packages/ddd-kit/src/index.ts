@@ -1,9 +1,9 @@
 /**
- * @acme/sdk-lite — Barrel exports
+ * @acme/ddd-kit — Barrel exports
  *
  * Why a single "index" file?
  * - Consumers can import everything from one place:
- * import { ok, withIdempotency } from "@acme/sdk-lite";
+ * import { ok, withIdempotency } from "@acme/ddd-kit";
  * - Internally we keep small modules (single responsibility) and re-export them here.
  */
 
@@ -40,4 +40,4 @@ export * from "./memory/idempotency-store.memory";
 export * from "./memory/unit-of-work.memory";
 
 // NOTE: we do NOT re-export the "domain" folder here to avoid naming collisions.
-// Apps can import domain primitives via the subpath: @acme/sdk-lite/domain
+// Apps can import domain primitives via the subpath: @acme/ddd-kit/domain

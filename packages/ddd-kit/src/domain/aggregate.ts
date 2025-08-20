@@ -4,7 +4,7 @@ import { deepEqual } from "node:assert";
  * re-export DomainInvariantError and other shared errors,
  * so apps can just write:
  *
- * import { AggregateRoot, DomainInvariantError } from "@acme/sdk-lite/domain";
+ * import { AggregateRoot, DomainInvariantError } from "@acme/ddd-kit/domain";
  *
  */
 export * from "../shared/errors"; // re-export DomainInvariantError (and other shared errors)

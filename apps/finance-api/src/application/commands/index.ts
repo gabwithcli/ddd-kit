@@ -4,7 +4,7 @@ import {
   // We update our imports to use the generic repository interface.
   AggregateRepository,
   CommandHandler,
-} from "@acme/sdk-lite";
+} from "../../../../../packages/ddd-kit/dist";
 import { AppEnv } from "../../adapters/hono/types";
 import { RealEstate } from "../../domain/real-estate/real-estate.aggregate";
 import { PersistenceLayer } from "../../infra/persistence";

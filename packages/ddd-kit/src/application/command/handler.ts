@@ -1,4 +1,4 @@
-// packages/sdk-lite/src/application/command/handler.ts
+// packages/ddd-kit/src/application/command/handler.ts
 
 /**
  * Abstract Command Handler

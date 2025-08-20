@@ -1,4 +1,4 @@
-// packages/sdk-lite/src/application/repos/aggregate.repository.ts
+// packages/ddd-kit/src/application/repos/aggregate.repository.ts
 
 import type { AggregateRoot } from "../../domain";
 import type { Tx } from "../../infra";

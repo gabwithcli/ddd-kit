@@ -1,4 +1,4 @@
-// ## File: packages/sdk-lite/src/http/status.ts
+// ## File: packages/ddd-kit/src/http/status.ts
 
 // This module centralizes and re-exports HTTP status utilities from the `stoker` library,
 // providing a single, consistent source for status codes and phrases across all

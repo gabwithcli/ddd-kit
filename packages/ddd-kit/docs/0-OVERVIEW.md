@@ -1,6 +1,6 @@
 # SDK Overview
 
-`@acme/sdk-lite` provides small, composable building blocks for backend services:
+`@acme/ddd-kit` provides small, composable building blocks for backend services:
 
 - **Result**: `ok/err`
 - **Domain errors**: `DomainInvariantError`

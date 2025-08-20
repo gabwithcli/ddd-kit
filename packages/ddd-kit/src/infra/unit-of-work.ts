@@ -1,4 +1,4 @@
-// packages/sdk-lite/src/infra/unit-of-work.ts
+// packages/ddd-kit/src/infra/unit-of-work.ts
 
 /**
  * Unit of Work (UoW) + Transaction marker

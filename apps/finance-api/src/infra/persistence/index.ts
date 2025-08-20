@@ -1,6 +1,9 @@
 // apps/finance-api/src/infra/persistence/index.ts
 
-import { AggregateRepository, UnitOfWork } from "@acme/sdk-lite";
+import {
+  AggregateRepository,
+  UnitOfWork,
+} from "../../../../../packages/ddd-kit/dist";
 
 // Import both implementations
 import { RealEstate } from "../../domain/real-estate/real-estate.aggregate";

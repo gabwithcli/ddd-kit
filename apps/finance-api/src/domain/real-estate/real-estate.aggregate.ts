@@ -4,7 +4,7 @@ import {
   AggregateRoot,
   DomainInvariantError,
   invariants,
-} from "@acme/sdk-lite/domain";
+} from "../../../../../packages/ddd-kit/dist/domain";
 import { Money } from "../shared/money";
 // ## CHANGE ##: We now import our new, type-safe event definition.
 import { RealEstateEvent } from "./real-estate.events";

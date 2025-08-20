@@ -1,4 +1,4 @@
-import { ValueObject } from "@acme/sdk-lite/domain";
+import { ValueObject } from "../../../../../packages/ddd-kit/dist/domain";
 import { Money } from "../shared/money";
 
 export class Address extends ValueObject<{
