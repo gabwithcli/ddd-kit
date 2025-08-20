@@ -46,13 +46,13 @@ export class CreateRealEstateCommand
 
     // 2. Get the current timestamp.
     // This is another infrastructure concern handled here, not in the aggregate.
-    const createdAt = this.deps.now().toISOString();
+    const createdAt = this.deps.now();
 
     // 3. Call the refactored aggregate factory.
     // We now pass the generated ID and timestamp as plain data. The aggregate's
     // `create` method is now a pure function, focused solely on enforcing
     // business rules on the data it receives.
-    const newAggregate = RealEstate.create({
+    const newAggregate = RealEstate.createAsset({
       id: newId,
       userId: payload.userId,
       details: {

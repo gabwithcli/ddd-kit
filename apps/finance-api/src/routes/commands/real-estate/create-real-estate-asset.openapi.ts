@@ -6,19 +6,19 @@ import {
 } from "@acme/sdk-lite";
 import { createRoute } from "@hono/zod-openapi";
 import { jsonContent } from "stoker/openapi/helpers";
-import { createRealEstateCommandSchema } from "../../../application/commands/real-estate/create-real-estate/create.schema";
+import { createRealEstatePayloadSchema } from "../../../application/commands/real-estate/create-real-estate-asset/create.schema";
 
-export const createRealEstateRoute = createRoute({
+export const createRealEstateAssetRoute = createRoute({
   method: "post",
   // The path is '/' relative to where these routes are mounted (e.g., '/v1/real-estates').
-  path: "/create",
+  path: "/create-real-estate-asset",
   tags: ["Real Estate"],
   summary: "Create a new real estate asset",
   request: {
     // The request body is defined by the command's payload schema.
     // This creates a direct link between our API contract and our application layer.
     body: jsonContent(
-      createRealEstateCommandSchema,
+      createRealEstatePayloadSchema,
       "The details of the new real estate asset to create."
     ),
   },

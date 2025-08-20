@@ -43,7 +43,7 @@ export class DeleteRealEstateCommand
     }
 
     // We orchestrate the call to the domain model, passing the current time.
-    aggregate.delete(this.deps.now());
+    aggregate.deleteAsset(this.deps.now());
 
     // On success, we return the mutated aggregate and a success response.
     return ok({

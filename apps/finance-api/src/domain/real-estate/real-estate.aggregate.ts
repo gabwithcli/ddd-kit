@@ -49,12 +49,12 @@ export class RealEstate extends AggregateRoot {
   // The domain model should not be concerned with infrastructure tasks like
   // generating IDs or getting the current time. That responsibility belongs to the
   // application layer (the `ICommand` implementation), which orchestrates the process.
-  static create(args: {
+  static createAsset(args: {
     id: string; // The full, unique ID is now passed in.
     userId: string;
     details: RealEstateDetails;
     purchase: PricePoint;
-    createdAt: string; // The creation timestamp is now a required argument.
+    createdAt: Date;
   }) {
     const { id, userId, details, purchase, createdAt } = args;
 
@@ -146,9 +146,7 @@ export class RealEstate extends AggregateRoot {
   }
 
   // Command handlers (mutations)
-  // These methods remain unchanged as their logic was already sound.
-
-  delete(deletedAt: Date) {
+  deleteAsset(deletedAt: Date) {
     // This is our core business rule (invariant) for this operation.
     // An aggregate that is already deleted cannot be deleted again.
     invariants({

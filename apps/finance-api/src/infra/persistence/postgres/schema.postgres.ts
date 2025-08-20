@@ -16,15 +16,11 @@ import {
  */
 export const realEstateFolder = pgSchema("real_estate");
 
-export const realEstates = realEstateFolder.table(
-  "real_estates",
+export const realEstateAssets = realEstateFolder.table(
+  "real_estate_assets",
   realEstatesColumns
 );
 export const realEstateAppraisals = realEstateFolder.table(
-  "real_estate_appraisals",
+  "real_estate_proc",
   realEstateAppraisalsColumns
-);
-export const realEstateMarketVals = realEstateFolder.table(
-  "real_estate_market_vals",
-  realEstateMarketValsColumns
 );

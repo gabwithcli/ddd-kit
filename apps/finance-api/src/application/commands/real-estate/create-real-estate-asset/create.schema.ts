@@ -22,7 +22,7 @@ export const createRealEstatePayloadSchema = z.object({
 });
 
 export const createRealEstateCommandSchema = z.object({
-  command: z.literal(realEstateCommandsListSchema.enum["create-real-estate"]),
+  command: z.literal(realEstateCommandsListSchema.enum["create-real-estate-asset"]),
   payload: createRealEstatePayloadSchema,
 });
 

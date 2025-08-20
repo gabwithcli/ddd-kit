@@ -17,7 +17,7 @@ import { AppEnv, Vars } from "./adapters/hono/types";
 import { getCommandLayer } from "./application/commands";
 import { env } from "./config";
 import { getPersistenceLayer } from "./infra/persistence";
-import { realEstateRoutes } from "./routes/real-estate/real-estate.routes";
+import { realEstateRoutes } from "./routes/commands/real-estate/real-estate.commands.routes";
 
 // We'll use OpenAPIHono and provide the `Vars` type to ensure our context is strongly typed.
 const app = new OpenAPIHono<{ Variables: Vars }>({
@@ -83,7 +83,7 @@ app.on(["GET", "HEAD"], "/healthcheck", (c) => {
 
 // We mount our domain-specific routes under a versioned path.
 // OpenAPIHono will automatically discover the route definitions within `realEstateRoutes`.
-app.route("/v1/real-estates", realEstateRoutes);
+app.route("/v1/commands/real-estate", realEstateRoutes);
 
 // --- OpenAPI and Documentation UI ---
 

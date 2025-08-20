@@ -7,7 +7,9 @@ export const deleteRealEstatePayloadSchema = z.object({
 });
 
 export const deleteRealEstateCommandSchema = z.object({
-  command: z.literal(realEstateCommandsListSchema.enum["delete-real-estate"]),
+  command: z.literal(
+    realEstateCommandsListSchema.enum["delete-real-estate-asset"]
+  ),
   payload: deleteRealEstatePayloadSchema,
 });
 

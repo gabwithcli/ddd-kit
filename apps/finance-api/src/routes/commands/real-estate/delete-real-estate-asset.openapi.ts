@@ -6,19 +6,19 @@ import {
 } from "@acme/sdk-lite";
 import { createRoute } from "@hono/zod-openapi";
 import { jsonContent } from "stoker/openapi/helpers";
-import { deleteRealEstateCommandSchema } from "../../../application/commands/real-estate/delete-real-estate/delete.schema";
+import { deleteRealEstatePayloadSchema } from "../../../application/commands/real-estate/delete-real-estate-asset/delete.schema";
 
-export const deleteRealEstateRoute = createRoute({
-  method: "delete",
+export const deleteRealEstateAssetRoute = createRoute({
+  method: "post",
   // The resource ID is part of the URL path, following REST conventions.
-  path: "/delete",
+  path: "/delete-real-estate-asset",
   tags: ["Real Estate"],
   summary: "Delete a real estate asset",
   request: {
     // The request body is defined by the command's payload schema.
     // This creates a direct link between our API contract and our application layer.
     body: jsonContent(
-      deleteRealEstateCommandSchema,
+      deleteRealEstatePayloadSchema,
       "The ID of the real estate asset to delete."
     ),
   },
