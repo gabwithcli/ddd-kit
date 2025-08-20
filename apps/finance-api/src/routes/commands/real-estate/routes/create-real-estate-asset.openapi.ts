@@ -6,19 +6,16 @@ import {
 } from "@acme/sdk-lite";
 import { createRoute } from "@hono/zod-openapi";
 import { jsonContent } from "stoker/openapi/helpers";
-import { createRealEstatePayloadSchema } from "../../../application/commands/real-estate/create-real-estate-asset/create.schema";
+import { createRealEstateAssetPayloadSchema } from "../../../../application/commands/real-estate/create-real-estate-asset/create-real-estate-asset.schema";
 
 export const createRealEstateAssetRoute = createRoute({
   method: "post",
-  // The path is '/' relative to where these routes are mounted (e.g., '/v1/real-estates').
   path: "/create-real-estate-asset",
   tags: ["Real Estate"],
   summary: "Create a new real estate asset",
   request: {
-    // The request body is defined by the command's payload schema.
-    // This creates a direct link between our API contract and our application layer.
     body: jsonContent(
-      createRealEstatePayloadSchema,
+      createRealEstateAssetPayloadSchema,
       "The details of the new real estate asset to create."
     ),
   },
@@ -26,7 +23,7 @@ export const createRealEstateAssetRoute = createRoute({
     [HttpStatus.CREATED]: {
       ...jsonContent(
         SuccessResponseSchema,
-        `${HttpPhrases.OK}: Asset created successfully.`
+        `${HttpPhrases.CREATED}: Asset created successfully.`
       ),
     },
     [HttpStatus.UNPROCESSABLE_ENTITY]: {

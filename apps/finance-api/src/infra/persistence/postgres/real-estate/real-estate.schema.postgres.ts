@@ -1,5 +1,3 @@
-// apps/finance-api/src/infra/persistence/postgres/real-estate/real-estate.schema.postgres.ts
-
 import {
   date,
   integer,
@@ -8,8 +6,8 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
-// Defines the columns for the real_estates table in a database-agnostic way.
-export const realEstatesColumns = {
+// Schema for the aggregate root table.
+export const realEstateAssetsColumns = {
   id: varchar("id", { length: 40 }).primaryKey(),
   userId: varchar("user_id", { length: 40 }).notNull(),
   name: varchar("name", { length: 256 }).notNull(),
@@ -25,28 +23,23 @@ export const realEstatesColumns = {
   purchaseValue: numeric("purchase_value", {
     precision: 14,
     scale: 2,
-  })
-    .$type<number>()
-    .notNull(),
+  }).notNull(),
   version: integer("version").notNull().default(0),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
-  // ADD THIS LINE TEMPORARILY
-  sanityCheck: varchar("sanity_check"),
 };
 
-// We do the same for the child tables.
+// Schema for the appraisals child table.
 export const realEstateAppraisalsColumns = {
+  id: varchar("id", { length: 40 }).primaryKey(),
   realEstateId: varchar("real_estate_id", { length: 40 }).notNull(),
   date: date("date").notNull(),
-  value: numeric("value", { precision: 14, scale: 2 })
-    .$type<number>()
-    .notNull(),
+  value: numeric("value", { precision: 14, scale: 2 }).notNull(),
 };
 
-export const realEstateMarketValsColumns = {
+// Schema for the valuations child table.
+export const realEstateValuationsColumns = {
+  id: varchar("id", { length: 40 }).primaryKey(),
   realEstateId: varchar("real_estate_id", { length: 40 }).notNull(),
   date: date("date").notNull(),
-  value: numeric("value", { precision: 14, scale: 2 })
-    .$type<number>()
-    .notNull(),
+  value: numeric("value", { precision: 14, scale: 2 }).notNull(),
 };

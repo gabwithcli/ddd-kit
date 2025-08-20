@@ -1,7 +1,7 @@
 import z from "zod";
 import { realEstateCommandsListSchema } from "../commands.names";
 
-export const createRealEstatePayloadSchema = z.object({
+export const createRealEstateAssetPayloadSchema = z.object({
   details: z.object({
     name: z.string().min(1, "Name is required"),
     address: z.object({
@@ -16,17 +16,20 @@ export const createRealEstatePayloadSchema = z.object({
     baseCurrency: z.string().length(3, "Use 3-letter currency code"),
   }),
   purchase: z.object({
-    date: z.string(), // ISO date string
-    value: z.number().positive(),
+    date: z.string().date("Must be a valid date string (YYYY-MM-DD)"),
+    value: z.number().positive("Value must be a positive number"),
   }),
 });
 
-export const createRealEstateCommandSchema = z.object({
-  command: z.literal(realEstateCommandsListSchema.enum["create-real-estate-asset"]),
-  payload: createRealEstatePayloadSchema,
+export const createRealEstateAssetCommandSchema = z.object({
+  command: z.literal(
+    realEstateCommandsListSchema.enum["create-real-estate-asset"]
+  ),
+  payload: createRealEstateAssetPayloadSchema,
 });
 
-export type CreateRealEstateCommand = z.infer<
-  typeof createRealEstateCommandSchema
+export type CreateRealEstateAssetCommand = z.infer<
+  typeof createRealEstateAssetCommandSchema
 >;
-export type CreateRealEstateCommandPayload = CreateRealEstateCommand["payload"];
+export type CreateRealEstateAssetCommandPayload =
+  CreateRealEstateAssetCommand["payload"];

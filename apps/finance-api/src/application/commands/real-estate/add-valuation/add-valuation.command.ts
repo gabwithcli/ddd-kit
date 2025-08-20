@@ -2,15 +2,13 @@ import { CommandOutput, ICommand, ok, Result } from "@acme/sdk-lite";
 import { z } from "zod";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
 import { Money } from "../../../../domain/shared/money";
-import { addAppraisalPayloadSchema } from "./add-appraisal.schema";
+import { addValuationPayloadSchema } from "./add-valuation.schema";
 
-type CommandPayload = z.infer<typeof addAppraisalPayloadSchema>;
-
-type CommandResponse = { appraisalId: string };
-
+type CommandPayload = z.infer<typeof addValuationPayloadSchema>;
+type CommandResponse = { valuationId: string };
 type CommandDependencies = { newId(): string };
 
-export class AddAppraisalCommand
+export class AddValuationCommand
   implements ICommand<CommandPayload, CommandResponse, RealEstate>
 {
   constructor(private readonly deps: CommandDependencies) {}
@@ -20,17 +18,17 @@ export class AddAppraisalCommand
     aggregate?: RealEstate
   ): Result<CommandOutput<RealEstate, CommandResponse>> {
     if (!aggregate) {
-      throw new Error("Cannot add an appraisal to a non-existent asset.");
+      throw new Error("Cannot add a valuation to a non-existent asset.");
     }
 
-    const appraisalId = `appr_${this.deps.newId()}`;
+    const valuationId = `val_${this.deps.newId()}`;
     const value = Money.from(payload.value, aggregate.details.baseCurrency);
 
-    aggregate.addAppraisal({ id: appraisalId, date: payload.date, value });
+    aggregate.addValuation({ id: valuationId, date: payload.date, value });
 
     return ok({
       aggregate: aggregate,
-      response: { appraisalId: appraisalId },
+      response: { valuationId: valuationId },
       events: aggregate.pullEvents(),
     });
   }

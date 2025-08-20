@@ -3,11 +3,18 @@ import { z } from "zod";
 export const realEstateCommandsList = [
   // real-estate (root) commands
   "create-real-estate-asset",
-  // "update-real-estate-asset",
+  "update-real-estate-details",
+  "update-real-estate-purchase",
   "delete-real-estate-asset",
+  // real-estate (child) commands
+  // -- appraisals
   "add-appraisal",
-  // "edit-price-update",
-  // "delete-price-update",
+  "update-appraisal",
+  "delete-appraisal",
+  // -- valuations
+  "add-valuation",
+  "update-valuation",
+  "delete-valuation",
 ] as const;
 
 export const realEstateCommandsListSchema = z.enum(realEstateCommandsList);

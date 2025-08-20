@@ -1,26 +1,34 @@
-// apps/finance-api/src/infra/schema/real-estate.ts
-
 import { pgSchema } from "drizzle-orm/pg-core";
 import {
   realEstateAppraisalsColumns,
-  realEstateMarketValsColumns,
-  realEstatesColumns,
+  realEstateAssetsColumns,
+  realEstateValuationsColumns,
 } from "./real-estate/real-estate.schema.postgres";
 
 /**
- *
- * In PostgreSQL, there is an entity called a schema (which we believe should be called folders).
- * This creates a structure in PostgreSQL that allows you to group related tables together.
+ * In PostgreSQL, a "schema" acts like a folder to group related tables.
+ * We're defining a 'real_estate' schema to hold all our tables for this domain.
  * @see https://orm.drizzle.team/docs/sql-schema-declaration
- *
  */
 export const realEstateFolder = pgSchema("real_estate");
 
+// Here we define the actual table objects that Drizzle will use for queries.
+// We pass the column definitions we created in the other file.
+
+// The main table for the RealEstate aggregate root.
 export const realEstateAssets = realEstateFolder.table(
-  "real_estate_assets",
-  realEstatesColumns
+  "real_estates",
+  realEstateAssetsColumns
 );
+
+// The table for the Appraisal child entities.
 export const realEstateAppraisals = realEstateFolder.table(
-  "real_estate_proc",
+  "real_estate_appraisals",
   realEstateAppraisalsColumns
+);
+
+// The table for the formal Valuation child entities.
+export const realEstateValuations = realEstateFolder.table(
+  "real_estate_valuations",
+  realEstateValuationsColumns
 );
