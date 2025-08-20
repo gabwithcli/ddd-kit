@@ -12,7 +12,7 @@ A small collection of sharp, focused tools for taming complex business logic. It
 
 **For a full explanation and developer guides, see the [ddd-kit README](./packages/ddd-kit/README.md)**.
 
-## 🚀 `finance-api` (Example Implementation)
+### 🚀 `finance-api` (Example Implementation)
 
 A real-world example of `ddd-kit` in action. This Hono-based API manages real estate assets and showcases how to structure a full application—from the HTTP layer down to the database—using the toolkit.
 
