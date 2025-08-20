@@ -3,6 +3,7 @@
 import {
   AggregateRepository,
   CommandHandler,
+  EventPublisher,
   ICommand,
   UnitOfWork,
 } from "../../../../../../packages/ddd-kit/dist";
@@ -25,6 +26,7 @@ import { UpdateValuationCommand } from "./update-valuation/update-valuation.comm
 type HandlerDependencies = {
   repo: AggregateRepository<RealEstate>;
   uow: UnitOfWork;
+  eventPublisher: EventPublisher;
   newId: () => string;
   now: () => Date;
 };

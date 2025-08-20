@@ -36,6 +36,7 @@ export * from "./application/policies";
 export * from "./application/repos";
 
 // Test doubles
+export * from "./memory/console-event-publisher.memory";
 export * from "./memory/idempotency-store.memory";
 export * from "./memory/unit-of-work.memory";
 

@@ -20,6 +20,8 @@ import { err, ok, type Result } from "../../shared/result";
 // This interface defines a universal contract for finding and saving an aggregate.
 import type { AggregateRepository } from "../repos/aggregate.repository";
 import type { ICommand } from "./command";
+// Import the EventPublisher interface.
+import { type EventPublisher } from "./types";
 
 /**
  * Defines the structure of the payload passed to the command handler's `execute` method.
@@ -46,7 +48,10 @@ export abstract class CommandHandler<
     protected readonly repo: TRepo,
     // The Unit of Work ensures that all operations (load, save, etc.)
     // happen within a single atomic transaction.
-    protected readonly uow: UnitOfWork
+    protected readonly uow: UnitOfWork,
+    // The event publisher is now an optional dependency.
+    // Making it optional prevents breaking changes for services that don't need eventing.
+    protected readonly eventPublisher?: EventPublisher
   ) {}
 
   /**
@@ -112,16 +117,18 @@ export abstract class CommandHandler<
         }
 
         // Step 3: DESTRUCTURE
-        const { aggregate: nextAggregate, response } = result.value;
+        // And also pull the events out from the result.
+        const { aggregate: nextAggregate, response, events } = result.value;
 
         // Step 4: SAVE
         await this.repo.save(tx, nextAggregate);
 
-        // Step 5: PUBLISH (Future Enhancement)
-        // After successfully saving, you would publish any domain events for other
+        // Step 5: PUBLISH
+        // After successfully saving, we publish any domain events for other
         // parts of the system to react to (e.g., updating read models, sending notifications).
-        // const events = nextAggregate.pullEvents();
-        // await this.eventPublisher.publish(events);
+        if (this.eventPublisher && events.length > 0) {
+          await this.eventPublisher.publish(events, tx);
+        }
 
         // Step 6: RETURN
         // Finally, we return the successful response DTO to the caller.

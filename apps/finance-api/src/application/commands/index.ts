@@ -1,10 +1,10 @@
 // apps/finance-api/src/application/commands/index.ts
 
 import {
-  // We update our imports to use the generic repository interface.
   AggregateRepository,
   CommandHandler,
-} from "../../../../../packages/ddd-kit/dist";
+  ConsoleEventPublisher,
+} from "@acme/ddd-kit";
 import { AppEnv } from "../../adapters/hono/types";
 import { RealEstate } from "../../domain/real-estate/real-estate.aggregate";
 import { PersistenceLayer } from "../../infra/persistence";
@@ -42,6 +42,8 @@ export function getCommandLayer({
   persistance_layer: PersistenceLayer;
   app_env: AppEnv;
 }): CommandLayer {
+  const eventPublisher = new ConsoleEventPublisher();
+
   return {
     // We instantiate our now persistence-agnostic RealEstateCommandHandler.
     // The `persistance_layer.repos.real_estate` will conform to the
@@ -49,6 +51,7 @@ export function getCommandLayer({
     real_estate: new RealEstateCommandHandler({
       repo: persistance_layer.repos.real_estate,
       uow: persistance_layer.uow,
+      eventPublisher: eventPublisher,
       newId: app_env.newId,
       now: app_env.now,
     }),

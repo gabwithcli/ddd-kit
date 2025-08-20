@@ -1,6 +1,7 @@
 // apps/finance-api/src/domain/real-estate/real-estate.aggregate.ts
 
 import {
+  AggregateId,
   AggregateRoot,
   DomainInvariantError,
   invariants,
@@ -19,7 +20,7 @@ export class RealEstate extends AggregateRoot {
   private _deletedAt: Date | null = null;
 
   private constructor(
-    id: string,
+    id: AggregateId<"RealEstate">,
     public readonly userId: string,
     private _details: RealEstateDetails,
     private _purchase: PricePoint,
@@ -27,14 +28,14 @@ export class RealEstate extends AggregateRoot {
     private _valuations: Valuation[],
     deletedAt: Date | null = null
   ) {
-    super("RealEstate", id);
+    super(id);
     this._deletedAt = deletedAt;
   }
 
   // --- Factory and Rehydration ---
 
   static createAsset(args: {
-    id: string;
+    id: AggregateId<"RealEstate">;
     userId: string;
     details: RealEstateDetails;
     purchase: PricePoint;
@@ -62,7 +63,7 @@ export class RealEstate extends AggregateRoot {
   }
 
   static fromState(s: {
-    id: string;
+    id: AggregateId<"RealEstate">;
     userId: string;
     version: number;
     details: RealEstateDetails;
