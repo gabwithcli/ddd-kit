@@ -1,12 +1,7 @@
 CREATE SCHEMA "real_estate";
 --> statement-breakpoint
 CREATE TABLE "real_estate"."real_estate_appraisals" (
-	"real_estate_id" varchar(40) NOT NULL,
-	"date" date NOT NULL,
-	"value" numeric(14, 2) NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "real_estate"."real_estate_market_vals" (
+	"id" varchar(40) PRIMARY KEY NOT NULL,
 	"real_estate_id" varchar(40) NOT NULL,
 	"date" date NOT NULL,
 	"value" numeric(14, 2) NOT NULL
@@ -27,6 +22,12 @@ CREATE TABLE "real_estate"."real_estates" (
 	"purchase_date" date NOT NULL,
 	"purchase_value" numeric(14, 2) NOT NULL,
 	"version" integer DEFAULT 0 NOT NULL,
-	"deleted_at" timestamp with time zone,
-	"sanity_check" varchar
+	"deleted_at" timestamp with time zone
+);
+--> statement-breakpoint
+CREATE TABLE "real_estate"."real_estate_valuations" (
+	"id" varchar(40) PRIMARY KEY NOT NULL,
+	"real_estate_id" varchar(40) NOT NULL,
+	"date" date NOT NULL,
+	"value" numeric(14, 2) NOT NULL
 );

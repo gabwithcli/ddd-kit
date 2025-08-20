@@ -1,5 +1,5 @@
 {
-  "id": "c70d2fcb-5c55-4c10-b292-d0745972caf1",
+  "id": "07f4bdfe-eb9e-43a2-a1d6-efb533683474",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -8,37 +8,12 @@
       "name": "real_estate_appraisals",
       "schema": "real_estate",
       "columns": {
-        "real_estate_id": {
-          "name": "real_estate_id",
+        "id": {
+          "name": "id",
           "type": "varchar(40)",
-          "primaryKey": false,
+          "primaryKey": true,
           "notNull": true
         },
-        "date": {
-          "name": "date",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "value": {
-          "name": "value",
-          "type": "numeric(14, 2)",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "real_estate.real_estate_market_vals": {
-      "name": "real_estate_market_vals",
-      "schema": "real_estate",
-      "columns": {
         "real_estate_id": {
           "name": "real_estate_id",
           "type": "varchar(40)",
@@ -160,12 +135,43 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "real_estate.real_estate_valuations": {
+      "name": "real_estate_valuations",
+      "schema": "real_estate",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(40)",
+          "primaryKey": true,
+          "notNull": true
         },
-        "sanity_check": {
-          "name": "sanity_check",
-          "type": "varchar",
+        "real_estate_id": {
+          "name": "real_estate_id",
+          "type": "varchar(40)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
+        },
+        "date": {
+          "name": "date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "value": {
+          "name": "value",
+          "type": "numeric(14, 2)",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
