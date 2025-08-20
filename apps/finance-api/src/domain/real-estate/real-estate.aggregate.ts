@@ -27,7 +27,7 @@ export class RealEstate extends AggregateRoot {
     private _valuations: Valuation[],
     deletedAt: Date | null = null
   ) {
-    super(id);
+    super("RealEstate", id);
     this._deletedAt = deletedAt;
   }
 

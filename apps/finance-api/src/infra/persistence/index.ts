@@ -1,7 +1,7 @@
 // apps/finance-api/src/infra/persistence/index.ts
 
 import {
-  AggregateRepository,
+  AbstractCrudRepository,
   UnitOfWork,
 } from "../../../../../packages/ddd-kit/dist";
 
@@ -15,7 +15,7 @@ import { PostgresUoW } from "./postgres/uow.postgres";
 export interface PersistenceLayer {
   uow: UnitOfWork;
   repos: {
-    real_estate: AggregateRepository<RealEstate>;
+    real_estate: AbstractCrudRepository<RealEstate>;
     // If you add a portfolio aggregate, you would add its repo here:
     // portfolio: AggregateRepository<Portfolio>;
   };

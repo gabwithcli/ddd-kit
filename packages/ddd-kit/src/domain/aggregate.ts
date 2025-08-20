@@ -18,7 +18,11 @@ export * from "../shared/errors"; // re-export DomainInvariantError (and other s
  * - Storage-agnostic: works with CRUD (ORM) or ES (event store) backends.
  */
 
-export type AggregateId = string;
+// Using a branded type for IDs.
+// This allows you to create distinct ID types like AggregateId<"RealEstate">
+// or AggregateId<"Order">, which are not interchangeable. This prevents a
+// whole class of bugs at compile time.
+export type AggregateId<T extends string> = string & { readonly __brand: T };
 
 /**
  * Marker for optimistic concurrency control.
@@ -33,7 +37,7 @@ export interface HasVersion {
  * Base Entity: identified by id; equality by identity.
  * Keep this small: don’t leak infra concerns here.
  */
-export abstract class Entity<Id extends AggregateId = AggregateId> {
+export abstract class Entity<Id extends string = AggregateId<any>> {
   constructor(public readonly id: Id) {}
 }
 
@@ -61,7 +65,7 @@ export abstract class ValueObject<T extends object> {
  * - Only entry point for state changes (public methods).
  * - Buffers domain events to support ES, outbox, and telemetry.
  */
-export abstract class AggregateRoot<Id extends AggregateId = AggregateId>
+export abstract class AggregateRoot<Id extends string = AggregateId<any>>
   extends Entity<Id>
   implements HasVersion
 {
