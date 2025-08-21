@@ -1,4 +1,10 @@
-import { CommandOutput, ICommand, ok, Result } from "ddd-kit";
+import {
+  CommandOutput,
+  createAggregateId,
+  ICommand,
+  ok,
+  Result,
+} from "ddd-kit";
 import { z } from "zod";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
 import { Address } from "../../../../domain/real-estate/types";
@@ -28,7 +34,7 @@ export class CreateRealEstateAssetCommand
     }
 
     // 1. Generate the unique ID for the new aggregate.
-    const newId = `re_${this.deps.newId()}`;
+    const newId = createAggregateId<"RealEstate">(this.deps.newId(), "re");
     const createdAt = this.deps.now();
 
     // 2. Call the aggregate's factory method with all the required data.

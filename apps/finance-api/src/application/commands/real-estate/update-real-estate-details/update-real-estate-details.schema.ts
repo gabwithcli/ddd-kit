@@ -34,3 +34,20 @@ export type UpdateRealEstateDetailsCommand = z.infer<
 >;
 export type UpdateRealEstateDetailsCommandPayload =
   UpdateRealEstateDetailsCommand["payload"];
+
+// We create a sample payload that conforms to our Zod schema.
+// This object will be used to pre-populate the request body in API documentation tools.
+// It's a great way to provide a sensible default for anyone testing the endpoint.
+export const updateRealEstateDetailsPayloadExample = {
+  id: "re_1234567890",
+  name: "Updated Real Estate Asset",
+  address: {
+    line1: "456 Updated Street",
+    line2: "Suite 100",
+    postalCode: "54321",
+    city: "Updated City",
+    state: "CA",
+    country: "USA",
+  },
+  notes: "Updated notes about the asset",
+} satisfies UpdateRealEstateDetailsCommandPayload;

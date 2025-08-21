@@ -26,6 +26,27 @@ export * from "../shared/errors"; // re-export DomainInvariantError (and other s
 export type AggregateId<T extends string> = string & { readonly __brand: T };
 
 /**
+ * Helper function to create a properly typed AggregateId from a string.
+ * This ensures type safety without requiring type assertions (as).
+ *
+ * @example Basic usage
+ * const orderId = createAggregateId<"Order">("ord_123");
+ *
+ * @example With auto-prefixing
+ * const orderId = createAggregateId<"Order">("123", "ord");
+ */
+export function createAggregateId<T extends string>(
+  id: string,
+  prefix?: string
+): AggregateId<T> {
+  // If prefix is provided and id doesn't already start with it, add the prefix
+  const finalId =
+    prefix && !id.startsWith(`${prefix}_`) ? `${prefix}_${id}` : id;
+
+  return finalId as AggregateId<T>; // Type assertion is encapsulated in this helper
+}
+
+/**
  * Marker for optimistic concurrency control.
  * - CRUD: version = row_version (incremented per successful commit)
  * - ES:   version = last event position (or stream revision)

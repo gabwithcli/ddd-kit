@@ -45,7 +45,10 @@
         "clean": "rimraf dist",
         "typecheck": "tsc --noEmit",
         "lint": "echo \"(add eslint if you want)\"",
-        "prepublishOnly": "npm run clean && npm run build && npm run typecheck"
+        "prepublishOnly": "npm run clean && npm run build && npm run typecheck",
+        "version:bump": "npm version patch && git push && git push --tags",
+        "publish:dry": "npm publish --dry-run",
+        "publish": "npm publish"
     },
     "dependencies": {
         "@hono/zod-openapi": "^0.16.0",
