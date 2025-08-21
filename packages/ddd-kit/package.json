@@ -1,17 +1,17 @@
 {
-    "name": "@acme/ddd-kit",
+    "name": "ddd-kit",
     "version": "0.0.1",
     "private": false,
-    "description": "Lightweight CQRS/DDD helpers: Result, domain errors, idempotency orchestration, request handler, and test doubles.",
+    "description": "A toolkit for Domain-Driven Design in TypeScript.",
     "license": "MIT",
-    "author": "Acme",
+    "author": "Gabriele Concli <gabriele.concli@gmail.com>",
     "repository": {
         "type": "git",
-        "url": "https://github.com/your-org/ddd-kit.git"
+        "url": "https://github.com/therealgabryx/ddd-kit.git"
     },
-    "homepage": "https://github.com/your-org/ddd-kit#readme",
+    "homepage": "https://github.com/therealgabryx/ddd-kit#readme",
     "bugs": {
-        "url": "https://github.com/your-org/ddd-kit/issues"
+        "url": "https://github.com/therealgabryx/ddd-kit/issues"
     },
     "type": "module",
     "main": "./dist/index.cjs",
