@@ -15,27 +15,27 @@ export const updateRealEstatePurchaseRoute = createRoute({
   summary: "Update the initial purchase details of an asset",
   request: {
     body: openapiJsonContent(
-      updateRealEstatePurchasePayloadSchema,
-      "The initial purchase details of the real estate asset to update."
+      "The initial purchase details of the real estate asset to update.",
+      updateRealEstatePurchasePayloadSchema
     ),
   },
   responses: {
     [HttpStatus.OK]: {
       ...openapiJsonContent(
-        SuccessResponseSchema,
-        `${HttpPhrases.OK}: Asset purchase updated successfully.`
+        `${HttpPhrases.OK}: Asset purchase updated successfully.`,
+        SuccessResponseSchema
       ),
     },
     [HttpStatus.NOT_FOUND]: {
       ...openapiJsonContent(
-        ErrorResponseSchema,
-        `${HttpPhrases.NOT_FOUND}: The asset was not found.`
+        `${HttpPhrases.NOT_FOUND}: The asset was not found.`,
+        ErrorResponseSchema
       ),
     },
     [HttpStatus.UNPROCESSABLE_ENTITY]: {
       ...openapiJsonContent(
-        ErrorResponseSchema,
-        `${HttpPhrases.UNPROCESSABLE_ENTITY}: A business rule was violated.`
+        `${HttpPhrases.UNPROCESSABLE_ENTITY}: A business rule was violated.`,
+        ErrorResponseSchema
       ),
     },
   },

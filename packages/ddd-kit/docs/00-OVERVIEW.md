@@ -2,11 +2,13 @@
 
 Welcome, colleague. You've found `@acme/ddd-kit`, a small collection of tools designed to distill the core patterns of **Domain-Driven Design** into a pragmatic toolkit. 
 
-This isn't a framework that will lock you in_ think of it as a set of sharp knives for the specific job of taming complex business logic.
+This isn't a framework that will lock you in: think of it as a set of sharp knives for the specific job of taming complex business logic.
 
 ### Philosophy
 
-In our small teams, we can't afford accidental complexity. We need code that is a direct conversation with our business experts. This kit is built on a few core beliefs:
+In our small teams we can't afford accidental complexity, and the code we create should directly model the business domain.
+
+For these reasons, this kit is built on a few core beliefs:
 
 1.  **The Domain is King**: Your business rules are the most valuable asset. The code should read like a clear statement of those rules. We put them inside **Aggregate Roots**, which act as protective bubbles for our logic.
 2.  **Clear Boundaries**: A request should do one thing and one thing only. We use the **Command** pattern to create a clear entry point for every business operation. The `CommandHandler` orchestrates the simple, predictable dance: **load, execute, save**.

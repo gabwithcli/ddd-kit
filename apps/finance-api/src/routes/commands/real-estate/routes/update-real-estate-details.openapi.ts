@@ -15,33 +15,33 @@ export const updateRealEstateDetailsRoute = createRoute({
   summary: "Update the details of a real estate asset",
   request: {
     body: openapiJsonContent(
-      updateRealEstateDetailsPayloadSchema,
-      "The details of the real estate asset to update."
+      "The details of the real estate asset to update.",
+      updateRealEstateDetailsPayloadSchema
     ),
   },
   responses: {
     [HttpStatus.OK]: {
       ...openapiJsonContent(
-        SuccessResponseSchema,
-        `${HttpPhrases.OK}: Asset details updated successfully.`
+        `${HttpPhrases.OK}: Asset details updated successfully.`,
+        SuccessResponseSchema
       ),
     },
     [HttpStatus.NOT_FOUND]: {
       ...openapiJsonContent(
-        ErrorResponseSchema,
-        `${HttpPhrases.NOT_FOUND}: The asset was not found.`
+        `${HttpPhrases.NOT_FOUND}: The asset was not found.`,
+        ErrorResponseSchema
       ),
     },
     [HttpStatus.UNPROCESSABLE_ENTITY]: {
       ...openapiJsonContent(
-        ErrorResponseSchema,
-        `${HttpPhrases.UNPROCESSABLE_ENTITY}: A business rule was violated.`
+        `${HttpPhrases.UNPROCESSABLE_ENTITY}: A business rule was violated.`,
+        ErrorResponseSchema
       ),
     },
     [HttpStatus.BAD_REQUEST]: {
       ...openapiJsonContent(
-        ErrorResponseSchema,
-        `${HttpPhrases.BAD_REQUEST}: The request body is invalid.`
+        `${HttpPhrases.BAD_REQUEST}: The request body is invalid.`,
+        ErrorResponseSchema
       ),
     },
   },

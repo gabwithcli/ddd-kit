@@ -33,3 +33,26 @@ export type CreateRealEstateAssetCommand = z.infer<
 >;
 export type CreateRealEstateAssetCommandPayload =
   CreateRealEstateAssetCommand["payload"];
+
+// We create a sample payload that conforms to our Zod schema.
+// This object will be used to pre-populate the request body in API documentation tools.
+// It's a great way to provide a sensible default for anyone testing the endpoint.
+export const createRealEstateAssetPayloadExample = {
+  details: {
+    name: "Example Real Estate Asset",
+    address: {
+      line1: "123 Main Street",
+      line2: "Apt 4B",
+      postalCode: "12345",
+      city: "Anytown",
+      state: "NY",
+      country: "USA",
+    },
+    notes: "Example notes about the asset",
+    baseCurrency: "USD",
+  },
+  purchase: {
+    date: "2023-10-26",
+    value: 250_000,
+  },
+} satisfies CreateRealEstateAssetCommandPayload;

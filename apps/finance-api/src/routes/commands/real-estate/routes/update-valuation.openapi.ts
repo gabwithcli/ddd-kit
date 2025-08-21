@@ -15,21 +15,21 @@ export const updateValuationRoute = createRoute({
   summary: "Update an existing formal valuation on an asset",
   request: {
     body: openapiJsonContent(
-      updateValuationPayloadSchema,
-      "The valuation details to update on the real estate asset."
+      "The valuation details to update on the real estate asset.",
+      updateValuationPayloadSchema
     ),
   },
   responses: {
     [HttpStatus.OK]: {
       ...openapiJsonContent(
-        SuccessResponseSchema,
-        `${HttpPhrases.OK}: Valuation updated successfully.`
+        `${HttpPhrases.OK}: Valuation updated successfully.`,
+        SuccessResponseSchema
       ),
     },
     [HttpStatus.NOT_FOUND]: {
       ...openapiJsonContent(
-        ErrorResponseSchema,
-        `${HttpPhrases.NOT_FOUND}: The asset or valuation was not found.`
+        `${HttpPhrases.NOT_FOUND}: The asset or valuation was not found.`,
+        ErrorResponseSchema
       ),
     },
   },

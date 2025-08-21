@@ -1,4 +1,3 @@
-import { createRoute } from "@hono/zod-openapi";
 import {
   ErrorResponseSchema,
   HttpPhrases,
@@ -6,6 +5,7 @@ import {
   openapiJsonContent,
   SuccessResponseSchema,
 } from "@acme/ddd-kit";
+import { createRoute } from "@hono/zod-openapi";
 import { addAppraisalPayloadSchema } from "../../../../application/commands/real-estate/add-appraisal/add-appraisal.schema";
 
 export const addAppraisalRoute = createRoute({
@@ -15,27 +15,27 @@ export const addAppraisalRoute = createRoute({
   summary: "Add an appraisal to a real estate asset",
   request: {
     body: openapiJsonContent(
-      addAppraisalPayloadSchema,
-      "The appraisal details to add to the real estate asset."
+      "The appraisal details to add to the real estate asset.",
+      addAppraisalPayloadSchema
     ),
   },
   responses: {
     [HttpStatus.CREATED]: {
       ...openapiJsonContent(
-        SuccessResponseSchema,
-        `${HttpPhrases.CREATED}: Appraisal added successfully.`
+        `${HttpPhrases.CREATED}: Appraisal added successfully.`,
+        SuccessResponseSchema
       ),
     },
     [HttpStatus.NOT_FOUND]: {
       ...openapiJsonContent(
-        ErrorResponseSchema,
-        `${HttpPhrases.NOT_FOUND}: The asset was not found.`
+        `${HttpPhrases.NOT_FOUND}: The asset was not found.`,
+        ErrorResponseSchema
       ),
     },
     [HttpStatus.UNPROCESSABLE_ENTITY]: {
       ...openapiJsonContent(
-        ErrorResponseSchema,
-        `${HttpPhrases.UNPROCESSABLE_ENTITY}: A business rule was violated.`
+        `${HttpPhrases.UNPROCESSABLE_ENTITY}: A business rule was violated.`,
+        ErrorResponseSchema
       ),
     },
   },

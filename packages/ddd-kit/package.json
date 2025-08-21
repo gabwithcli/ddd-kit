@@ -48,6 +48,7 @@
         "prepublishOnly": "npm run clean && npm run build && npm run typecheck"
     },
     "dependencies": {
+        "@hono/zod-openapi": "^0.16.0",
         "stoker": "^2.0.1"
     },
     "peerDependencies": {

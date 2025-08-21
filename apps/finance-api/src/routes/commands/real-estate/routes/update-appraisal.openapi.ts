@@ -15,27 +15,27 @@ export const updateAppraisalRoute = createRoute({
   summary: "Update an existing appraisal on an asset",
   request: {
     body: openapiJsonContent(
-      updateAppraisalPayloadSchema,
-      "The appraisal details to update on the real estate asset."
+      "The appraisal details to update on the real estate asset.",
+      updateAppraisalPayloadSchema
     ),
   },
   responses: {
     [HttpStatus.OK]: {
       ...openapiJsonContent(
-        SuccessResponseSchema,
-        `${HttpPhrases.OK}: Appraisal updated successfully.`
+        `${HttpPhrases.OK}: Appraisal updated successfully.`,
+        SuccessResponseSchema
       ),
     },
     [HttpStatus.NOT_FOUND]: {
       ...openapiJsonContent(
-        ErrorResponseSchema,
-        `${HttpPhrases.NOT_FOUND}: The asset or appraisal was not found.`
+        `${HttpPhrases.NOT_FOUND}: The asset or appraisal was not found.`,
+        ErrorResponseSchema
       ),
     },
     [HttpStatus.UNPROCESSABLE_ENTITY]: {
       ...openapiJsonContent(
-        ErrorResponseSchema,
-        `${HttpPhrases.UNPROCESSABLE_ENTITY}: A business rule was violated.`
+        `${HttpPhrases.UNPROCESSABLE_ENTITY}: A business rule was violated.`,
+        ErrorResponseSchema
       ),
     },
   },

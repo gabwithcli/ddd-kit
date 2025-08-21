@@ -15,21 +15,21 @@ export const deleteValuationRoute = createRoute({
   summary: "Delete a formal valuation from an asset",
   request: {
     body: openapiJsonContent(
+      "The ID of the valuation to delete from the real estate asset.",
       deleteValuationPayloadSchema,
-      "The ID of the valuation to delete from the real estate asset."
     ),
   },
   responses: {
     [HttpStatus.OK]: {
       ...openapiJsonContent(
+        `${HttpPhrases.OK}: Valuation deleted successfully.`,
         SuccessResponseSchema,
-        `${HttpPhrases.OK}: Valuation deleted successfully.`
       ),
     },
     [HttpStatus.NOT_FOUND]: {
       ...openapiJsonContent(
+        `${HttpPhrases.NOT_FOUND}: The asset or valuation was not found.`,
         ErrorResponseSchema,
-        `${HttpPhrases.NOT_FOUND}: The asset or valuation was not found.`
       ),
     },
   },

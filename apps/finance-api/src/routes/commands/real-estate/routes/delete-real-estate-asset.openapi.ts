@@ -15,21 +15,21 @@ export const deleteRealEstateAssetRoute = createRoute({
   summary: "Delete a real estate asset",
   request: {
     body: openapiJsonContent(
-      deleteRealEstateAssetPayloadSchema,
-      "The ID of the real estate asset to delete."
+      "The ID of the real estate asset to delete.",
+      deleteRealEstateAssetPayloadSchema
     ),
   },
   responses: {
     [HttpStatus.OK]: {
       ...openapiJsonContent(
-        SuccessResponseSchema,
-        `${HttpPhrases.OK}: Asset deleted successfully.`
+        `${HttpPhrases.OK}: Asset deleted successfully.`,
+        SuccessResponseSchema
       ),
     },
     [HttpStatus.NOT_FOUND]: {
       ...openapiJsonContent(
-        ErrorResponseSchema,
-        `${HttpPhrases.NOT_FOUND}: The specified asset was not found.`
+        `${HttpPhrases.NOT_FOUND}: The specified asset was not found.`,
+        ErrorResponseSchema
       ),
     },
   },

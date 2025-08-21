@@ -15,21 +15,21 @@ export const addValuationRoute = createRoute({
   summary: "Add a formal valuation to a real estate asset",
   request: {
     body: openapiJsonContent(
-      addValuationPayloadSchema,
-      "The valuation details to add to the real estate asset."
+      "The valuation details to add to the real estate asset.",
+      addValuationPayloadSchema
     ),
   },
   responses: {
     [HttpStatus.CREATED]: {
       ...openapiJsonContent(
-        SuccessResponseSchema,
-        `${HttpPhrases.CREATED}: Valuation added successfully.`
+        `${HttpPhrases.CREATED}: Valuation added successfully.`,
+        SuccessResponseSchema
       ),
     },
     [HttpStatus.NOT_FOUND]: {
       ...openapiJsonContent(
-        ErrorResponseSchema,
-        `${HttpPhrases.NOT_FOUND}: The asset was not found.`
+        `${HttpPhrases.NOT_FOUND}: The asset was not found.`,
+        ErrorResponseSchema
       ),
     },
   },
