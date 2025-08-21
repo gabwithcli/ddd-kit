@@ -1,11 +1,11 @@
+import { createRoute } from "@hono/zod-openapi";
 import {
   ErrorResponseSchema,
   HttpPhrases,
   HttpStatus,
   openapiJsonContent,
   SuccessResponseSchema,
-} from "@acme/ddd-kit";
-import { createRoute } from "@hono/zod-openapi";
+} from "ddd-kit";
 import { deleteRealEstateAssetPayloadSchema } from "../../../../application/commands/real-estate/delete-real-estate-asset/delete-real-estate-asset.schema";
 
 export const deleteRealEstateAssetRoute = createRoute({

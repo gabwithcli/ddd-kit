@@ -1,13 +1,13 @@
 {
     "name": "ddd-kit",
-    "version": "0.0.1",
+    "version": "0.0.4",
     "private": false,
     "description": "A toolkit for Domain-Driven Design in TypeScript.",
     "license": "MIT",
     "author": "Gabriele Concli <gabriele.concli@gmail.com>",
     "repository": {
         "type": "git",
-        "url": "https://github.com/therealgabryx/ddd-kit.git"
+        "url": "git+https://github.com/therealgabryx/ddd-kit.git"
     },
     "homepage": "https://github.com/therealgabryx/ddd-kit#readme",
     "bugs": {

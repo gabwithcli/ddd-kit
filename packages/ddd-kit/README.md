@@ -1,4 +1,4 @@
-# @acme/ddd-kit: A Pragmatic DDD Toolkit
+# ddd-kit: A Pragmatic DDD Toolkit
 
 A small collection of sharp, focused tools for taming complex business logic in TypeScript. This isn't a framework; it's a set of patterns, inspired by the **Domain-Driven Design (DDD) philosophy**, to help you build robust, maintainable, and testable applications. 
 

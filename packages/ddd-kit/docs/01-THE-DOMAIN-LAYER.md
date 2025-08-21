@@ -49,7 +49,7 @@ The `ddd-kit` provides base classes for these concepts. The `ValueObject` even h
 
 ```typescript
 // apps/finance-api/src/domain/real-estate/types.ts
-import { ValueObject } from "@acme/ddd-kit/domain";
+import { ValueObject } from "ddd-kit/domain";
 
 export class Address extends ValueObject<{
   line1: string;
@@ -70,7 +70,7 @@ Invariants are rules that must always be true. The best place to enforce them is
 
 ```typescript
 // apps/finance-api/src/domain/real-estate/real-estate.aggregate.ts
-import { invariants } from "@acme/ddd-kit/domain";
+import { invariants } from "ddd-kit/domain";
 
 export class RealEstate extends AggregateRoot {
   // ... properties and methods ...

@@ -20,7 +20,7 @@ You would typically apply this wrapper at the edge of your system, just before c
 
 ```typescript
 // A simplified example of how you might wire it up.
-import { withIdempotency, UnitOfWork, IdempotencyStore } from "@acme/ddd-kit";
+import { withIdempotency, UnitOfWork, IdempotencyStore } from "ddd-kit";
 
 async function handleApiRequest(
     commandName: string,

@@ -14,9 +14,6 @@ importers:
 
   apps/finance-api:
     dependencies:
-      '@acme/ddd-kit':
-        specifier: workspace:*
-        version: link:../../packages/ddd-kit
       '@hono/node-server':
         specifier: ^1.4.0
         version: 1.18.2(hono@4.9.1)
@@ -29,6 +26,9 @@ importers:
       '@scalar/hono-api-reference':
         specifier: ^0.9.13
         version: 0.9.13(hono@4.9.1)
+      ddd-kit:
+        specifier: ^0.0.4
+        version: 0.0.4(@asteasolutions/zod-to-openapi@7.3.4(zod@3.25.76))(hono@4.9.1)(openapi3-ts@4.5.0)(zod@3.25.76)
       drizzle-orm:
         specifier: ^0.44.4
         version: 0.44.4(@types/better-sqlite3@7.6.13)(@types/pg@8.15.5)(better-sqlite3@12.2.0)(pg@8.16.3)
@@ -674,6 +674,12 @@ packages:
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
+
+  ddd-kit@0.0.4:
+    resolution: {integrity: sha512-QKCb5LzGoTspXWxodc+sctoM5rRfNOmVZJsT3alU4Gy+c6Qnm06sv+GJw2UIoRNeh372JJCdioWqOfZpXsGF1w==}
+    engines: {node: '>=18.17'}
+    peerDependencies:
+      zod: ^3.23.0
 
   debug@4.4.1:
     resolution: {integrity: sha512-KcKCqiftBJcZr++7ykoDIEwSa3XWowTfNPo92BYxjXiyYEVrUQh2aLyhxBCwww+heortUFxEJYcRzosstTEBYQ==}
@@ -1703,6 +1709,16 @@ snapshots:
       path-key: 3.1.1
       shebang-command: 2.0.0
       which: 2.0.2
+
+  ddd-kit@0.0.4(@asteasolutions/zod-to-openapi@7.3.4(zod@3.25.76))(hono@4.9.1)(openapi3-ts@4.5.0)(zod@3.25.76):
+    dependencies:
+      '@hono/zod-openapi': 0.16.4(hono@4.9.1)(zod@3.25.76)
+      stoker: 2.0.1(@asteasolutions/zod-to-openapi@7.3.4(zod@3.25.76))(@hono/zod-openapi@0.16.4(hono@4.9.1)(zod@3.25.76))(hono@4.9.1)(openapi3-ts@4.5.0)
+      zod: 3.25.76
+    transitivePeerDependencies:
+      - '@asteasolutions/zod-to-openapi'
+      - hono
+      - openapi3-ts
 
   debug@4.4.1:
     dependencies:

@@ -6,7 +6,7 @@ This monorepo contains a pragmatic toolkit for Domain-Driven Design in TypeScrip
 
 This project is organized into two main packages: a reusable library and an example implementation.
 
-### 🛠️ `@acme/ddd-kit` (The Toolkit)
+### 🛠️ `ddd-kit` (The Toolkit)
 
 A small collection of sharp, focused tools for taming complex business logic. It provides the core patterns of DDD (Aggregates, Commands, Repositories) without locking you into a framework.
 

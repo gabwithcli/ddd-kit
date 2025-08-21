@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 // The AbstractCrudRepository provides the shared `save` logic, so this class
 // only needs to worry about the database-specific implementation details.
-import { AbstractCrudRepository, Tx } from "@acme/ddd-kit";
+import { AbstractCrudRepository, Tx } from "ddd-kit";
 // The RealEstate aggregate is our rich domain model. This repository's job
 // is to translate this object to and from the database.
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";

@@ -26,7 +26,7 @@ Here's a real-world example from our `finance-api`. Notice how it's just a plain
 
 ```typescript
 // apps/finance-api/src/application/commands/real-estate/add-appraisal/add-appraisal.command.ts
-import { ICommand, CommandOutput, ok, Result } from "@acme/ddd-kit";
+import { ICommand, CommandOutput, ok, Result } from "ddd-kit";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
 import { Money } from "../../../../domain/shared/money";
 

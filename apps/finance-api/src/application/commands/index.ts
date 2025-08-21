@@ -4,7 +4,7 @@ import {
   AggregateRepository,
   CommandHandler,
   ConsoleEventPublisher,
-} from "@acme/ddd-kit";
+} from "ddd-kit";
 import { AppEnv } from "../../adapters/hono/types";
 import { RealEstate } from "../../domain/real-estate/real-estate.aggregate";
 import { PersistenceLayer } from "../../infra/persistence";

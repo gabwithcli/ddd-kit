@@ -1,6 +1,6 @@
-# @acme/ddd-kit: A Pragmatic DDD Toolkit
+# ddd-kit: A Pragmatic DDD Toolkit
 
-Welcome, colleague. You've found `@acme/ddd-kit`, a small collection of tools designed to distill the core patterns of **Domain-Driven Design** into a pragmatic toolkit. 
+Welcome, colleague. You've found `ddd-kit`, a small collection of tools designed to distill the core patterns of **Domain-Driven Design** into a pragmatic toolkit. 
 
 This isn't a framework that will lock you in: think of it as a set of sharp knives for the specific job of taming complex business logic.
 

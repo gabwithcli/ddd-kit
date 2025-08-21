@@ -14,7 +14,7 @@ It creates a function that performs a sequence of steps:
 Here's how `finance-api` uses it to create a single, powerful handler for *all* `RealEstate` commands:
 ```typescript
 // apps/finance-api/src/adapters/hono/commands/real-estate/real-estate.commands.api-handler.ts
-import { authFromContext, makeRequestHandler } from "@acme/ddd-kit";
+import { authFromContext, makeRequestHandler } from "ddd-kit";
 import { RealEstateCommandRequest } from "../../../../application/commands/real-estate/commands.schema";
 
 export const realEstateApiHandler = makeRequestHandler({
@@ -60,7 +60,7 @@ This makes your route definitions incredibly concise and consistent.
 
 ```typescript
 // apps/finance-api/src/routes/commands/real-estate/real-estate.commands.routes.ts
-import { HttpStatus, respond } from "@acme/ddd-kit";
+import { HttpStatus, respond } from "ddd-kit";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { realEstateApiHandler } from "...";
 import { createRealEstateAssetRoute } from "./routes/create-real-estate-asset.openapi";

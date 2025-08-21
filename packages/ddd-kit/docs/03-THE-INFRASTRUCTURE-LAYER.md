@@ -29,7 +29,7 @@ Here's a snippet from the `finance-api`'s PostgreSQL repository:
 
 ```typescript
 // apps/finance-api/src/infra/persistence/postgres/real-estate/real-estate.repo.postgres.ts
-import { AbstractCrudRepository } from "@acme/ddd-kit";
+import { AbstractCrudRepository } from "ddd-kit";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
 // ... other imports
 
@@ -70,7 +70,7 @@ The `CommandHandler` uses this internally, so you get transactional safety for f
 
 ```typescript
 // apps/finance-api/src/infra/persistence/postgres/uow.postgres.ts
-import { UnitOfWork } from "@acme/ddd-kit";
+import { UnitOfWork } from "ddd-kit";
 import { db } from "./db";
 
 export const PostgresUoW: UnitOfWork = {

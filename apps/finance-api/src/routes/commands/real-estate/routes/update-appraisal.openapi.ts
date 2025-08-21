@@ -1,11 +1,11 @@
+import { createRoute } from "@hono/zod-openapi";
 import {
   ErrorResponseSchema,
   HttpPhrases,
   HttpStatus,
   openapiJsonContent,
   SuccessResponseSchema,
-} from "@acme/ddd-kit";
-import { createRoute } from "@hono/zod-openapi";
+} from "ddd-kit";
 import { updateAppraisalPayloadSchema } from "../../../../application/commands/real-estate/update-appraisal/update-appraisal.schema";
 
 export const updateAppraisalRoute = createRoute({

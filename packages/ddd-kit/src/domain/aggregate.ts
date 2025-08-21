@@ -5,7 +5,7 @@ import type { DomainEvent } from "../application/command";
  * re-export DomainInvariantError and other shared errors,
  * so apps can just write:
  *
- * import { AggregateRoot, DomainInvariantError } from "@acme/ddd-kit/domain";
+ * import { AggregateRoot, DomainInvariantError } from "ddd-kit/domain";
  *
  */
 export * from "../shared/errors"; // re-export DomainInvariantError (and other shared errors)
