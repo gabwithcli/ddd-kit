@@ -1,17 +1,17 @@
 {
     "name": "ddd-kit",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "private": false,
     "description": "A toolkit for Domain-Driven Design in TypeScript.",
     "license": "MIT",
     "author": "Gabriele Concli <gabriele.concli@gmail.com>",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/therealgabryx/ddd-kit.git"
+        "url": "git+https://github.com/gabwithcli/ddd-kit.git"
     },
-    "homepage": "https://github.com/therealgabryx/ddd-kit#readme",
+    "homepage": "https://github.com/gabwithcli/ddd-kit#readme",
     "bugs": {
-        "url": "https://github.com/therealgabryx/ddd-kit/issues"
+        "url": "https://github.com/gabwithcli/ddd-kit/issues"
     },
     "type": "module",
     "main": "./dist/index.cjs",
@@ -45,10 +45,7 @@
         "clean": "rimraf dist",
         "typecheck": "tsc --noEmit",
         "lint": "echo \"(add eslint if you want)\"",
-        "prepublishOnly": "pnpm clean && pnpm build && pnpm typecheck",
-        "version:bump": "pnpm version patch && git push && git push --tags",
-        "publish:dry": "pnpm publish --dry-run",
-        "publish": "pnpm publish"
+        "prepublishOnly": "pnpm clean && pnpm build && pnpm typecheck"
     },
     "dependencies": {
         "@hono/zod-openapi": "^0.16.0",
