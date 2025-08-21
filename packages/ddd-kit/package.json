@@ -1,6 +1,6 @@
 {
     "name": "ddd-kit",
-    "version": "0.0.4",
+    "version": "0.0.6",
     "private": false,
     "description": "A toolkit for Domain-Driven Design in TypeScript.",
     "license": "MIT",
