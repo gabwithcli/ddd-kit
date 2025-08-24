@@ -9,7 +9,7 @@ import {
 import {
   createRealEstateAssetPayloadExample,
   createRealEstateAssetPayloadSchema,
-} from "../../../../application/commands/real-estate/create-real-estate-asset/create-real-estate-asset.schema";
+} from "../../../../application/commands/real-estate/create-real-estate-asset/create-real-estate-asset.command.example";
 
 export const createRealEstateAssetRoute = createRoute({
   method: "post",

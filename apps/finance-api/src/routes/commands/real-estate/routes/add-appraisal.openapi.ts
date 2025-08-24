@@ -6,7 +6,7 @@ import {
   openapiJsonContent,
   SuccessResponseSchema,
 } from "ddd-kit";
-import { addAppraisalPayloadSchema } from "../../../../application/commands/real-estate/add-appraisal/add-appraisal.schema";
+import { addAppraisalPayloadSchema } from "../../../../application/commands/real-estate/add-appraisal/add-appraisal.command.example";
 
 export const addAppraisalRoute = createRoute({
   method: "post",

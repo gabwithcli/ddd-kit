@@ -2,7 +2,7 @@ import { CommandOutput, ICommand, ok, Result } from "ddd-kit";
 import { z } from "zod";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
 import { Money } from "../../../../domain/shared/money";
-import { addAppraisalPayloadSchema } from "./add-appraisal.schema";
+import { addAppraisalPayloadSchema } from "./add-appraisal.command.schema";
 
 type CommandPayload = z.infer<typeof addAppraisalPayloadSchema>;
 

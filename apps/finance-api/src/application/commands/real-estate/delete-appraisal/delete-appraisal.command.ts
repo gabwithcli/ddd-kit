@@ -1,7 +1,7 @@
 import { CommandOutput, ICommand, ok, Result } from "ddd-kit";
 import { z } from "zod";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
-import { deleteAppraisalPayloadSchema } from "./delete-appraisal.schema";
+import { deleteAppraisalPayloadSchema } from "./delete-appraisal.command.schema";
 
 type CommandPayload = z.infer<typeof deleteAppraisalPayloadSchema>;
 type CommandResponse = { appraisalId: string; ok: true };

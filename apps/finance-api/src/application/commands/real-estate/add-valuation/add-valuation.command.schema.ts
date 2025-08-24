@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { realEstateCommandsListSchema } from "../commands.names";
+import { realEstateCommandsListSchema } from "../real-estate.commands";
 
 export const addValuationPayloadSchema = z.object({
   id: z.string().min(1, "Real estate asset ID is required"),
@@ -14,12 +14,3 @@ export const addValuationCommandSchema = z.object({
 
 export type AddValuationCommand = z.infer<typeof addValuationCommandSchema>;
 export type AddValuationCommandPayload = AddValuationCommand["payload"];
-
-// We create a sample payload that conforms to our Zod schema.
-// This object will be used to pre-populate the request body in API documentation tools.
-// It's a great way to provide a sensible default for anyone testing the endpoint.
-export const addValuationPayloadExample = {
-  id: "re_1234567890",
-  date: "2023-10-26",
-  value: 300_000,
-} satisfies AddValuationCommandPayload;

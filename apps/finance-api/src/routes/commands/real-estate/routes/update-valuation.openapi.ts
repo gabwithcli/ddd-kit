@@ -6,7 +6,7 @@ import {
   openapiJsonContent,
   SuccessResponseSchema,
 } from "ddd-kit";
-import { updateValuationPayloadSchema } from "../../../../application/commands/real-estate/update-valuation/update-valuation.schema";
+import { updateValuationPayloadSchema } from "../../../../application/commands/real-estate/update-valuation/update-valuation.command.example";
 
 export const updateValuationRoute = createRoute({
   method: "post",

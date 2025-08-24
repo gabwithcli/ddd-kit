@@ -2,7 +2,7 @@ import { CommandOutput, ICommand, ok, Result } from "ddd-kit";
 import { z } from "zod";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
 import { Address } from "../../../../domain/real-estate/types";
-import { updateRealEstateDetailsPayloadSchema } from "./update-real-estate-details.schema";
+import { updateRealEstateDetailsPayloadSchema } from "./update-real-estate-details.command.schema";
 
 type CommandPayload = z.infer<typeof updateRealEstateDetailsPayloadSchema>;
 type CommandResponse = { id: string; ok: true };

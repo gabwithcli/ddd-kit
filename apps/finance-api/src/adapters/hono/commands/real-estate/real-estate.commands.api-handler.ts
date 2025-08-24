@@ -2,7 +2,7 @@
 
 import { authFromContext, makeRequestHandler } from "ddd-kit";
 import { type Context } from "hono";
-import { RealEstateCommandRequest } from "../../../../application/commands/real-estate/commands.schema";
+import { RealEstateCommandRequest } from "../../../../application/commands/real-estate/real-estate.commands";
 import { Vars } from "../../types";
 
 type Ctx = Context<{ Variables: Vars }>;

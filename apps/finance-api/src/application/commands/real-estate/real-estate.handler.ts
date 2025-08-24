@@ -10,11 +10,11 @@ import {
 import { RealEstate } from "../../../domain/real-estate/real-estate.aggregate";
 import { AddAppraisalCommand } from "./add-appraisal/add-appraisal.command";
 import { AddValuationCommand } from "./add-valuation/add-valuation.command";
-import { RealEstateCommandsList } from "./commands.names";
 import { CreateRealEstateAssetCommand } from "./create-real-estate-asset/create-real-estate-asset.command";
 import { DeleteAppraisalCommand } from "./delete-appraisal/delete-appraisal.command";
 import { DeleteRealEstateAssetCommand } from "./delete-real-estate-asset/delete-real-estate-asset.command";
 import { DeleteValuationCommand } from "./delete-valuation/delete-valuation.command";
+import { RealEstateCommandsList } from "./real-estate.commands";
 import { UpdateAppraisalCommand } from "./update-appraisal/update-appraisal.command";
 import { UpdateRealEstateDetailsCommand } from "./update-real-estate-details/update-real-estate-details.command";
 import { UpdateRealEstatePurchaseCommand } from "./update-real-estate-purchase/update-real-estate-purchase.command";
@@ -55,7 +55,8 @@ export class RealEstateCommandHandler extends CommandHandler<
 
   constructor(deps: HandlerDependencies) {
     // The generic `CommandHandler` is designed to accept any `AggregateRepository`.
-    super(deps.repo, deps.uow);
+    // We must pass all dependencies, including the eventPublisher, to the base class.
+    super(deps.repo, deps.uow, deps.eventPublisher);
 
     // We instantiate and map all commands for this aggregate here.
     // The command objects operate on the aggregate in memory and are unaware of how it's loaded or saved.

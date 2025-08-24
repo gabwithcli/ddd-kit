@@ -6,7 +6,7 @@ import {
   openapiJsonContent,
   SuccessResponseSchema,
 } from "ddd-kit";
-import { deleteAppraisalPayloadSchema } from "../../../../application/commands/real-estate/delete-appraisal/delete-appraisal.schema";
+import { deleteAppraisalPayloadSchema } from "../../../../application/commands/real-estate/delete-appraisal/delete-appraisal.command.example";
 
 export const deleteAppraisalRoute = createRoute({
   method: "post",

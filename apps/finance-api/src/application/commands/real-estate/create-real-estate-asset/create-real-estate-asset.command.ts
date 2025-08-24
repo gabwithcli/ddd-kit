@@ -9,7 +9,7 @@ import { z } from "zod";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
 import { Address } from "../../../../domain/real-estate/types";
 import { Money } from "../../../../domain/shared/money";
-import { createRealEstateAssetPayloadSchema } from "./create-real-estate-asset.schema";
+import { createRealEstateAssetPayloadSchema } from "./create-real-estate-asset.command.schema";
 
 type CommandPayload = z.infer<typeof createRealEstateAssetPayloadSchema> & {
   userId: string;

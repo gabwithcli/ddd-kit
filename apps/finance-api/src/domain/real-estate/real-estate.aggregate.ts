@@ -3,11 +3,9 @@
 import {
   AggregateId,
   AggregateRoot,
-  DomainInvariantError,
   invariants,
-} from "../../../../../packages/ddd-kit/dist/domain";
+} from "../../../../../packages/ddd-kit/dist/domain"; /// ----> check this
 import { Money } from "../shared/money";
-// ## CHANGE ##: We now import our new, type-safe event definition.
 import { RealEstateEvent } from "./real-estate.events";
 import type {
   Appraisal,
@@ -51,12 +49,28 @@ export class RealEstate extends AggregateRoot {
       null
     );
 
-    agg.recordEvent("RealEstateAssetCreated", {
-      id: args.id,
-      userId: args.userId,
-      details: args.details,
-      purchase: args.purchase,
-      at: args.createdAt,
+    agg.recordEvent({
+      // The event type now includes the version suffix.
+      type: "RealEstateAssetCreated_V1",
+      data: {
+        id: args.id,
+        userId: args.userId,
+        details: {
+          name: args.details.name,
+          address: args.details.address.props,
+          notes: args.details.notes,
+          baseCurrency: args.details.baseCurrency,
+        },
+        purchase: {
+          date: args.purchase.date,
+          value: args.purchase.value.props,
+        },
+        at: args.createdAt,
+      },
+      meta: {
+        version: 1,
+        timestamp: args.createdAt,
+      },
     });
 
     return agg;
@@ -72,7 +86,6 @@ export class RealEstate extends AggregateRoot {
     valuations: Valuation[];
     deletedAt?: Date | null;
   }) {
-    // ... (constructor call is the same)
     const agg = new RealEstate(
       s.id,
       s.userId,
@@ -115,9 +128,19 @@ export class RealEstate extends AggregateRoot {
     this.ensureIsNotDeleted("updateDetails");
 
     this._details = { ...this._details, ...newDetails };
-    this.recordEvent("RealEstateAssetDetailsUpdated", {
-      id: this.id,
-      changes: newDetails,
+    this.recordEvent({
+      type: "RealEstateAssetDetailsUpdated_V1",
+      data: {
+        id: this.id,
+        changes: {
+          ...newDetails,
+          address: newDetails.address ? newDetails.address.props : undefined,
+        },
+      },
+      meta: {
+        version: 1,
+        timestamp: new Date(),
+      },
     });
   }
 
@@ -126,9 +149,19 @@ export class RealEstate extends AggregateRoot {
     const proposedPurchase = { ...this._purchase, ...newPurchaseData };
     this._purchase = proposedPurchase;
 
-    this.recordEvent("RealEstateAssetPurchaseUpdated", {
-      id: this.id,
-      purchase: this._purchase,
+    this.recordEvent({
+      type: "RealEstateAssetPurchaseUpdated_V1",
+      data: {
+        id: this.id,
+        purchase: {
+          date: this._purchase.date,
+          value: this._purchase.value.props,
+        },
+      },
+      meta: {
+        version: 1,
+        timestamp: new Date(),
+      },
     });
   }
 
@@ -137,15 +170,36 @@ export class RealEstate extends AggregateRoot {
       return;
     }
     this._deletedAt = deletedAt;
-    this.recordEvent("RealEstateAssetDeleted", { id: this.id, at: deletedAt });
+    this.recordEvent({
+      type: "RealEstateAssetDeleted_V1",
+      data: { id: this.id, at: deletedAt },
+      meta: {
+        version: 1,
+        timestamp: deletedAt,
+      },
+    });
   }
 
   public addAppraisal(appraisal: Appraisal) {
     this.ensureIsNotDeleted("addAppraisal");
-    this.runValuationInvariants(appraisal, "addAppraisal");
+    this.runAppraisalInvariants(appraisal, "addAppraisal");
     this._appraisals.push(appraisal);
     this._appraisals.sort((a, b) => a.date.localeCompare(b.date));
-    this.recordEvent("RealEstateAppraisalAdded", { id: this.id, appraisal });
+    this.recordEvent({
+      type: "RealEstateAppraisalAdded_V1",
+      data: {
+        id: this.id,
+        appraisal: {
+          id: appraisal.id,
+          date: appraisal.date,
+          value: appraisal.value.props,
+        },
+      },
+      meta: {
+        version: 1,
+        timestamp: new Date(),
+      },
+    });
   }
 
   public updateAppraisal(
@@ -153,40 +207,70 @@ export class RealEstate extends AggregateRoot {
     data: Partial<{ date: string; value: Money }>
   ) {
     this.ensureIsNotDeleted("updateAppraisal");
+    let appraisalIndex = -1;
+    const appraisalMustExist = () => {
+      appraisalIndex = this._appraisals.findIndex((a) => a.id === appraisalId);
+      return appraisalIndex !== -1;
+    };
+    invariants({
+      aggregate: "RealEstate",
+      operation: "updateAppraisal",
+      id: this.id,
+    })
+      .must(
+        `Appraisal with ID ${appraisalId} not found.`,
+        "appraisal.not_found",
+        appraisalMustExist,
+        { appraisalId }
+      )
+      .throwIfAny();
 
-    const appraisalIndex = this._appraisals.findIndex(
-      (a) => a.id === appraisalId
-    );
-    if (appraisalIndex === -1) {
-      throw new DomainInvariantError(
-        `Appraisal with ID ${appraisalId} not found.`
-      );
-    }
     const updatedAppraisal = { ...this._appraisals[appraisalIndex], ...data };
-    this.runValuationInvariants(updatedAppraisal, "updateAppraisal");
+    this.runAppraisalInvariants(updatedAppraisal, "updateAppraisal");
     this._appraisals[appraisalIndex] = updatedAppraisal;
     this._appraisals.sort((a, b) => a.date.localeCompare(b.date));
 
-    this.recordEvent("RealEstateAppraisalUpdated", {
-      id: this.id,
-      appraisal: updatedAppraisal,
+    this.recordEvent({
+      type: "RealEstateAppraisalUpdated_V1",
+      data: {
+        id: this.id,
+        appraisal: {
+          id: updatedAppraisal.id,
+          date: updatedAppraisal.date,
+          value: updatedAppraisal.value.props,
+        },
+      },
+      meta: {
+        version: 1,
+        timestamp: new Date(),
+      },
     });
   }
 
   public removeAppraisal(appraisalId: string) {
     this.ensureIsNotDeleted("removeAppraisal");
-
     const initialCount = this._appraisals.length;
     this._appraisals = this._appraisals.filter((a) => a.id !== appraisalId);
-    if (this._appraisals.length === initialCount) {
-      throw new DomainInvariantError(
-        `Appraisal with ID ${appraisalId} not found.`
-      );
-    }
-
-    this.recordEvent("RealEstateAppraisalRemoved", {
+    invariants({
+      aggregate: "RealEstate",
+      operation: "removeAppraisal",
       id: this.id,
-      appraisalId,
+    })
+      .ensure(
+        `Appraisal with ID ${appraisalId} not found.`,
+        "appraisal.not_found",
+        this._appraisals.length < initialCount,
+        { appraisalId }
+      )
+      .throwIfAny();
+
+    this.recordEvent({
+      type: "RealEstateAppraisalRemoved_V1",
+      data: { id: this.id, appraisalId },
+      meta: {
+        version: 1,
+        timestamp: new Date(),
+      },
     });
   }
 
@@ -195,7 +279,21 @@ export class RealEstate extends AggregateRoot {
     this.runValuationInvariants(valuation, "addValuation");
     this._valuations.push(valuation);
     this._valuations.sort((a, b) => a.date.localeCompare(b.date));
-    this.recordEvent("RealEstateValuationAdded", { id: this.id, valuation });
+    this.recordEvent({
+      type: "RealEstateValuationAdded_V1",
+      data: {
+        id: this.id,
+        valuation: {
+          id: valuation.id,
+          date: valuation.date,
+          value: valuation.value.props,
+        },
+      },
+      meta: {
+        version: 1,
+        timestamp: new Date(),
+      },
+    });
   }
 
   public updateValuation(
@@ -203,52 +301,98 @@ export class RealEstate extends AggregateRoot {
     data: Partial<{ date: string; value: Money }>
   ) {
     this.ensureIsNotDeleted("updateValuation");
-
     const valuationIndex = this._valuations.findIndex(
       (v) => v.id === valuationId
     );
-    if (valuationIndex === -1) {
-      throw new DomainInvariantError(
-        `Valuation with ID ${valuationId} not found.`
-      );
-    }
+    invariants({
+      aggregate: "RealEstate",
+      operation: "updateValuation",
+      id: this.id,
+    })
+      .ensure(
+        `Valuation with ID ${valuationId} not found.`,
+        "valuation.not_found",
+        valuationIndex !== -1,
+        { valuationId }
+      )
+      .throwIfAny();
+
     const updatedValuation = { ...this._valuations[valuationIndex], ...data };
     this.runValuationInvariants(updatedValuation, "updateValuation");
     this._valuations[valuationIndex] = updatedValuation;
     this._valuations.sort((a, b) => a.date.localeCompare(b.date));
 
-    this.recordEvent("RealEstateValuationUpdated", {
-      id: this.id,
-      valuation: updatedValuation,
+    this.recordEvent({
+      type: "RealEstateValuationUpdated_V1",
+      data: {
+        id: this.id,
+        valuation: {
+          id: updatedValuation.id,
+          date: updatedValuation.date,
+          value: updatedValuation.value.props,
+        },
+      },
+      meta: {
+        version: 1,
+        timestamp: new Date(),
+      },
     });
   }
 
   public removeValuation(valuationId: string) {
     this.ensureIsNotDeleted("removeValuation");
-
     const initialCount = this._valuations.length;
     this._valuations = this._valuations.filter((v) => v.id !== valuationId);
-    if (this._valuations.length === initialCount) {
-      throw new DomainInvariantError(
-        `Valuation with ID ${valuationId} not found.`
-      );
-    }
-
-    this.recordEvent("RealEstateValuationRemoved", {
+    invariants({
+      aggregate: "RealEstate",
+      operation: "removeValuation",
       id: this.id,
-      valuationId,
+    })
+      .ensure(
+        `Valuation with ID ${valuationId} not found.`,
+        "valuation.not_found",
+        this._valuations.length < initialCount,
+        { valuationId }
+      )
+      .throwIfAny();
+
+    this.recordEvent({
+      type: "RealEstateValuationRemoved_V1",
+      data: { id: this.id, valuationId },
+      meta: {
+        version: 1,
+        timestamp: new Date(),
+      },
     });
   }
 
   // --- Private Helpers ---
 
   /**
-   * A private, type-safe wrapper around the base record method.
-   * This ensures we can only use event names defined in RealEstateEvent.
+   * This method is now fully type-safe. It only accepts a valid event object
+   * that conforms to our RealEstateEvent discriminated union.
    */
-  private recordEvent(type: RealEstateEvent, data: unknown) {
+  private recordEvent<T extends RealEstateEvent>(event: T) {
     // Calls the protected `record` method from the base AggregateRoot class.
-    super.record(type, data);
+    super.record(event);
+  }
+
+  private runAppraisalInvariants(
+    v: { date: string; value: Money },
+    operation: string
+  ) {
+    invariants({ aggregate: "RealEstate", operation, id: this.id })
+      .ensure(
+        "Appraisal date cannot be before purchase date.",
+        "appraisal.date_before_purchase",
+        new Date(v.date) >= new Date(this._purchase.date)
+      )
+      .ensure(
+        "Appraisal currency must match the asset's base currency.",
+        "appraisal.currency_mismatch",
+        v.value.currency === this._details.baseCurrency
+      )
+      .throwIfAny("RealEstate.Invalid");
   }
 
   private runValuationInvariants(
@@ -270,10 +414,13 @@ export class RealEstate extends AggregateRoot {
   }
 
   private ensureIsNotDeleted(operation: string) {
-    if (this.isDeleted) {
-      throw new DomainInvariantError(
-        `Cannot perform '${operation}' on a deleted asset.`
-      );
-    }
+    invariants({ aggregate: "RealEstate", operation, id: this.id })
+      .ensure(
+        `Cannot perform '${operation}' on a deleted asset.`,
+        "asset.is_deleted",
+        !this.isDeleted,
+        { deletedAt: this._deletedAt }
+      )
+      .throwIfAny();
   }
 }
