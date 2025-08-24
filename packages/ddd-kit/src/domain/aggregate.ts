@@ -93,16 +93,18 @@ export abstract class AggregateRoot<Id extends string = AggregateId<any>>
 {
   public version = 0;
 
-  // In-memory event buffer; handlers drain with pullEvents()
+  // The in-memory event buffer now stores the full DomainEvent object,
+  // including the `meta` property.
   protected readonly _events: Array<DomainEvent> = [];
 
   /**
    * Record a domain event.
-   * - In CRUD mode: you may publish these via outbox to keep analytics/read-sides in sync.
-   * - In ES mode: these are what you append to the event store.
+   * The concrete aggregate is responsible for constructing the full event object,
+   * including its type, data, and metadata. This base method simply adds it
+   * to the internal event buffer.
    */
-  protected record(type: string, data: unknown) {
-    this._events.push({ type, data });
+  protected record(event: DomainEvent) {
+    this._events.push(event);
   }
 
   /**
