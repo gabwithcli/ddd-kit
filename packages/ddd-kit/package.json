@@ -46,7 +46,7 @@
         "typecheck": "tsc --noEmit",
         "lint": "echo \"(add eslint if you want)\"",
         "prepublishOnly": "pnpm clean && pnpm build && pnpm typecheck",
-        "bump": "pnpm version patch",
+        "bump": "pnpm version patch & git add . && git commit -m \"build(ddd-kit): version bump\"",
         "prepub": "pnpm publish --dry-run",
         "pub": "pnpm publish"
     },
