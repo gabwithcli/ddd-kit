@@ -7,6 +7,7 @@
 import type { z } from "@hono/zod-openapi";
 import * as HttpStatus from "stoker/http-status-codes";
 import * as HttpPhrases from "stoker/http-status-phrases";
+import { z as zod } from "zod";
 
 /**
  * openapiJsonContent: A helper function to create the `content` part of an OpenAPI request/response
@@ -64,4 +65,23 @@ function openapiJsonContent<T extends ZodSchema>(
     description,
   };
 }
-export { HttpPhrases, HttpStatus, openapiJsonContent };
+
+/**
+ * Creates a reusable Zod schema object for the `Idempotency-Key` header.
+ * This is designed to be spread into a `z.object({})` schema.
+ * @param purpose - A short, specific description of what the key prevents (e.g., "Prevents creating duplicate assets.")
+ * @returns An object with the "idempotency-key" schema.
+ */
+const idempotencyKeyHeader = (purpose: string) => {
+  const baseDescription =
+    "A unique key to safely retry this request without performing the operation twice.";
+
+  return {
+    "idempotency-key": zod
+      .string()
+      .optional()
+      .describe(`${baseDescription} ${purpose}`),
+  };
+};
+
+export { HttpPhrases, HttpStatus, idempotencyKeyHeader, openapiJsonContent };
