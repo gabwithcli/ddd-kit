@@ -1,11 +1,9 @@
 {
   "compilerOptions": {
     // --- Project Type ---
-    "composite": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "emitDeclarationOnly": true,
 
     // --- Module System ---
     "module": "ESNext",
@@ -28,6 +26,5 @@
 
   // This is the most critical part that fixes the "file not listed" error.
   "include": ["src/**/*"],
-
   "exclude": ["node_modules", "dist"]
 }

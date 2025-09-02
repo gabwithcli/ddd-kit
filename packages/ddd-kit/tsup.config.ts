@@ -15,7 +15,8 @@ export default defineConfig({
   // Clean the 'dist' directory before building.
   clean: true,
 
-  dts: false,
+  // Telling tsup to handle d.ts file generation.
+  dts: true,
 
   treeshake: true,
   minify: false,

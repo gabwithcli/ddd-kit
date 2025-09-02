@@ -1,6 +1,6 @@
 {
     "name": "ddd-kit",
-    "version": "0.0.8",
+    "version": "0.0.9",
     "private": false,
     "description": "A toolkit for Domain-Driven Design in TypeScript.",
     "license": "MIT",
@@ -40,7 +40,7 @@
         "README.md"
     ],
     "scripts": {
-        "build": "pnpm clean && tsc --project tsconfig.json && tsup",
+        "build": "tsup",
         "dev": "tsup --watch",
         "clean": "rimraf dist",
         "typecheck": "tsc --noEmit",
