@@ -1,5 +1,6 @@
 {
     "name": "ddd-kit-root",
+    "type": "module",
     "private": true,
     "packageManager": "pnpm@9.0.0",
     "workspaces": [
@@ -7,7 +8,7 @@
         "apps/*"
     ],
     "scripts": {
-        "prepare": "husky install",
+        "prepare": "husky",
         "build": "pnpm -w -r --filter ./packages/* run build"
     },
     "pnpm": {
@@ -18,6 +19,8 @@
     },
     "version": "0.0.2",
     "devDependencies": {
+        "@commitlint/cli": "^19.8.1",
+        "@commitlint/config-conventional": "^19.8.1",
         "husky": "^9.1.7"
     }
 }

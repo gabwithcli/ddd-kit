@@ -1,4 +1,4 @@
-# pnpm -r typecheck
+npx commitlint --edit $1
 
 # decomment 'exit 1' to test the hook script and abort the Git command
 # exit 1 
