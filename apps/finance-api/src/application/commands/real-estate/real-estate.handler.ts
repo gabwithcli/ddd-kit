@@ -14,7 +14,7 @@ import { CreateRealEstateAssetCommand } from "./create-real-estate-asset/create-
 import { DeleteAppraisalCommand } from "./delete-appraisal/delete-appraisal.command";
 import { DeleteRealEstateAssetCommand } from "./delete-real-estate-asset/delete-real-estate-asset.command";
 import { DeleteValuationCommand } from "./delete-valuation/delete-valuation.command";
-import { RealEstateCommandsList } from "./real-estate.commands";
+import { RealEstateCommandsList } from "./real-estate.commands.names";
 import { UpdateAppraisalCommand } from "./update-appraisal/update-appraisal.command";
 import { UpdateRealEstateDetailsCommand } from "./update-real-estate-details/update-real-estate-details.command";
 import { UpdateRealEstatePurchaseCommand } from "./update-real-estate-purchase/update-real-estate-purchase.command";

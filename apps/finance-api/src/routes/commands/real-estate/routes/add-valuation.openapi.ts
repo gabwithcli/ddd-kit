@@ -6,7 +6,8 @@ import {
   openapiJsonContent,
   SuccessResponseSchema,
 } from "ddd-kit";
-import { addValuationPayloadSchema } from "../../../../application/commands/real-estate/add-valuation/add-valuation.command.example";
+import { addValuationPayloadSchema } from "src/application/commands/real-estate/add-valuation/add-valuation.command.schema";
+import { addValuationPayloadExample } from "../../../../application/commands/real-estate/add-valuation/add-valuation.command.example";
 
 export const addValuationRoute = createRoute({
   method: "post",
@@ -16,7 +17,8 @@ export const addValuationRoute = createRoute({
   request: {
     body: openapiJsonContent(
       "The valuation details to add to the real estate asset.",
-      addValuationPayloadSchema
+      addValuationPayloadSchema,
+      addValuationPayloadExample
     ),
   },
   responses: {

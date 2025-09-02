@@ -6,10 +6,8 @@ import {
   openapiJsonContent,
   SuccessResponseSchema,
 } from "ddd-kit";
-import {
-  createRealEstateAssetPayloadExample,
-  createRealEstateAssetPayloadSchema,
-} from "../../../../application/commands/real-estate/create-real-estate-asset/create-real-estate-asset.command.example";
+import { createRealEstateAssetPayloadSchema } from "src/application/commands/real-estate/create-real-estate-asset/create-real-estate-asset.command.schema";
+import { createRealEstateAssetPayloadExample } from "../../../../application/commands/real-estate/create-real-estate-asset/create-real-estate-asset.command.example";
 
 export const createRealEstateAssetRoute = createRoute({
   method: "post",

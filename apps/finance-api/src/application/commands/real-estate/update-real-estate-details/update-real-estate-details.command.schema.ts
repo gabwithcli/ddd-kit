@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { realEstateCommandsListSchema } from "../real-estate.commands";
+import { realEstateCommandsListSchema } from "../real-estate.commands.names";
 
 const addressSchema = z.object({
   line1: z.string().min(1, "Address line1 is required"),

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { realEstateCommandsListSchema } from "../real-estate.commands";
+import { realEstateCommandsListSchema } from "../real-estate.commands.names";
 
 export const updateAppraisalPayloadSchema = z
   .object({

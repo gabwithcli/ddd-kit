@@ -6,7 +6,8 @@ import {
   openapiJsonContent,
   SuccessResponseSchema,
 } from "ddd-kit";
-import { deleteValuationPayloadSchema } from "../../../../application/commands/real-estate/delete-valuation/delete-valuation.command.example";
+import { deleteValuationPayloadExample } from "src/application/commands/real-estate/delete-valuation/delete-valuation.command.example";
+import { deleteValuationPayloadSchema } from "src/application/commands/real-estate/delete-valuation/delete-valuation.command.schema";
 
 export const deleteValuationRoute = createRoute({
   method: "post",
@@ -16,7 +17,8 @@ export const deleteValuationRoute = createRoute({
   request: {
     body: openapiJsonContent(
       "The ID of the valuation to delete from the real estate asset.",
-      deleteValuationPayloadSchema
+      deleteValuationPayloadSchema,
+      deleteValuationPayloadExample
     ),
   },
   responses: {

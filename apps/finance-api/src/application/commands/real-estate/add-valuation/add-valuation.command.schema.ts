@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { realEstateCommandsListSchema } from "../real-estate.commands";
+import { realEstateCommandsListSchema } from "../real-estate.commands.names";
 
 export const addValuationPayloadSchema = z.object({
   id: z.string().min(1, "Real estate asset ID is required"),

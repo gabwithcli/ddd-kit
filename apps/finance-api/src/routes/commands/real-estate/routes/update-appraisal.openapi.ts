@@ -6,7 +6,8 @@ import {
   openapiJsonContent,
   SuccessResponseSchema,
 } from "ddd-kit";
-import { updateAppraisalPayloadSchema } from "../../../../application/commands/real-estate/update-appraisal/update-appraisal.command.example";
+import { updateAppraisalPayloadExample } from "src/application/commands/real-estate/update-appraisal/update-appraisal.command.example";
+import { updateAppraisalPayloadSchema } from "src/application/commands/real-estate/update-appraisal/update-appraisal.command.schema";
 
 export const updateAppraisalRoute = createRoute({
   method: "post",
@@ -16,7 +17,8 @@ export const updateAppraisalRoute = createRoute({
   request: {
     body: openapiJsonContent(
       "The appraisal details to update on the real estate asset.",
-      updateAppraisalPayloadSchema
+      updateAppraisalPayloadSchema,
+      updateAppraisalPayloadExample
     ),
   },
   responses: {

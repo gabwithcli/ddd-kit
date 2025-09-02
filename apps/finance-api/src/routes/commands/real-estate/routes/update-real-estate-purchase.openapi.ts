@@ -6,7 +6,8 @@ import {
   openapiJsonContent,
   SuccessResponseSchema,
 } from "ddd-kit";
-import { updateRealEstatePurchasePayloadSchema } from "../../../../application/commands/real-estate/update-real-estate-purchase/update-real-estate-purchase.command.example";
+import { updateRealEstatePurchasePayloadExample } from "src/application/commands/real-estate/update-real-estate-purchase/update-real-estate-purchase.command.example";
+import { updateRealEstatePurchasePayloadSchema } from "src/application/commands/real-estate/update-real-estate-purchase/update-real-estate-purchase.command.schema";
 
 export const updateRealEstatePurchaseRoute = createRoute({
   method: "post",
@@ -16,7 +17,8 @@ export const updateRealEstatePurchaseRoute = createRoute({
   request: {
     body: openapiJsonContent(
       "The initial purchase details of the real estate asset to update.",
-      updateRealEstatePurchasePayloadSchema
+      updateRealEstatePurchasePayloadSchema,
+      updateRealEstatePurchasePayloadExample
     ),
   },
   responses: {

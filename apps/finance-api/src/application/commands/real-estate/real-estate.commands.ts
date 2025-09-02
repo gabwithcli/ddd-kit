@@ -10,30 +10,6 @@ import { updateRealEstateDetailsCommandSchema } from "./update-real-estate-detai
 import { updateRealEstatePurchaseCommandSchema } from "./update-real-estate-purchase/update-real-estate-purchase.command.schema";
 import { updateValuationCommandSchema } from "./update-valuation/update-valuation.command.schema";
 
-// --- Command Names ---
-// A single, comprehensive list of all command names for this aggregate.
-export const realEstateCommandsList = [
-  // real-estate (root) commands
-  "create-real-estate-asset",
-  "update-real-estate-details",
-  "update-real-estate-purchase",
-  "delete-real-estate-asset",
-  // real-estate (child) commands
-  // -- appraisals
-  "add-appraisal",
-  "update-appraisal",
-  "delete-appraisal",
-  // -- valuations
-  "add-valuation",
-  "update-valuation",
-  "delete-valuation",
-] as const;
-
-export const realEstateCommandsListSchema = z.enum(realEstateCommandsList);
-export type RealEstateCommandsList = z.infer<
-  typeof realEstateCommandsListSchema
->;
-
 // --- Master Command Schema ---
 /**
  * A discriminated union of all possible command schemas for the RealEstate aggregate.
