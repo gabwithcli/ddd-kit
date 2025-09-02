@@ -47,8 +47,8 @@
         "lint": "echo \"(add eslint if you want)\"",
         "prepublishOnly": "pnpm clean && pnpm build && pnpm typecheck",
         "bump": "pnpm version patch",
-        "prepublish": "pnpm publish --dry-run",
-        "publish": "pnpm publish"
+        "prepub": "pnpm publish --dry-run",
+        "pub": "pnpm publish"
     },
     "dependencies": {
         "@hono/zod-openapi": "^1.1.0",
