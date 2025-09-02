@@ -1,5 +1,6 @@
 {
     "name": "ddd-kit-root",
+    "version": "0.0.1",
     "type": "module",
     "private": true,
     "packageManager": "pnpm@9.0.0",
@@ -19,7 +20,6 @@
             "@asteasolutions/zod-to-openapi": "^8.0.0"
         }
     },
-    "version": "0.0.2",
     "devDependencies": {
         "@commitlint/cli": "^19.8.1",
         "@commitlint/config-conventional": "^19.8.1",
