@@ -9,7 +9,7 @@ export class Address extends ValueObject<{
   state?: string;
   country: string;
 }> {
-  static of(a: Omit<Address["props"], never>) {
+  static from(a: Omit<Address["props"], never>) {
     return new Address(a);
   }
 }

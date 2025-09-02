@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm db:start && tsx watch --env-file .env src/server.ts",
+    "test": "vitest",
     "build": "tsup src/server.ts --format esm,cjs",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
@@ -19,7 +20,7 @@
     "@hono/swagger-ui": "^0.5.2",
     "@hono/zod-openapi": "^1.1.0",
     "@scalar/hono-api-reference": "^0.9.13",
-    "ddd-kit": "^0.0.14",
+    "ddd-kit": "^0.0.15",
     "drizzle-orm": "^0.44.5",
     "hono": "^4.4.0",
     "pg": "^8.12.0",
@@ -35,7 +36,8 @@
     "rimraf": "^6.0.0",
     "tsup": "^8.0.1",
     "tsx": "^4.7.1",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "vitest": "^3.2.4"
   },
   "engines": {
     "node": ">=18.17"

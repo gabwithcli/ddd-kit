@@ -75,7 +75,7 @@ export class RealEstatePostgresRepo extends AbstractCrudRepository<RealEstate> {
       deletedAt: root.deletedAt,
       details: {
         name: root.name,
-        address: Address.of({
+        address: Address.from({
           line1: root.addr1,
           line2: root.addr2 ?? undefined,
           postalCode: root.postalCode,

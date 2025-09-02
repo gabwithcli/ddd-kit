@@ -43,7 +43,7 @@ export class CreateRealEstateAssetCommand
       userId: payload.userId,
       details: {
         name: payload.details.name,
-        address: Address.of(payload.details.address),
+        address: Address.from(payload.details.address),
         notes: payload.details.notes,
         baseCurrency: payload.details.baseCurrency,
       },

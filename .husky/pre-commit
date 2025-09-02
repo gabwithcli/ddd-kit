@@ -1,4 +1,24 @@
+echo "\nRunning pre-commit hooks..." 
+
+# 1. Run type-checking across all workspaces.
+# The "-r" flag tells pnpm to run the "typecheck" script in every package.
+echo "\n🔍 Checking types..."
 pnpm -r typecheck
+if [ $? -ne 0 ]; then
+    echo "Type-checking failed. Aborting commit."
+    exit 1
+fi
+
+# 2. Run tests for the finance-api workspace.
+# The "--filter" flag targets the specific app where your tests are.
+echo "\n🧪 Running tests..."
+pnpm --filter ddd-kit--finance-api test
+if [ $? -ne 0 ]; then
+    echo "\n🚨 Tests failed. Aborting commit."
+    exit 1
+fi
+
+echo "\n✅ All checks passed. Proceeding with commit."
 
 # decomment 'exit 1' to test the hook script and abort the Git command
 # exit 1 

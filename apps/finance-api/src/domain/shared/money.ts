@@ -53,15 +53,6 @@ export class Money extends ValueObject<{ amount: number; currency: string }> {
    * @param amount Importo in unità monetarie (es. 100.50 = 100 euro e 50 cent)
    * @param currency Codice valuta (verrà normalizzato a MAIUSCOLO)
    */
-  static of(amount: number, currency: string) {
-    return this.create(amount, currency);
-  }
-
-  /**
-   * Alias di `of` per contesti in cui `from` risulta più leggibile.
-   * @param amount Importo in unità monetarie
-   * @param currency Codice valuta
-   */
   static from(amount: number, currency: string) {
     return this.create(amount, currency);
   }

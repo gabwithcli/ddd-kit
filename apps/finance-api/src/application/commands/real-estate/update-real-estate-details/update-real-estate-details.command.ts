@@ -25,7 +25,7 @@ export class UpdateRealEstateDetailsCommand
     const detailsToUpdate = {
       name: details.name,
       notes: details.notes,
-      address: details.address ? Address.of(details.address) : undefined,
+      address: details.address ? Address.from(details.address) : undefined,
     };
 
     // 3. Call the aggregate method.

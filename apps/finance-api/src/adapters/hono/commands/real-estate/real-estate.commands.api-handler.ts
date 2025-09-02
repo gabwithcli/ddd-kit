@@ -107,8 +107,7 @@ export const realEstateApiHandler = makeRequestHandler<
             aggregateId,
             payload: payloadWithAuth,
           },
-          // @ts-expect-error
-          tx 
+          tx
         );
       }
     );
