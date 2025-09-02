@@ -1,10 +1,6 @@
 // apps/finance-api/src/domain/real-estate/real-estate.aggregate.ts
 
-import {
-  AggregateId,
-  AggregateRoot,
-  invariants,
-} from "../../../../../packages/ddd-kit/dist/domain"; /// ----> check this
+import { AggregateId, AggregateRoot, invariants } from "ddd-kit/domain";
 import { Money } from "../shared/money";
 import { RealEstateEvent } from "./real-estate.events";
 import type {

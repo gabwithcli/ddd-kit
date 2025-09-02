@@ -18,8 +18,8 @@ import * as HttpPhrases from "stoker/http-status-phrases";
  */
 
 // The base schema type remains the same.
-export type ZodSchema = z.ZodTypeAny;
-export type ZodIssue = z.ZodIssue;
+export type ZodSchema = z.ZodType;
+export type ZodIssue = z.core.$ZodIssue;
 
 // Let's define the return type once to keep things DRY.
 type OpenApiContentResult<T extends ZodSchema> = {

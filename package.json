@@ -9,12 +9,14 @@
     ],
     "scripts": {
         "prepare": "husky",
-        "build": "pnpm -w -r --filter ./packages/* run build"
+        "build": "pnpm -w -r --filter ./packages/* run build",
+        "typecheck": "pnpm -r run typecheck"
     },
     "pnpm": {
         "overrides": {
-            "zod": "^3.23.0",
-            "drizzle-orm": "^0.44.4"
+            "zod": "^4.1.5",
+            "drizzle-orm": "^0.44.5",
+            "@asteasolutions/zod-to-openapi": "^8.0.0"
         }
     },
     "version": "0.0.2",

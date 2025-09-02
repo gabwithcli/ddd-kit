@@ -1,7 +1,7 @@
 // ddd-kit/src/http/request-handler.ts
 
 import type * as Z from "zod";
-import type { SafeParseReturnType, ZodTypeAny } from "zod";
+import { type ZodType } from "zod";
 import type { EdgeError } from "../shared/errors";
 import { err, ok, type Result } from "../shared/result";
 
@@ -48,7 +48,7 @@ export type BodyReader<C> = (c: C) => Promise<unknown>;
 export function makeRequestHandler<
   C = any,
   A = unknown,
-  S extends ZodTypeAny = ZodTypeAny,
+  S extends ZodType = ZodType,
   O = unknown
 >(opts: {
   auth: AuthFn<C, A>;
@@ -81,10 +81,7 @@ export function makeRequestHandler<
     }
 
     // 3) Zod validation
-    const parsed = opts.bodySchema.safeParse(raw) as SafeParseReturnType<
-      unknown,
-      Z.infer<S>
-    >;
+    const parsed = opts.bodySchema.safeParse(raw);
     if (!parsed.success) {
       return err({
         kind: "BadRequest",

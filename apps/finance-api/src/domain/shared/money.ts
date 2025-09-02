@@ -1,9 +1,6 @@
 // apps/finance-api/src/domain/shared/money.ts
 
-import {
-  DomainInvariantError,
-  ValueObject,
-} from "../../../../../packages/ddd-kit/dist/domain";
+import { DomainInvariantError, ValueObject } from "ddd-kit/domain";
 
 /**
  * Money

@@ -1,9 +1,6 @@
 // apps/finance-api/src/infra/persistence/postgres/uow.postgres.ts
 
-import type {
-  Tx,
-  UnitOfWork,
-} from "../../../../../../packages/ddd-kit/dist/infra";
+import type { Tx, UnitOfWork } from "ddd-kit/infra";
 import { DB, db } from "./db";
 
 type PostgresTx = DB;
