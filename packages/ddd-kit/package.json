@@ -1,6 +1,6 @@
 {
     "name": "ddd-kit",
-    "version": "0.0.9",
+    "version": "0.0.10",
     "private": false,
     "description": "A toolkit for Domain-Driven Design in TypeScript.",
     "license": "MIT",
@@ -45,7 +45,10 @@
         "clean": "rimraf dist",
         "typecheck": "tsc --noEmit",
         "lint": "echo \"(add eslint if you want)\"",
-        "prepublishOnly": "pnpm clean && pnpm build && pnpm typecheck"
+        "prepublishOnly": "pnpm clean && pnpm build && pnpm typecheck",
+        "bump": "pnpm version patch",
+        "prepublish": "pnpm publish --dry-run",
+        "publish": "pnpm publish"
     },
     "dependencies": {
         "@hono/zod-openapi": "^1.1.0",
