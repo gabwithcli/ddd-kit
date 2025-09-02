@@ -1,4 +1,4 @@
-// packages/ddd-kit/src/application/command/handler.ts
+// ## File: packages/ddd-kit/src/application/command/handler.ts
 
 /**
  * Abstract Command Handler
@@ -14,7 +14,8 @@
  */
 
 import { AggregateRoot, DomainInvariantError } from "../../domain/aggregate";
-import type { UnitOfWork } from "../../infra";
+// Import the `Tx` type to be used in the `execute` method signature.
+import type { Tx, UnitOfWork } from "../../infra";
 import { err, ok, type Result } from "../../shared/result";
 // We now import the new, generic repository interface.
 // This interface defines a universal contract for finding and saving an aggregate.
@@ -56,16 +57,21 @@ export abstract class CommandHandler<
 
   /**
    * The main public method to execute a command. It orchestrates the entire
-   * operation within a single transaction, providing a consistent execution
-   * boundary for all your business logic.
+   * operation. If an optional transaction `tx` is provided, it will run within that
+   * transaction. If not, it will create its own, ensuring a consistent execution
+   * boundary for all business logic.
    *
-   * @param commandName - The name of the command to execute (e.g., "create-real-estate").
-   * @param data - The data for the command, including the payload and optional aggregateId.
-   * @returns The result of the command execution, which is the response DTO from the command itself.
+   * @param {string} commandName - The name of the command to execute (e.g., "create-real-estate-asset").
+   * @param {CommandHandlerPayload<TPayload>} data - The data for the command, including the payload and optional aggregateId.
+   * @param {Tx} [tx] - An optional, existing transaction handle. This is the key to allowing
+   * this handler to participate in a larger, single atomic operation managed by an external caller,
+   * such as an idempotency wrapper.
+   * @returns {Promise<Result<TResponse>>} The result of the command execution, which is the response DTO from the command itself.
    */
   public async execute<TPayload, TResponse>(
     commandName: string,
-    data: CommandHandlerPayload<TPayload>
+    data: CommandHandlerPayload<TPayload>,
+    tx?: Tx // <-- The new optional parameter.
   ): Promise<Result<TResponse>> {
     // First, we find the specific command implementation from our command map.
     // This allows a single handler to manage multiple operations for an aggregate.
@@ -78,9 +84,12 @@ export abstract class CommandHandler<
       });
     }
 
-    // The entire process is wrapped in a transaction managed by the Unit of Work.
-    // If any step fails, the entire transaction is rolled back, ensuring data consistency.
-    return this.uow.withTransaction(async (tx) => {
+    /**
+     * This inner function encapsulates the core "load -> execute -> save -> publish" pipeline.
+     * It's designed to be called within a transaction, which is passed as the `transaction` parameter.
+     * @param {Tx} transaction - The active transaction for all database operations.
+     */
+    const run = async (transaction: Tx): Promise<Result<TResponse>> => {
       // We wrap the core logic in a try/catch block to handle domain errors gracefully.
       try {
         // Step 1: LOAD
@@ -92,7 +101,7 @@ export abstract class CommandHandler<
           // We now use the generic `findById` method from our new repository interface.
           // This abstracts away how the aggregate is loaded.
           const loadedAggregate = await this.repo.findById(
-            tx,
+            transaction,
             data.aggregateId
           );
           if (!loadedAggregate) {
@@ -121,13 +130,13 @@ export abstract class CommandHandler<
         const { aggregate: nextAggregate, response, events } = result.value;
 
         // Step 4: SAVE
-        await this.repo.save(tx, nextAggregate);
+        await this.repo.save(transaction, nextAggregate);
 
         // Step 5: PUBLISH
         // After successfully saving, we publish any domain events for other
         // parts of the system to react to (e.g., updating read models, sending notifications).
         if (this.eventPublisher && events.length > 0) {
-          await this.eventPublisher.publish(events, tx);
+          await this.eventPublisher.publish(events, transaction);
         }
 
         // Step 6: RETURN
@@ -149,6 +158,17 @@ export abstract class CommandHandler<
         // as a true 500 Internal Server Error.
         throw e;
       }
-    });
+    };
+
+    // If an external transaction `tx` was provided, we run our logic within it.
+    if (tx) {
+      return run(tx);
+    }
+    // Otherwise, we wrap our logic in a new transaction managed by the Unit of Work.
+    // This preserves the original behavior for calls that aren't wrapped in an
+    // external transaction manager like the idempotency helper.
+    else {
+      return this.uow.withTransaction(run);
+    }
   }
 }

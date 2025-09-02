@@ -1,5 +1,6 @@
 // apps/finance-api/src/adapters/hono/types.ts
 
+import { PersistenceLayer } from "src/infra/persistence";
 import { CommandLayer } from "../../application/commands";
 
 // What commands need from the app (clock + id factory)
@@ -11,4 +12,5 @@ export type Vars = {
   env: AppEnv;
   // Adding the command handlers layer here for injection
   handlers: CommandLayer;
+  persistence: PersistenceLayer;
 };

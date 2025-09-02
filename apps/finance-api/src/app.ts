@@ -52,6 +52,7 @@ app.use("*", async (c, next) => {
 
   c.set("env", app_env);
   c.set("handlers", handlers); // This makes the command handlers available.
+  c.set("persistence", persistance_layer); // Injects the full persistence layer into context
 
   await next();
 });

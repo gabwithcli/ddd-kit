@@ -1,8 +1,9 @@
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import {
   ErrorResponseSchema,
   HttpPhrases,
   HttpStatus,
+  idempotencyKeyHeader,
   openapiJsonContent,
   SuccessResponseSchema,
 } from "ddd-kit";
@@ -15,6 +16,11 @@ export const deleteRealEstateAssetRoute = createRoute({
   tags: ["Real Estate"],
   summary: "Delete a real estate asset",
   request: {
+    headers: z.object({
+      ...idempotencyKeyHeader(
+        "Ensures that a retried delete request still returns a success message instead of a 404 Not Found, which is better for the client."
+      ),
+    }),
     body: openapiJsonContent(
       "The ID of the real estate asset to delete.",
       deleteRealEstateAssetPayloadSchema,

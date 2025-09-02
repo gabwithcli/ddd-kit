@@ -77,7 +77,7 @@ const idempotencyKeyHeader = (purpose: string) => {
     "A unique key to safely retry this request without performing the operation twice.";
 
   return {
-    "idempotency-key": zod
+    "Idempotency-Key": zod
       .string()
       .optional()
       .describe(`${baseDescription} ${purpose}`),

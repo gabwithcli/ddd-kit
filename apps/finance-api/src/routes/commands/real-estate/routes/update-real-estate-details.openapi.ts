@@ -1,8 +1,9 @@
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import {
   ErrorResponseSchema,
   HttpPhrases,
   HttpStatus,
+  idempotencyKeyHeader,
   openapiJsonContent,
   SuccessResponseSchema,
 } from "ddd-kit";
@@ -15,6 +16,11 @@ export const updateRealEstateDetailsRoute = createRoute({
   tags: ["Real Estate"],
   summary: "Update the details of a real estate asset",
   request: {
+    headers: z.object({
+      ...idempotencyKeyHeader(
+        "Prevents conflicting updates and ensures a retry returns the original success response."
+      ),
+    }),
     body: openapiJsonContent(
       "The details of the real estate asset to update.",
       updateRealEstateDetailsPayloadSchema,

@@ -1,8 +1,9 @@
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import {
   ErrorResponseSchema,
   HttpPhrases,
   HttpStatus,
+  idempotencyKeyHeader,
   openapiJsonContent,
   SuccessResponseSchema,
 } from "ddd-kit";
@@ -15,6 +16,9 @@ export const deleteValuationRoute = createRoute({
   tags: ["Real Estate"],
   summary: "Delete a formal valuation from an asset",
   request: {
+    headers: z.object({
+      ...idempotencyKeyHeader("Ensures a clean success response on retry."),
+    }),
     body: openapiJsonContent(
       "The ID of the valuation to delete from the real estate asset.",
       deleteValuationPayloadSchema,

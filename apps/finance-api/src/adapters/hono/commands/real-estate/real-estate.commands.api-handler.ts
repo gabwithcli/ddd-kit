@@ -1,11 +1,15 @@
-// apps/finance-api/src/adapters/hono/commands/real-estate/real-estate.commands.api-handler.ts
+// ## File: apps/finance-api/src/adapters/hono/commands/real-estate/real-estate.commands.api-handler.ts
 
-import { authFromContext, makeRequestHandler } from "ddd-kit";
+import { authFromContext, makeRequestHandler, withIdempotency } from "ddd-kit";
 import { type Context } from "hono";
+import { createHash } from "node:crypto";
 import { RealEstateCommandRequest } from "../../../../application/commands/real-estate/real-estate.commands";
 import { Vars } from "../../types";
 
 type Ctx = Context<{ Variables: Vars }>;
+
+// A simple but effective SHA256 hash function for creating a stable hash of the scope.
+const hash = (s: string) => createHash("sha256").update(s).digest("hex");
 
 export const realEstateApiHandler = makeRequestHandler<
   Ctx,
@@ -43,23 +47,70 @@ export const realEstateApiHandler = makeRequestHandler<
   // validates the `command` name and the corresponding `payload` shape.
   bodySchema: RealEstateCommandRequest,
 
-  // 4. Map the request to the application layer.
-  // The `body` parameter here is the fully validated command object.
+  /**
+   * 4. Map the request to the application layer.
+   * This function is now the main orchestrator for the entire operation. It sets up
+   * and calls the `withIdempotency` wrapper, which in turn calls the command handler
+   * within a single, atomic transaction.
+   * @param {object} context - The context object containing the Hono context `c`,
+   * authentication details `auth`, and the validated request `body`.
+   * @returns {Promise<Result<unknown>>} The result of the operation, which will be the
+   * successful command response or a structured error.
+   */
   map: ({ c, auth, body }) => {
-    const handler = c.var.handlers.real_estate;
-    const payload: Record<string, any> = body.payload;
+    // Get the idempotency key from the request header. It's optional and can be null.
+    const idempotencyKey = c.req.header("Idempotency-Key") || null;
 
-    // Enrich the client payload with the authenticated userId.
+    // Get all necessary infrastructure dependencies from the Hono context.
+    const handler = c.var.handlers.real_estate;
+    const uow = c.var.persistence.uow;
+    const store = c.var.persistence.idempotencyStore;
+
+    // Enrich the client payload with server-side context like the authenticated userId.
     const payloadWithAuth = { ...body.payload, userId: auth.userId };
 
-    // If the command requires an aggregate ID, we extract it from the body payload.
-    // This is typically the case for commands that operate on existing aggregates.
-    const aggregateId = payload?.id ?? ""; // ugly, we assume the ID is always present for commands that require it.
+    // Execute the command, now wrapped with our idempotency logic.
+    return withIdempotency(
+      {
+        /**
+         * Configuration for the idempotency check itself.
+         */
+        options: {
+          key: idempotencyKey,
+          command: body.command,
+          scope: { userId: auth.userId },
+          payload: payloadWithAuth,
+        },
+      },
+      /**
+       * The infrastructure dependencies needed for the wrapper to run.
+       */
+      { uow, store, hash },
+      /**
+       * This inner function is the atomic "unit of work".
+       * It will only be executed if the idempotency check passes.
+       * The `tx` parameter it receives is the single, atomic transaction for the entire operation.
+       * @param {Tx} tx - The active transaction handle.
+       */
+      (tx) => {
+        const payload: Record<string, any> = body.payload;
+        // If the command requires an aggregate ID, we extract it from the body payload.
+        // This is typically the case for commands that operate on existing aggregates.
+        const aggregateId = payload?.id ?? ""; // ugly, we assume the ID is always present for commands that require it.
 
-    // Execute the command.
-    return handler.execute(body.command, {
-      aggregateId,
-      payload: payloadWithAuth,
-    });
+        // We call our refactored handler, passing the transaction context `tx`.
+        // This ensures the handler's logic executes within the single transaction
+        // managed by the idempotency wrapper, achieving true atomicity.
+        return handler.execute(
+          body.command,
+          {
+            aggregateId,
+            payload: payloadWithAuth,
+          },
+          // @ts-expect-error
+          tx 
+        );
+      }
+    );
   },
 });

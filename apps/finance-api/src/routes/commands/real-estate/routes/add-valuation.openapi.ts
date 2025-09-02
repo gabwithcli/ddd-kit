@@ -1,8 +1,9 @@
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import {
   ErrorResponseSchema,
   HttpPhrases,
   HttpStatus,
+  idempotencyKeyHeader,
   openapiJsonContent,
   SuccessResponseSchema,
 } from "ddd-kit";
@@ -15,6 +16,9 @@ export const addValuationRoute = createRoute({
   tags: ["Real Estate"],
   summary: "Add a formal valuation to a real estate asset",
   request: {
+    headers: z.object({
+      ...idempotencyKeyHeader("Prevents adding the same valuation twice."),
+    }),
     body: openapiJsonContent(
       "The valuation details to add to the real estate asset.",
       addValuationPayloadSchema,

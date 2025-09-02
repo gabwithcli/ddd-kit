@@ -3,6 +3,7 @@ import {
   ErrorResponseSchema,
   HttpPhrases,
   HttpStatus,
+  idempotencyKeyHeader,
   openapiJsonContent,
   SuccessResponseSchema,
 } from "ddd-kit";
@@ -16,12 +17,7 @@ export const createRealEstateAssetRoute = createRoute({
   summary: "Create a new real estate asset",
   request: {
     headers: z.object({
-      "idempotency-key": z
-        .string()
-        .optional()
-        .describe(
-          "A unique key to safely retry this request without performing the operation twice. Prevents creating duplicate assets."
-        ),
+      ...idempotencyKeyHeader("Prevents creating duplicate assets."),
     }),
     body: openapiJsonContent(
       "The details of the new real estate asset to create.",
