@@ -30,15 +30,23 @@ This kit provides a set of composable primitives to structure your application:
 
 Here's a glimpse of how the pieces fit together.
 
-**1. Define a rule in your Aggregate:**
+**1. Define a rule and a state transition in your Aggregate:**
 ```typescript
 class Order extends AggregateRoot {
+  // The command method makes a decision. 
   cancel(reason: string) {
     if (this.status === 'SHIPPED') {
       throw new DomainInvariantError('Cannot cancel a shipped order.');
+    } 
+    // It raises an event, but doesn't change state itself.
+    this.raise({ type: 'OrderCancelled', data: { orderId: this.id, reason } });
+  }
+
+  // The apply method enacts the state change.
+  protected apply(event: DomainEvent): void {
+    if (event.type === 'OrderCancelled') {
+      this.status = 'CANCELLED';
     }
-    this.status = 'CANCELLED';
-    this.record('OrderCancelled', { orderId: this.id, reason });
   }
 }
 ```
@@ -46,7 +54,8 @@ class Order extends AggregateRoot {
 **2. Create a Command for the use case:**
 ```typescript
 class CancelOrderCommand implements ICommand<{ reason: string }, { ok: boolean }, Order> {
-  execute(payload: { reason: string }, aggregate: Order) {
+****  execute(payload: { reason: string }, aggregate: Order) {
+    // The command calls the aggregate's public method.
     aggregate.cancel(payload.reason);
     return ok({ aggregate, response: { ok: true }, events: aggregate.pullEvents() });
   }
@@ -61,8 +70,24 @@ const handler = new OrderCommandHandler(/* ...dependencies... */);
 const result = await handler.execute('cancel-order', {
   aggregateId: 'order_123',
   payload: { reason: 'Customer changed their mind.' },
-});
+}); 
 ```
+
+---
+
+### A Unified Model for Any Persistence
+
+`ddd-kit` uses a **"Raise/Apply" pattern** within its `AggregateRoot` to keep your business logic pure and persistence-agnostic.
+
+- **Command Methods `raise` Events:** A public method like `cancel()` validates the request and raises an event describing what should happen. It doesn't change the state itself.
+- **The `apply()` Method Changes State:** A single, protected `apply()` method is the only place state can be mutated. It acts like a reducer, changing state based on the event that was raised.
+
+This simple but powerful pattern means the same domain model works seamlessly whether you're using:
+
+- **CRUD:** Rehydrating from a database row and saving the full, updated state.
+- **Event Sourcing:** Rehydrating by replaying an event history and saving only the new event.
+
+Your core business logic remains identical, completely decoupled from the infrastructure.
 
 ---
 

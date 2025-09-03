@@ -11,7 +11,7 @@ This enforces consistency. For example, in our `finance-api`, the `RealEstate` a
 Our `AggregateRoot` base class gives you a few things for free:
 * A unique `id`.
 * A `version` number for optimistic concurrency control (preventing two people from changing the same thing at the same time).
-* A way to record and pull **Domain Events**.
+* A way to record and pull **Domain Events** using the robust "Raise/Apply" pattern.
 
 ```typescript
 // packages/ddd-kit/src/domain/aggregate.ts
@@ -19,15 +19,22 @@ Our `AggregateRoot` base class gives you a few things for free:
 export abstract class AggregateRoot<Id extends string = AggregateId<any>>
   extends Entity<Id>
   implements HasVersion
-{
+{ 
   public version = 0;
-  protected readonly _events: Array<DomainEvent> = [];
+  protected readonly _events: Array<DomainEvent> = []; 
 
   // ... implementation ...
 
-  protected record(type: string, data: unknown) {
-    this._events.push({ type, data });
+  // Command methods call this to announce a state change.
+  protected raise(event: DomainEvent) {
+    // It applies the state change...
+    this.apply(event);
+    // ...and buffers the event for persistence.
+    this._events.push(event);
   }
+
+  // The single place where state is allowed to be mutated.
+  protected abstract apply(event: DomainEvent): void;
 
   public pullEvents() {
     const out = [...this._events];
@@ -80,7 +87,7 @@ export class RealEstate extends AggregateRoot {
       .ensure(
         "Valuation date cannot be before purchase date.",
         "valuation.date_before_purchase",
-        new Date(v.date) >= new Date(this._purchase.date)
+        new Date(v.date) >= new Date(this._purchase.date) 
       )
       .ensure(
         "Valuation currency must match the asset's base currency.",
@@ -88,8 +95,41 @@ export class RealEstate extends AggregateRoot {
         v.value.currency === this._details.baseCurrency
       )
       .throwIfAny(); // Throws a single `DomainInvariantError` if any check fails
-  }
+  } 
 }
-```
+``` 
 
 This keeps your domain objects clean, protected, and the single source of truth for business logic.
+
+---
+
+## 🏛️ The "Raise/Apply" Pattern: Unifying CRUD and Event Sourcing
+
+To achieve true persistence agnosticism, the `AggregateRoot` in `ddd-kit` uses a pattern that separates the *decision* to make a change from the *application* of that change. This is the **"Raise/Apply"** pattern.
+
+Think of it like a corporate decision:
+1.  **The Command Method (The Board Meeting):** A public method like `updateDetails()` is where the business decision is made. It runs all the necessary checks and invariants to ensure the command is valid.
+2.  **`raise(event)` (The Official Announcement):** Once the decision is validated, the command method doesn't directly change anything. Instead, it calls `this.raise(event)`, creating an official, immutable record of what was decided.
+3.  **`apply(event)` (The Departments):** The `raise` method immediately passes that new event to a protected `apply()` method. This method is the only place in the aggregate where state is allowed to change. It acts like the various departments (accounting, logistics) that execute the board's decision based on the official announcement.
+
+This pattern ensures your domain logic is pure—it only produces events. How the resulting state is stored is a detail left to the infrastructure layer.
+
+### How It Works for a CRUD Repository
+
+For a standard state-based repository, the lifecycle is straightforward:
+
+1.  **Load:** The repository fetches the latest state of the aggregate from the database and uses the static `fromState()` factory to instantly rehydrate the object. This is like getting a snapshot of the company's current financial state.
+2.  **Execute:** You call a command method (e.g., `aggregate.updateDetails(...)`).
+3.  **Raise & Apply:** The method validates the input and calls `raise(event)`. This immediately calls `apply(event)` internally, which mutates the aggregate's in-memory state.
+4.  **Save:** The repository takes the full, now-modified state of the aggregate and saves it back to the database, typically via an `UPDATE` statement that also checks the `version` for optimistic concurrency. The events that were raised can be passed to an event publisher.
+
+### How It Works for an Event Sourcing Repository
+
+This is where the pattern truly shines. The *exact same aggregate code* supports a completely different persistence model:
+
+1.  **Load:** The repository fetches the entire stream of historical events for the aggregate. It creates a *blank* instance of the aggregate and then replays each event through the `apply()` method, one by one, to reconstruct the current state.
+2.  **Execute:** You call the same command method (`aggregate.updateDetails(...)`).
+3.  **Raise & Apply:** The method works identically, calling `raise(event)` which then calls `apply(event)` to update the in-memory state based on this single new event.
+4.  **Save:** The repository calls `pullEvents()`, which gets *only the new event(s)*. It then appends just these new events to the event stream in the database.
+
+By structuring your aggregates this way, you make your domain model incredibly resilient to changes in infrastructure, which is a cornerstone of building robust, maintainable systems.

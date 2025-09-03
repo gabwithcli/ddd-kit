@@ -83,8 +83,10 @@ export abstract class ValueObject<T extends object> {
 
 /**
  * AggregateRoot:
- * - Guards invariants for the whole aggregate.
- * - Only entry point for state changes (public methods).
+ * - Guards invariants for the whole aggregate, as the only entry point for state changes.
+ * - Enforces the "Raise/Apply" pattern:
+ * -> Command methods validate and `raise` events, but do not mutate state directly.
+ * -> State mutations are centralized in a single `apply` method.
  * - Buffers domain events to support ES, outbox, and telemetry.
  */
 export abstract class AggregateRoot<Id extends string = AggregateId<any>>
@@ -98,28 +100,38 @@ export abstract class AggregateRoot<Id extends string = AggregateId<any>>
   protected readonly _events: Array<DomainEvent> = [];
 
   /**
-   * Record a domain event.
-   * The concrete aggregate is responsible for constructing the full event object,
-   * including its type, data, and metadata. This base method simply adds it
-   * to the internal event buffer.
+   * The core of our state transition logic.
+   * This abstract method MUST be implemented by concrete aggregates. It will
+   * contain a switch statement to handle each possible event type and
+   * apply the necessary state changes.
+   * @param event The domain event to apply to the aggregate.
    */
-  protected record(event: DomainEvent) {
+  protected abstract apply(event: DomainEvent): void;
+
+  /**
+   * Raises a new domain event.
+   * This is the one-and-only way for a command method to enact a state change.
+   * It orchestrates the two critical steps:
+   * 1. Calls `apply(event)` to mutate the aggregate's in-memory state.
+   * 2. Pushes the event to the internal buffer to be persisted.
+   * @param event The domain event being raised.
+   */
+  protected raise(event: DomainEvent) {
+    // First, we apply the event to ourself to change the current state.
+    this.apply(event);
+
+    // Then, we buffer the event so the application layer can persist it.
     this._events.push(event);
   }
 
   /**
    * Drain and return pending domain events.
-   * MUST be called by the application layer (command runner) after successful guards.
-   *
-   * (with simplified comments for clarity below)
-   *
+   * This method's functionality remains the same. The repository calls it
+   * to get the list of "new" events that need to be saved.
    */
-  pullEvents() {
-    // 1. Make a copy of the letters to give to the postman. (Copy the events to be returned)
+  public pullEvents() {
     const out = [...this._events];
-    // 2. Immediately empty the mailbox so the letters can't be collected again. (handle the clearing of the events)
     this.clearEvents();
-    // 3. Hand the copied letters to the postman.
     return out;
   }
 
