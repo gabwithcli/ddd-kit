@@ -24,24 +24,45 @@ export type CommandInput = Record<string, unknown>;
 export type PolicyResult = Result<true, unknown>;
 
 /** The required, non-negotiable properties of our event metadata. */
-type EventMetaBase = {
+type EventMeta = {
   version: number;
   timestamp: Date;
+  [key: string]: unknown;
 };
 
-/** Basic event type for cross-domain helpers. Keep it serializable. */
-export type DomainEvent = {
+/**
+ * A plain object representation of a domain event, useful for serialization.
+ */
+export type DomainEventObject<T = unknown> = {
   type: string;
-  data: unknown;
-  // By making `meta` required and using an intersection type (`&`), we
-  // guarantee that `version` and `timestamp` are always present, while
-  // still allowing any other optional properties.
-  meta: EventMetaBase & {
-    [key: string]: unknown;
-  };
+  data: T;
+  meta: EventMeta;
 };
+
+/**
+ * An abstract base class for creating rich, class-based domain events.
+ * It automatically handles metadata and provides a clear structure.
+ * @template T - The type of the event's data payload.
+ */
+export abstract class DomainEvent<T> {
+  // Each concrete event MUST define its type.
+  public abstract readonly type: string;
+  // The metadata is handled by the base class.
+  public readonly meta: EventMeta;
+
+  constructor(
+    // The data payload for the event.
+    public readonly data: T,
+    meta?: { version?: number; timestamp?: Date }
+  ) {
+    this.meta = {
+      version: meta?.version ?? 1,
+      timestamp: meta?.timestamp ?? new Date(),
+    };
+  }
+}
 
 /** Optional publisher port */
 export interface EventPublisher {
-  publish(events: DomainEvent[], tx: Tx): Promise<void>;
+  publish(events: DomainEvent<unknown>[], tx: Tx): Promise<void>;
 }

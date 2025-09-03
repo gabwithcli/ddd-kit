@@ -14,7 +14,7 @@ import type { DomainEvent } from "./types";
  */
 export type CommandOutput<T extends AggregateRoot, TResponse> = {
   aggregate: T;
-  events: DomainEvent[];
+  events: DomainEvent<unknown>[];
   response: TResponse;
 };
 

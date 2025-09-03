@@ -9,7 +9,7 @@ import type { AggregateRepository } from "./aggregate.repository";
  * Represents the result of loading events for an aggregate.
  */
 export type EventStream = {
-  events: DomainEvent[];
+  events: DomainEvent<unknown>[];
   // The version is the count of events, used for optimistic concurrency.
   version: number;
 };
@@ -107,6 +107,6 @@ export abstract class AbstractEsRepository<AR extends AggregateRoot>
     tx: Tx,
     id: string,
     expectedVersion: number,
-    events: DomainEvent[]
+    events: DomainEvent<unknown>[]
   ): Promise<void>;
 }

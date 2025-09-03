@@ -16,7 +16,7 @@ export class ConsoleEventPublisher implements EventPublisher {
    * but it's available for more advanced publishers (e.g., that write
    * to an outbox table within the same transaction).
    */
-  public async publish(events: DomainEvent[], tx: Tx): Promise<void> {
+  public async publish(events: DomainEvent<unknown>[], tx: Tx): Promise<void> {
     if (events.length === 0) {
       return;
     }

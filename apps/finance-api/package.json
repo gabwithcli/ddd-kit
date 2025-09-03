@@ -20,7 +20,7 @@
     "@hono/swagger-ui": "^0.5.2",
     "@hono/zod-openapi": "^1.1.0",
     "@scalar/hono-api-reference": "^0.9.13",
-    "ddd-kit": "^0.0.15",
+    "ddd-kit": "^0.0.16",
     "drizzle-orm": "^0.44.5",
     "hono": "^4.4.0",
     "pg": "^8.12.0",

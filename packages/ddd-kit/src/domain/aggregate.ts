@@ -97,7 +97,7 @@ export abstract class AggregateRoot<Id extends string = AggregateId<any>>
 
   // The in-memory event buffer now stores the full DomainEvent object,
   // including the `meta` property.
-  protected readonly _events: Array<DomainEvent> = [];
+  protected readonly _events: Array<DomainEvent<unknown>> = [];
 
   /**
    * The core of our state transition logic.
@@ -106,7 +106,7 @@ export abstract class AggregateRoot<Id extends string = AggregateId<any>>
    * apply the necessary state changes.
    * @param event The domain event to apply to the aggregate.
    */
-  protected abstract apply(event: DomainEvent): void;
+  protected abstract apply(event: DomainEvent<unknown>): void;
 
   /**
    * Raises a new domain event.
@@ -116,7 +116,7 @@ export abstract class AggregateRoot<Id extends string = AggregateId<any>>
    * 2. Pushes the event to the internal buffer to be persisted.
    * @param event The domain event being raised.
    */
-  protected raise(event: DomainEvent) {
+  protected raise(event: DomainEvent<unknown>) {
     // First, we apply the event to ourself to change the current state.
     this.apply(event);
 
