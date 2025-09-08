@@ -2,6 +2,7 @@
 
 import { DomainEvent } from "ddd-kit";
 import { z } from "zod";
+import { RealEstateEventName } from "../real-estate.events";
 
 // We keep the Zod schema for validation, but now it's part of the event class.
 export const RealEstateAssetCreatedV1Schema = z.object({
@@ -36,11 +37,11 @@ type EventData = z.infer<typeof RealEstateAssetCreatedV1Schema>;
 /**
  * Represents the event that is raised when a new real estate asset is created.
  */
-// @ts-expect-error: TS abstract class cannot implement non-TS interface
 export class RealEstateAssetCreated extends DomainEvent<EventData> {
   // This static property makes the event type string safe and easily accessible.
-  public static readonly type = "RealEstateAssetCreated_V1";
-  public readonly type = RealEstateAssetCreated.type;
+  public static readonly type: RealEstateEventName =
+    "RealEstateAssetCreated_V1";
+  public readonly type: RealEstateEventName = RealEstateAssetCreated.type;
 
   // The constructor takes the raw data, validates it, and passes it to the base class.
   constructor(data: EventData) {

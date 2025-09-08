@@ -1,16 +1,16 @@
 import { z } from "zod";
+import { RealEstateAppraisalAddedV1Schema } from "./events/real-estate-appraisal-added.event";
+import { RealEstateAppraisalRemovedV1Schema } from "./events/real-estate-appraisal-removed.event";
+import { RealEstateAppraisalUpdatedV1Schema } from "./events/real-estate-appraisal-updated.event";
+import { RealEstateAssetCreatedV1Schema } from "./events/real-estate-asset-created.event";
+import { RealEstateAssetDeletedV1Schema } from "./events/real-estate-asset-deleted.event";
+import { RealEstateAssetDetailsUpdatedV1Schema } from "./events/real-estate-asset-details-updated.event";
+import { RealEstateAssetPurchaseUpdatedV1Schema } from "./events/real-estate-asset-purchase-updated.event";
+import { RealEstateValuationAddedV1Schema } from "./events/real-estate-valuation-added.event";
+import { RealEstateValuationRemovedV1Schema } from "./events/real-estate-valuation-removed.event";
+import { RealEstateValuationUpdatedV1Schema } from "./events/real-estate-valuation-updated.event";
 
 // Import all individual, versioned event schemas.
-import { RealEstateAppraisalAddedV1Schema } from "./events/real-estate-appraisal-added.v1.schema";
-import { RealEstateAppraisalRemovedV1Schema } from "./events/real-estate-appraisal-removed.v1.schema";
-import { RealEstateAppraisalUpdatedV1Schema } from "./events/real-estate-appraisal-updated.v1.schema";
-import { RealEstateAssetCreatedV1Schema } from "./events/real-estate-asset-created.v1.schema";
-import { RealEstateAssetDeletedV1Schema } from "./events/real-estate-asset-deleted.v1.schema";
-import { RealEstateAssetDetailsUpdatedV1Schema } from "./events/real-estate-asset-details-updated.v1.schema";
-import { RealEstateAssetPurchaseUpdatedV1Schema } from "./events/real-estate-asset-purchase-updated.v1.schema";
-import { RealEstateValuationAddedV1Schema } from "./events/real-estate-valuation-added.v1.schema";
-import { RealEstateValuationRemovedV1Schema } from "./events/real-estate-valuation-removed.v1.schema";
-import { RealEstateValuationUpdatedV1Schema } from "./events/real-estate-valuation-updated.v1.schema";
 
 // This reusable schema defines the structure of our event metadata.
 export const EventMetaV1Schema = z.object({
@@ -37,6 +37,7 @@ export const realEstateEventsList = [
 ] as const;
 
 export const RealEstateEventNamesSchema = z.enum(realEstateEventsList);
+export type RealEstateEventName = z.infer<typeof RealEstateEventNamesSchema>;
 
 // We now add the `meta: EventMetaV1Schema` to every object in the union.
 // This ensures the inferred `RealEstateEvent` type matches the objects you create.

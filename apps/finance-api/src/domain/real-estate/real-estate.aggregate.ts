@@ -1,8 +1,18 @@
 // ## File: apps/finance-api/src/domain/real-estate/real-estate.aggregate.ts
 
+import { DomainEvent } from "ddd-kit";
 import { AggregateId, AggregateRoot, invariants } from "ddd-kit/domain";
 import { Money } from "../shared/money";
-import { RealEstateEvent } from "./real-estate.events";
+import { RealEstateAppraisalAdded } from "./events/real-estate-appraisal-added.event";
+import { RealEstateAppraisalRemoved } from "./events/real-estate-appraisal-removed.event";
+import { RealEstateAppraisalUpdated } from "./events/real-estate-appraisal-updated.event";
+import { RealEstateAssetCreated } from "./events/real-estate-asset-created.event";
+import { RealEstateAssetDeleted } from "./events/real-estate-asset-deleted.event";
+import { RealEstateAssetDetailsUpdated } from "./events/real-estate-asset-details-updated.event";
+import { RealEstateAssetPurchaseUpdated } from "./events/real-estate-asset-purchase-updated.event";
+import { RealEstateValuationAdded } from "./events/real-estate-valuation-added.event";
+import { RealEstateValuationRemoved } from "./events/real-estate-valuation-removed.event";
+import { RealEstateValuationUpdated } from "./events/real-estate-valuation-updated.event";
 import type {
   Appraisal,
   PricePoint,
@@ -44,132 +54,147 @@ export class RealEstate extends AggregateRoot {
   // --- STATE TRANSITION ---
 
   /**
-   * This new, centralized `apply` method is now the ONLY place where
+   * 1. A single, comprehensive `apply` method handles all state changes
+   *
+   * This centralized `apply` method is the ONLY place where
    * the aggregate's state is allowed to change. It acts as a reducer,
    * mutating state based on the event it receives.
    */
-  protected apply(event: RealEstateEvent): void {
+  protected apply(event: DomainEvent<unknown>): void {
+    // We use a switch on the event's static `type` property for organization.
     switch (event.type) {
-      case "RealEstateAssetCreated_V1":
-        // The creation event populates the initial state.
-        this.props.userId = event.data.userId;
+      case RealEstateAssetCreated.type: {
+        // We need to cast the event to its specific type to access its data.
+        const ev = event as RealEstateAssetCreated;
+        this.props.userId = ev.data.userId;
         this.props.details = {
-          name: event.data.details.name,
-          address: Address.from(event.data.details.address),
-          notes: event.data.details.notes,
-          baseCurrency: event.data.details.baseCurrency,
+          name: ev.data.details.name,
+          address: Address.from(ev.data.details.address),
+          notes: ev.data.details.notes,
+          baseCurrency: ev.data.details.baseCurrency,
         };
         this.props.purchase = {
-          date: event.data.purchase.date,
+          date: ev.data.purchase.date,
           value: Money.from(
-            event.data.purchase.value.amount,
-            event.data.purchase.value.currency
+            ev.data.purchase.value.amount,
+            ev.data.purchase.value.currency
           ),
         };
         this.props.appraisals = [];
         this.props.valuations = [];
         this.props.deletedAt = null;
         break;
-
-      case "RealEstateAssetDetailsUpdated_V1":
-        // All the state mutation logic from the old `updateDetails` method now lives here.
+      }
+      case RealEstateAssetDetailsUpdated.type: {
+        const ev = event as RealEstateAssetDetailsUpdated;
         this.props.details = {
           ...this.props.details,
-          ...event.data.changes,
-          address: event.data.changes.address
-            ? Address.from(event.data.changes.address)
+          ...ev.data.changes,
+          address: ev.data.changes.address
+            ? Address.from(ev.data.changes.address)
             : this.props.details.address,
         };
         break;
-
-      case "RealEstateAssetPurchaseUpdated_V1":
+      }
+      case RealEstateAssetPurchaseUpdated.type: {
+        const ev = event as RealEstateAssetPurchaseUpdated;
         this.props.purchase = {
-          date: event.data.purchase.date,
+          date: ev.data.purchase.date,
           value: Money.from(
-            event.data.purchase.value.amount,
-            event.data.purchase.value.currency
+            ev.data.purchase.value.amount,
+            ev.data.purchase.value.currency
           ),
         };
         break;
-
-      case "RealEstateAssetDeleted_V1":
-        this.props.deletedAt = event.data.at;
+      }
+      case RealEstateAssetDeleted.type: {
+        const ev = event as RealEstateAssetDeleted;
+        this.props.deletedAt = ev.data.at;
         break;
-
-      case "RealEstateAppraisalAdded_V1":
+      }
+      case RealEstateAppraisalAdded.type: {
+        const ev = event as RealEstateAppraisalAdded;
         this.props.appraisals.push({
-          id: event.data.appraisal.id,
-          date: event.data.appraisal.date,
+          id: ev.data.appraisal.id,
+          date: ev.data.appraisal.date,
           value: Money.from(
-            event.data.appraisal.value.amount,
-            event.data.appraisal.value.currency
+            ev.data.appraisal.value.amount,
+            ev.data.appraisal.value.currency
           ),
         });
         this.props.appraisals.sort((a, b) => a.date.localeCompare(b.date));
         break;
-
-      case "RealEstateAppraisalUpdated_V1":
+      }
+      case RealEstateAppraisalUpdated.type: {
+        const ev = event as RealEstateAppraisalUpdated;
         const appraisalIndex = this.props.appraisals.findIndex(
-          (a) => a.id === event.data.appraisal.id
+          (a) => a.id === ev.data.appraisal.id
         );
         if (appraisalIndex !== -1) {
           this.props.appraisals[appraisalIndex] = {
             ...this.props.appraisals[appraisalIndex],
-            date: event.data.appraisal.date,
+            date: ev.data.appraisal.date,
             value: Money.from(
-              event.data.appraisal.value.amount,
-              event.data.appraisal.value.currency
+              ev.data.appraisal.value.amount,
+              ev.data.appraisal.value.currency
             ),
           };
           this.props.appraisals.sort((a, b) => a.date.localeCompare(b.date));
         }
         break;
-
-      case "RealEstateAppraisalRemoved_V1":
+      }
+      case RealEstateAppraisalRemoved.type: {
+        const ev = event as RealEstateAppraisalRemoved;
         this.props.appraisals = this.props.appraisals.filter(
-          (a) => a.id !== event.data.appraisalId
+          (a) => a.id !== ev.data.appraisalId
         );
         break;
-
-      case "RealEstateValuationAdded_V1":
+      }
+      case RealEstateValuationAdded.type: {
+        const ev = event as RealEstateValuationAdded;
         this.props.valuations.push({
-          id: event.data.valuation.id,
-          date: event.data.valuation.date,
+          id: ev.data.valuation.id,
+          date: ev.data.valuation.date,
           value: Money.from(
-            event.data.valuation.value.amount,
-            event.data.valuation.value.currency
+            ev.data.valuation.value.amount,
+            ev.data.valuation.value.currency
           ),
         });
         this.props.valuations.sort((a, b) => a.date.localeCompare(b.date));
         break;
-
-      case "RealEstateValuationUpdated_V1":
+      }
+      case RealEstateValuationUpdated.type: {
+        const ev = event as RealEstateValuationUpdated;
         const valuationIndex = this.props.valuations.findIndex(
-          (v) => v.id === event.data.valuation.id
+          (v) => v.id === ev.data.valuation.id
         );
         if (valuationIndex !== -1) {
           this.props.valuations[valuationIndex] = {
             ...this.props.valuations[valuationIndex],
-            date: event.data.valuation.date,
+            date: ev.data.valuation.date,
             value: Money.from(
-              event.data.valuation.value.amount,
-              event.data.valuation.value.currency
+              ev.data.valuation.value.amount,
+              ev.data.valuation.value.currency
             ),
           };
           this.props.valuations.sort((a, b) => a.date.localeCompare(b.date));
         }
         break;
-
-      case "RealEstateValuationRemoved_V1":
+      }
+      case RealEstateValuationRemoved.type: {
+        const ev = event as RealEstateValuationRemoved;
         this.props.valuations = this.props.valuations.filter(
-          (v) => v.id !== event.data.valuationId
+          (v) => v.id !== ev.data.valuationId
         );
         break;
+      }
     }
   }
 
   // --- FACTORIES ---
 
+  // 2. Factories for creating new aggregates or rehydrating from state
+  // validates and then calls this.raise()
   static createAsset(args: {
     id: AggregateId<"RealEstate">;
     userId: string;
@@ -189,11 +214,10 @@ export class RealEstate extends AggregateRoot {
     // 2. Create a "blank" instance. It only has an ID for now.
     const agg = new RealEstate(args.id, {} as RealEstateProps);
 
-    // 3. Raise the creation event. This will call the `apply` method,
-    // which is now responsible for populating the initial state.
-    agg.raise({
-      type: "RealEstateAssetCreated_V1",
-      data: {
+    // 3. Raise the creation event by instantiating the event class.
+    // This will call the `apply` method, which is now responsible for populating the initial state.
+    agg.raise(
+      new RealEstateAssetCreated({
         id: args.id,
         userId: args.userId,
         details: {
@@ -207,9 +231,8 @@ export class RealEstate extends AggregateRoot {
           value: args.purchase.value.props,
         },
         at: args.createdAt,
-      },
-      meta: { version: 1, timestamp: args.createdAt },
-    });
+      })
+    );
 
     return agg;
   }
@@ -217,6 +240,7 @@ export class RealEstate extends AggregateRoot {
   /**
    * The `fromState` factory for CRUD remains unchanged. It's our "snapshot"
    * restoration mechanism and is key to keeping the aggregate persistence-agnostic.
+   * directly rehydrates state for CRUD repositories
    */
   static fromState(s: {
     id: AggregateId<"RealEstate">;
@@ -265,69 +289,52 @@ export class RealEstate extends AggregateRoot {
   }
 
   // --- COMMANDS ---
+  // 3. Thin, expressive command methods that only raise events
   public updateDetails(
     newDetails: Partial<Omit<RealEstateDetails, "baseCurrency">>
   ) {
     this.ensureIsNotDeleted("updateDetails");
-
-    // The command method is now just for validation and raising the event.
-    // It no longer mutates state directly.
-    this.raise({
-      type: "RealEstateAssetDetailsUpdated_V1",
-      data: {
+    this.raise(
+      new RealEstateAssetDetailsUpdated({
         id: this.id,
         changes: {
           ...newDetails,
           address: newDetails.address ? newDetails.address.props : undefined,
         },
-      },
-      meta: { version: 1, timestamp: new Date() },
-    });
+      })
+    );
   }
-
   public updatePurchase(newPurchaseData: Partial<PricePoint>) {
     this.ensureIsNotDeleted("updatePurchase");
-    const newPurchaseDetails = { ...this.props.purchase, ...newPurchaseData };
-
-    this.raise({
-      type: "RealEstateAssetPurchaseUpdated_V1",
-      data: {
+    const proposedPurchase = { ...this.props.purchase, ...newPurchaseData };
+    this.raise(
+      new RealEstateAssetPurchaseUpdated({
         id: this.id,
         purchase: {
-          date: newPurchaseDetails.date,
-          value: newPurchaseDetails.value.props,
+          date: proposedPurchase.date,
+          value: proposedPurchase.value.props,
         },
-      },
-      meta: { version: 1, timestamp: new Date() },
-    });
+      })
+    );
   }
-
   public deleteAsset(deletedAt: Date) {
     if (this.isDeleted) return;
-    this.raise({
-      type: "RealEstateAssetDeleted_V1",
-      data: { id: this.id, at: deletedAt },
-      meta: { version: 1, timestamp: deletedAt },
-    });
+    this.raise(new RealEstateAssetDeleted({ id: this.id, at: deletedAt }));
   }
-
   public addAppraisal(appraisal: Appraisal) {
     this.ensureIsNotDeleted("addAppraisal");
     this.runAppraisalInvariants(appraisal, "addAppraisal");
-    this.raise({
-      type: "RealEstateAppraisalAdded_V1",
-      data: {
+    this.raise(
+      new RealEstateAppraisalAdded({
         id: this.id,
         appraisal: {
           id: appraisal.id,
           date: appraisal.date,
           value: appraisal.value.props,
         },
-      },
-      meta: { version: 1, timestamp: new Date() },
-    });
+      })
+    );
   }
-
   public updateAppraisal(
     appraisalId: string,
     data: Partial<{ date: string; value: Money }>
@@ -350,21 +357,17 @@ export class RealEstate extends AggregateRoot {
 
     const updatedAppraisal = { ...appraisalToUpdate!, ...data };
     this.runAppraisalInvariants(updatedAppraisal, "updateAppraisal");
-
-    this.raise({
-      type: "RealEstateAppraisalUpdated_V1",
-      data: {
+    this.raise(
+      new RealEstateAppraisalUpdated({
         id: this.id,
         appraisal: {
           id: updatedAppraisal.id,
           date: updatedAppraisal.date,
           value: updatedAppraisal.value.props,
         },
-      },
-      meta: { version: 1, timestamp: new Date() },
-    });
+      })
+    );
   }
-
   public removeAppraisal(appraisalId: string) {
     this.ensureIsNotDeleted("removeAppraisal");
     invariants({
@@ -379,32 +382,22 @@ export class RealEstate extends AggregateRoot {
       )
       .throwIfAny();
 
-    this.raise({
-      type: "RealEstateAppraisalRemoved_V1",
-      data: { id: this.id, appraisalId },
-      meta: { version: 1, timestamp: new Date() },
-    });
+    this.raise(new RealEstateAppraisalRemoved({ id: this.id, appraisalId }));
   }
-
-  // NOTE: Valuations commands would be refactored in the exact same way as appraisals.
-  // To keep this example concise, I've omitted them, but you would apply the same pattern.
   public addValuation(valuation: Valuation) {
     this.ensureIsNotDeleted("addValuation");
     this.runValuationInvariants(valuation, "addValuation");
-    this.raise({
-      type: "RealEstateValuationAdded_V1",
-      data: {
+    this.raise(
+      new RealEstateValuationAdded({
         id: this.id,
         valuation: {
           id: valuation.id,
           date: valuation.date,
           value: valuation.value.props,
         },
-      },
-      meta: { version: 1, timestamp: new Date() },
-    });
+      })
+    );
   }
-
   public updateValuation(
     valuationId: string,
     data: Partial<{ date: string; value: Money }>
@@ -428,20 +421,17 @@ export class RealEstate extends AggregateRoot {
     const updatedValuation = { ...valuationToUpdate!, ...data };
     this.runValuationInvariants(updatedValuation, "updateValuation");
 
-    this.raise({
-      type: "RealEstateValuationUpdated_V1",
-      data: {
+    this.raise(
+      new RealEstateValuationUpdated({
         id: this.id,
         valuation: {
           id: updatedValuation.id,
           date: updatedValuation.date,
           value: updatedValuation.value.props,
         },
-      },
-      meta: { version: 1, timestamp: new Date() },
-    });
+      })
+    );
   }
-
   public removeValuation(valuationId: string) {
     this.ensureIsNotDeleted("removeValuation");
     invariants({
@@ -456,11 +446,7 @@ export class RealEstate extends AggregateRoot {
       )
       .throwIfAny();
 
-    this.raise({
-      type: "RealEstateValuationRemoved_V1",
-      data: { id: this.id, valuationId },
-      meta: { version: 1, timestamp: new Date() },
-    });
+    this.raise(new RealEstateValuationRemoved({ id: this.id, valuationId }));
   }
 
   // --- Private Helpers ---
