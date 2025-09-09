@@ -1,21 +1,19 @@
-// @ts-expect-error
 import { AllEventUnion, IProjector, Tx } from "ddd-kit";
 import { and, eq, gte, isNull, or } from "drizzle-orm";
 import { RealEstateAssetCreated } from "../../../../domain/real-estate/events/real-estate-asset-created.event";
 import { RealEstateAssetDeleted } from "../../../../domain/real-estate/events/real-estate-asset-deleted.event";
 import { RealEstateAssetDetailsUpdated } from "../../../../domain/real-estate/events/real-estate-asset-details-updated.event";
-// Import the valuation events
 import { RealEstateValuationAdded } from "../../../../domain/real-estate/events/real-estate-valuation-added.event";
 import { RealEstateValuationUpdated } from "../../../../domain/real-estate/events/real-estate-valuation-updated.event";
 import { realEstateSummaries } from "../schema.postgres";
 import { asPostgres } from "../uow.postgres";
 
 /**
- * RealEstateProjector
+ * RealEstateAssetsSummariesProjector
  * This class is responsible for updating the `real_estate_summaries` read model table
  * in response to domain events from the RealEstate aggregate.
  */
-export class RealEstateProjector implements IProjector {
+export class RealEstateAssetsSummariesProjector implements IProjector {
   // We declare which events this projector is interested in.
   // The ProjectionManager will only send us events of these types.
   public readonly subscribesTo = [

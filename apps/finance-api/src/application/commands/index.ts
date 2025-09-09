@@ -4,7 +4,9 @@ import {
   AggregateRepository,
   CommandHandler,
   ConsoleEventPublisher,
+  ProjectionManager,
 } from "ddd-kit";
+import { RealEstateAssetsSummariesProjector } from "src/infra/persistence/postgres/real-estate/real-estate-assets-summaries.projector.postgres";
 import { AppEnv } from "../../adapters/hono/types";
 import { RealEstate } from "../../domain/real-estate/real-estate.aggregate";
 import { PersistenceLayer } from "../../infra/persistence";
@@ -42,7 +44,9 @@ export function getCommandLayer({
   persistance_layer: PersistenceLayer;
   app_env: AppEnv;
 }): CommandLayer {
-  const eventPublisher = new ConsoleEventPublisher();
+  const consoleEventPublisher = new ConsoleEventPublisher();
+  const projectionManager = new ProjectionManager();
+  projectionManager.register(new RealEstateAssetsSummariesProjector());
 
   return {
     // We instantiate our now persistence-agnostic RealEstateCommandHandler.
@@ -51,7 +55,7 @@ export function getCommandLayer({
     real_estate: new RealEstateCommandHandler({
       repo: persistance_layer.repos.real_estate,
       uow: persistance_layer.uow,
-      eventPublisher: eventPublisher,
+      eventPublisher: projectionManager,
       newId: app_env.newId,
       now: app_env.now,
     }),

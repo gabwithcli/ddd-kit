@@ -15,9 +15,11 @@ import { ulid } from "ulid";
 // Local application imports
 import { AppEnv, Vars } from "./adapters/hono/types";
 import { getCommandLayer } from "./application/commands";
+import { getQueryLayer } from "./application/queries";
 import { env } from "./config";
 import { getPersistenceLayer } from "./infra/persistence";
 import { realEstateRoutes } from "./routes/commands/real-estate/real-estate.commands.routes";
+import { realEstateQueryRoutes } from "./routes/queries/real-estate/real-estate.queries.routes";
 
 // We'll use OpenAPIHono and provide the `Vars` type to ensure our context is strongly typed.
 const app = new OpenAPIHono<{ Variables: Vars }>({
@@ -41,6 +43,8 @@ const persistance_layer = getPersistenceLayer();
 // Next, we create the command layer, injecting the persistence and env dependencies.
 // This gives us our command handlers.
 const handlers = getCommandLayer({ persistance_layer, app_env });
+// Similarly, we create the query layer for read operations.
+const queries = getQueryLayer({ persistance_layer });
 
 // Finally, we create a middleware that runs for every request.
 // It injects the dependencies into Hono's context (`c.var`), making them
@@ -52,6 +56,7 @@ app.use("*", async (c, next) => {
 
   c.set("env", app_env);
   c.set("handlers", handlers); // This makes the command handlers available.
+  c.set("queries", queries); // This makes the query handlers available.
   c.set("persistence", persistance_layer); // Injects the full persistence layer into context
 
   await next();
@@ -85,6 +90,8 @@ app.on(["GET", "HEAD"], "/healthcheck", (c) => {
 // We mount our domain-specific routes under a versioned path.
 // OpenAPIHono will automatically discover the route definitions within `realEstateRoutes`.
 app.route("/v1/commands/real-estate", realEstateRoutes);
+// Similarly, we mount the query routes.
+app.route("/v1/queries/real-estate", realEstateQueryRoutes);
 
 // --- OpenAPI and Documentation UI ---
 
