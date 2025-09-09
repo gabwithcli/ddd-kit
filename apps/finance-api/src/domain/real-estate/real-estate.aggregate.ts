@@ -1,6 +1,5 @@
 // ## File: apps/finance-api/src/domain/real-estate/real-estate.aggregate.ts
 
-import { DomainEvent } from "ddd-kit";
 import { AggregateId, AggregateRoot, invariants } from "ddd-kit/domain";
 import { Money } from "../shared/money";
 import { RealEstateAppraisalAdded } from "./events/real-estate-appraisal-added.event";
@@ -13,7 +12,7 @@ import { RealEstateAssetPurchaseUpdated } from "./events/real-estate-asset-purch
 import { RealEstateValuationAdded } from "./events/real-estate-valuation-added.event";
 import { RealEstateValuationRemoved } from "./events/real-estate-valuation-removed.event";
 import { RealEstateValuationUpdated } from "./events/real-estate-valuation-updated.event";
-import { RealEstateEventName } from "./real-estate.events";
+import { RealEstateEventName, RealEstateEvents } from "./real-estate.events";
 import type {
   Appraisal,
   PricePoint,
@@ -142,7 +141,7 @@ export class RealEstate extends AggregateRoot<
    */
   static fromHistory(
     id: AggregateId<"RealEstate">,
-    events: DomainEvent<unknown>[]
+    events: RealEstateEvents[]
   ) {
     // 1. Create a new, empty aggregate instance. It only knows its ID.
     const agg = new RealEstate(id, {} as RealEstateProps);
@@ -152,7 +151,10 @@ export class RealEstate extends AggregateRoot<
     // the exact same `apply<EventName>` methods that are used during command
     // execution to rebuild the state from scratch.
     for (const event of events) {
-      // @ts-expect-error
+      // The `apply` method in the AggregateRoot base class expects a specific union
+      // of events (RealEstateEvents), not the generic DomainEvent<unknown>.
+      // This cast tells TypeScript that we, the developers, guarantee that only
+      // valid RealEstate events will be in this stream, resolving the type error.
       agg.apply(event);
     }
 

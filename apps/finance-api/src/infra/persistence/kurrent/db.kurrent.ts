@@ -15,6 +15,6 @@ if (env.AGGREGATES_DB_CLIENT === "kurrent" && !env.KURRENT_DB_URL) {
 // Initialize the KurrentDB client using the connection string from our config.
 // We make it potentially null and handle that in the repository to allow
 // the app to run even if only the Postgres config is set.
-export const kurrentClient = env.KURRENT_DB_URL
-  ? KurrentDBClient.connectionString(env.KURRENT_DB_URL)
-  : null;
+export const kurrentClient = KurrentDBClient.connectionString(
+  env.KURRENT_DB_URL!
+);

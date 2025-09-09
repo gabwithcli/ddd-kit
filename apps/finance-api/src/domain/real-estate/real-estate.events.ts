@@ -1,14 +1,44 @@
 import { z } from "zod";
-import { RealEstateAppraisalAddedV1Schema } from "./events/real-estate-appraisal-added.event";
-import { RealEstateAppraisalRemovedV1Schema } from "./events/real-estate-appraisal-removed.event";
-import { RealEstateAppraisalUpdatedV1Schema } from "./events/real-estate-appraisal-updated.event";
-import { RealEstateAssetCreatedV1Schema } from "./events/real-estate-asset-created.event";
-import { RealEstateAssetDeletedV1Schema } from "./events/real-estate-asset-deleted.event";
-import { RealEstateAssetDetailsUpdatedV1Schema } from "./events/real-estate-asset-details-updated.event";
-import { RealEstateAssetPurchaseUpdatedV1Schema } from "./events/real-estate-asset-purchase-updated.event";
-import { RealEstateValuationAddedV1Schema } from "./events/real-estate-valuation-added.event";
-import { RealEstateValuationRemovedV1Schema } from "./events/real-estate-valuation-removed.event";
-import { RealEstateValuationUpdatedV1Schema } from "./events/real-estate-valuation-updated.event";
+import {
+  RealEstateAppraisalAdded,
+  RealEstateAppraisalAddedV1Schema,
+} from "./events/real-estate-appraisal-added.event";
+import {
+  RealEstateAppraisalRemoved,
+  RealEstateAppraisalRemovedV1Schema,
+} from "./events/real-estate-appraisal-removed.event";
+import {
+  RealEstateAppraisalUpdated,
+  RealEstateAppraisalUpdatedV1Schema,
+} from "./events/real-estate-appraisal-updated.event";
+import {
+  RealEstateAssetCreated,
+  RealEstateAssetCreatedV1Schema,
+} from "./events/real-estate-asset-created.event";
+import {
+  RealEstateAssetDeleted,
+  RealEstateAssetDeletedV1Schema,
+} from "./events/real-estate-asset-deleted.event";
+import {
+  RealEstateAssetDetailsUpdated,
+  RealEstateAssetDetailsUpdatedV1Schema,
+} from "./events/real-estate-asset-details-updated.event";
+import {
+  RealEstateAssetPurchaseUpdated,
+  RealEstateAssetPurchaseUpdatedV1Schema,
+} from "./events/real-estate-asset-purchase-updated.event";
+import {
+  RealEstateValuationAdded,
+  RealEstateValuationAddedV1Schema,
+} from "./events/real-estate-valuation-added.event";
+import {
+  RealEstateValuationRemoved,
+  RealEstateValuationRemovedV1Schema,
+} from "./events/real-estate-valuation-removed.event";
+import {
+  RealEstateValuationUpdated,
+  RealEstateValuationUpdatedV1Schema,
+} from "./events/real-estate-valuation-updated.event";
 
 // Import all individual, versioned event schemas.
 
@@ -116,3 +146,19 @@ export const RealEstateEventSchema = z.discriminatedUnion("type", [
 // This inferred type will now correctly include the `meta` property.
 export type RealEstateEvent = z.infer<typeof RealEstateEventSchema>;
 export type RealEstateEventType = z.infer<typeof RealEstateEventNamesSchema>;
+
+// --- Exporting union type of all event classes ---
+// This is the type needed by the aggregate's `fromHistory` method. It creates a
+// single, comprehensive type representing "any possible event that can belong
+// to a RealEstate aggregate".
+export type RealEstateEvents =
+  | RealEstateAssetCreated
+  | RealEstateAssetDeleted
+  | RealEstateAssetDetailsUpdated
+  | RealEstateAssetPurchaseUpdated
+  | RealEstateAppraisalAdded
+  | RealEstateAppraisalUpdated
+  | RealEstateAppraisalRemoved
+  | RealEstateValuationAdded
+  | RealEstateValuationUpdated
+  | RealEstateValuationRemoved;
