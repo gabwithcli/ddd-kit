@@ -172,7 +172,7 @@ export abstract class AggregateRoot<
    * @param event The strongly-typed domain event to be dispatched.
    * @throws {Error} If a corresponding `apply<EventType>` method is not found on the concrete aggregate.
    */
-  private apply(event: EventUnion<TAllEvents>): void {
+  protected apply(event: EventUnion<TAllEvents>): void {
     const handlerMethodName = `apply${event.type}`;
     const handler = this[handlerMethodName as keyof this];
 

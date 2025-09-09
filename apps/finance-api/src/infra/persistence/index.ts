@@ -30,7 +30,6 @@ export function getPersistenceLayer(): PersistenceLayer {
       // keeping transactional state separate from the event store.
       idempotencyStore: new PostgresIdempotencyStore(),
       repos: {
-        // @ts-expect-error
         real_estate: new RealEstateKurrentRepo(),
         // add other repositories here...
       },

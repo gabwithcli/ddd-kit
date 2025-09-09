@@ -14,6 +14,13 @@ export type EventStream = {
   version: number;
 };
 
+// A new, type-safe contract for our aggregate class.
+// It describes an object (the class constructor itself) that has a static method
+// named `fromHistory`. This is exactly what our repository needs for rehydration.
+export type RehydratableAggregate<AR extends AggregateRoot> = {
+  fromHistory(id: string, events: DomainEvent<unknown>[]): AR;
+};
+
 /**
  * An abstract base class for Event Sourcing repositories.
  *
@@ -45,10 +52,8 @@ export abstract class AbstractEsRepository<AR extends AggregateRoot>
 
     // 2. Rehydrate the aggregate by replaying its history.
     // The aggregate root MUST have a factory method like `fromHistory` for this to work.
-    const aggregate = (this.getAggregateClass() as any).fromHistory(
-      id,
-      stream.events
-    );
+    const AggregateClass = this.getAggregateClass();
+    const aggregate = AggregateClass.fromHistory(id, stream.events);
     aggregate.version = stream.version;
 
     return aggregate;
@@ -84,7 +89,7 @@ export abstract class AbstractEsRepository<AR extends AggregateRoot>
    * A reference to the aggregate's constructor.
    * This is needed to call the static `fromHistory` method during rehydration.
    */
-  protected abstract getAggregateClass(): { new (...args: any[]): AR };
+  protected abstract getAggregateClass(): RehydratableAggregate<AR>;
 
   /**
    * Loads the raw event data and stream version from the database.

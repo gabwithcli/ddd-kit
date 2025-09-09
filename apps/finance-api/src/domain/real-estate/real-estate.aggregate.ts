@@ -140,8 +140,10 @@ export class RealEstate extends AggregateRoot<
    * @param id The ID of the aggregate.
    * @param events The historical events for this aggregate instance.
    */
-  // @ts-expect-error
-  static fromHistory(id: AggregateId<"RealEstate">, events: DomainEvent[]) {
+  static fromHistory(
+    id: AggregateId<"RealEstate">,
+    events: DomainEvent<unknown>[]
+  ) {
     // 1. Create a new, empty aggregate instance. It only knows its ID.
     const agg = new RealEstate(id, {} as RealEstateProps);
 
