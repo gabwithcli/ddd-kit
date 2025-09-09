@@ -36,7 +36,7 @@ In the apps/finance-api directory, copy the example environment file:
 cp .env.example .env
 ```
 
-Make sure the `DATABASE_URL` in the new `.env` file matches the credentials in `docker-compose.yml`. The default values should work out of the box.
+Make sure the `POSTGRES_DB_URL` in the new `.env` file matches the credentials in `docker-compose.yml`. The default values should work out of the box.
 
 ### 4. Start the Database
 This command uses Docker Compose to start a PostgreSQL database in a container.

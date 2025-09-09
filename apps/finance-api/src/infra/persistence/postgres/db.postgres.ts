@@ -5,7 +5,7 @@ import { Pool } from "pg";
 import * as schema from "./schema.postgres";
 
 export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.POSTGRES_DB_URL!,
 });
 
 // Give Drizzle the schema => enables db.query.<table> with types

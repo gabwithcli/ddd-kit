@@ -1,5 +1,6 @@
 // ## File: apps/finance-api/src/domain/real-estate/real-estate.aggregate.ts
 
+import { DomainEvent } from "ddd-kit";
 import { AggregateId, AggregateRoot, invariants } from "ddd-kit/domain";
 import { Money } from "../shared/money";
 import { RealEstateAppraisalAdded } from "./events/real-estate-appraisal-added.event";
@@ -128,6 +129,32 @@ export class RealEstate extends AggregateRoot<
     };
     const agg = new RealEstate(s.id, props);
     agg.version = s.version;
+    return agg;
+  }
+
+  /**
+   * The `fromHistory` factory is used by Event Sourcing repositories.
+   * It creates a "blank" aggregate and then replays its entire history of
+   * events to reconstruct its current state.
+   *
+   * @param id The ID of the aggregate.
+   * @param events The historical events for this aggregate instance.
+   */
+  // @ts-expect-error
+  static fromHistory(id: AggregateId<"RealEstate">, events: DomainEvent[]) {
+    // 1. Create a new, empty aggregate instance. It only knows its ID.
+    const agg = new RealEstate(id, {} as RealEstateProps);
+
+    // 2. Iterate through each historical event and apply it to the aggregate.
+    // This is where the magic of the "Raise/Apply" pattern shines. We are reusing
+    // the exact same `apply<EventName>` methods that are used during command
+    // execution to rebuild the state from scratch.
+    for (const event of events) {
+      // @ts-expect-error
+      agg.apply(event);
+    }
+
+    // 3. Return the fully rehydrated aggregate.
     return agg;
   }
 

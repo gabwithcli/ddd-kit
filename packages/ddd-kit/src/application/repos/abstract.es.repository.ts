@@ -1,8 +1,8 @@
-// packages/sdk-lite/src/application/repos/abstract.es.repository.ts
+// packages/ddd-kit/src/application/repos/abstract.es.repository.ts
 
-import type { AggregateRoot } from "../../domain";
+import { AggregateRoot } from "../../domain";
 import type { Tx } from "../../infra";
-import type { DomainEvent } from "../command";
+import { DomainEvent } from "../command";
 import type { AggregateRepository } from "./aggregate.repository";
 
 /**

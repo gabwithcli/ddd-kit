@@ -4,4 +4,5 @@
  */
 
 export * from "./abstract.crud.repository";
+export * from "./abstract.es.repository";
 export * from "./aggregate.repository";
