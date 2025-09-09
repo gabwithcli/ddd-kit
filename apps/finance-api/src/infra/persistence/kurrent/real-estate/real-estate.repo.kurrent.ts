@@ -2,7 +2,6 @@
 
 import {
   AbstractEsRepository,
-  DomainEvent,
   EventStream,
   RehydratableAggregate,
   Tx,
@@ -33,7 +32,7 @@ export class RealEstateKurrentRepo extends AbstractEsRepository<RealEstate> {
     // We correctly iterate over the stream to collect all events.
     const streamIterator = kurrentClient.readStream(streamName);
 
-    const domainEvents: DomainEvent<unknown>[] = [];
+    const domainEvents: RealEstateEvents[] = [];
     let streamVersion = 0;
 
     // Use a `for await...of` loop to consume the async iterator.

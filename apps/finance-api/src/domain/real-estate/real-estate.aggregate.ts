@@ -151,10 +151,6 @@ export class RealEstate extends AggregateRoot<
     // the exact same `apply<EventName>` methods that are used during command
     // execution to rebuild the state from scratch.
     for (const event of events) {
-      // The `apply` method in the AggregateRoot base class expects a specific union
-      // of events (RealEstateEvents), not the generic DomainEvent<unknown>.
-      // This cast tells TypeScript that we, the developers, guarantee that only
-      // valid RealEstate events will be in this stream, resolving the type error.
       agg.apply(event);
     }
 

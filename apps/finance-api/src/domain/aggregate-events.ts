@@ -12,6 +12,7 @@ import type { RealEstateAssetPurchaseUpdated } from "./real-estate/events/real-e
 import type { RealEstateValuationAdded } from "./real-estate/events/real-estate-valuation-added.event";
 import type { RealEstateValuationRemoved } from "./real-estate/events/real-estate-valuation-removed.event";
 import type { RealEstateValuationUpdated } from "./real-estate/events/real-estate-valuation-updated.event";
+import { RealEstateEvents } from "./real-estate/real-estate.events";
 
 declare module "ddd-kit/domain" {
   // This tells TypeScript to add properties to the existing AggregateEvents interface
@@ -35,3 +36,10 @@ declare module "ddd-kit/domain" {
     // ...
   }
 }
+
+export type DomainEvents =
+  | RealEstateEvents
+  // Add other domain aggregate event unions here, e.g.:
+  // PortfolioEvents |
+  // ...;
+  | never;

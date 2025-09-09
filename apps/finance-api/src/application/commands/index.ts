@@ -4,11 +4,11 @@ import {
   AggregateRepository,
   CommandHandler,
   ConsoleEventPublisher,
-  DomainEvent,
   EventPublisher,
   ProjectionManager,
   Tx,
 } from "ddd-kit";
+import { DomainEvents } from "src/domain/aggregate-events";
 import { RealEstateSummaryEventProjector } from "src/infra/persistence/postgres/real-estate/real-estate-assets-summaries.event-projector.postgres";
 import { AppEnv } from "../../adapters/hono/types";
 import { RealEstate } from "../../domain/real-estate/real-estate.aggregate";
@@ -29,7 +29,7 @@ class CompositeEventPublisher implements EventPublisher {
    * The publish method iterates through all registered publishers and calls
    * their respective publish methods in parallel.
    */
-  public async publish(events: DomainEvent<unknown>[], tx: Tx): Promise<void> {
+  public async publish(events: DomainEvents[], tx: Tx): Promise<void> {
     // We use Promise.all to run all publishing tasks concurrently.
     await Promise.all(this.publishers.map((p) => p.publish(events, tx)));
   }
