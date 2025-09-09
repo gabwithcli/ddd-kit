@@ -4,13 +4,36 @@ import {
   AggregateRepository,
   CommandHandler,
   ConsoleEventPublisher,
+  DomainEvent,
+  EventPublisher,
   ProjectionManager,
+  Tx,
 } from "ddd-kit";
-import { RealEstateAssetsSummariesProjector } from "src/infra/persistence/postgres/real-estate/real-estate-assets-summaries.projector.postgres";
+import { RealEstateSummaryEventProjector } from "src/infra/persistence/postgres/real-estate/real-estate-assets-summaries.event-projector.postgres";
 import { AppEnv } from "../../adapters/hono/types";
 import { RealEstate } from "../../domain/real-estate/real-estate.aggregate";
 import { PersistenceLayer } from "../../infra/persistence";
 import { RealEstateCommandHandler } from "./real-estate/real-estate.handler";
+
+/**
+ * A simple composite event publisher that delegates to multiple publishers.
+ * This allows us to both update our read models (via ProjectionManager) and
+ * log events to the console (via ConsoleEventPublisher) from a single point.
+ * It's like a power strip: you plug it in once, and it powers multiple devices.
+ */
+class CompositeEventPublisher implements EventPublisher {
+  // We hold an array of all the publishers we want to notify.
+  constructor(private readonly publishers: EventPublisher[]) {}
+
+  /**
+   * The publish method iterates through all registered publishers and calls
+   * their respective publish methods in parallel.
+   */
+  public async publish(events: DomainEvent<unknown>[], tx: Tx): Promise<void> {
+    // We use Promise.all to run all publishing tasks concurrently.
+    await Promise.all(this.publishers.map((p) => p.publish(events, tx)));
+  }
+}
 
 /**
  * CommandLayer
@@ -44,18 +67,30 @@ export function getCommandLayer({
   persistance_layer: PersistenceLayer;
   app_env: AppEnv;
 }): CommandLayer {
-  const consoleEventPublisher = new ConsoleEventPublisher();
+  // 1. Set up the ProjectionManager for our read models.
   const projectionManager = new ProjectionManager();
-  projectionManager.register(new RealEstateAssetsSummariesProjector());
+  const realEstateSummaryProjector = new RealEstateSummaryEventProjector(
+    persistance_layer.repos.real_estate
+  );
+  projectionManager.register(realEstateSummaryProjector);
+
+  // 2. Set up the console logger for development visibility.
+  const consoleEventPublisher = new ConsoleEventPublisher();
+
+  // 3. Create the composite publisher that combines both.
+  const compositePublisher = new CompositeEventPublisher([
+    consoleEventPublisher,
+    projectionManager,
+  ]);
 
   return {
-    // We instantiate our now persistence-agnostic RealEstateCommandHandler.
-    // The `persistance_layer.repos.real_estate` will conform to the
-    // `AggregateRepository` interface, making this wiring type-safe and correct.
+    // 4. Inject the single composite publisher into our command handler.
+    // The handler doesn't need to know it's talking to multiple publishers;
+    // it just sees a single `EventPublisher` interface.
     real_estate: new RealEstateCommandHandler({
       repo: persistance_layer.repos.real_estate,
       uow: persistance_layer.uow,
-      eventPublisher: projectionManager,
+      eventPublisher: compositePublisher,
       newId: app_env.newId,
       now: app_env.now,
     }),

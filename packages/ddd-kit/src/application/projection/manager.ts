@@ -26,7 +26,7 @@ export class ProjectionManager implements EventPublisher {
     if (events.length === 0) return;
 
     console.log(
-      "📣 Projecting Domain Events...",
+      "📣 [ProjectionManager] Projecting Domain Events...",
       events.map((e) => e.type)
     );
     const tasks = new Map<IProjector, AllEventUnion[]>();

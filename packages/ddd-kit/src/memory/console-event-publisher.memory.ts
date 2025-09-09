@@ -20,7 +20,9 @@ export class ConsoleEventPublisher implements EventPublisher {
     if (events.length === 0) {
       return;
     }
-    console.log("📣 Publishing Domain Events...");
+    console.log(
+      "📣 [ConsoleEventPublisher] Publishing Domain Events to console..."
+    );
     // We use JSON.stringify with indentation to make the output readable.
     console.log(JSON.stringify(events, null, 2));
   }

@@ -16,7 +16,7 @@ import type { RealEstateValuationUpdated } from "./real-estate/events/real-estat
 declare module "ddd-kit/domain" {
   // This tells TypeScript to add properties to the existing AggregateEvents interface
   export interface AggregateEvents {
-    // The key is the event's unique type string, and the value is the event's class type.
+    // --- Real Estate Events ---
     RealEstateAssetCreated_V1: RealEstateAssetCreated;
     RealEstateAssetDetailsUpdated_V1: RealEstateAssetDetailsUpdated;
     RealEstateAssetPurchaseUpdated_V1: RealEstateAssetPurchaseUpdated;
@@ -27,6 +27,11 @@ declare module "ddd-kit/domain" {
     RealEstateValuationAdded_V1: RealEstateValuationAdded;
     RealEstateValuationUpdated_V1: RealEstateValuationUpdated;
     RealEstateValuationRemoved_V1: RealEstateValuationRemoved;
+    // ... other real estate events
+    //
+    // --- Other Aggregate Events ---
+    // Add events for other aggregates here as needed
+    // e.g., PortfolioCreated_V1: PortfolioCreated;
+    // ...
   }
 }
-//
