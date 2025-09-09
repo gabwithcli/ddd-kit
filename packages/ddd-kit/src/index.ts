@@ -35,6 +35,7 @@ export * from "./application/policies";
 // Projections (Read-side CQRS)
 export * from "./application/projection/manager";
 export * from "./application/projection/projector";
+export * from "./application/projection/state-projector";
 
 // Aggregate primitives
 export * from "./application/repos";
