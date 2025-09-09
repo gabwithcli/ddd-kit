@@ -5,6 +5,7 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
+import { realEstateSummariesColumns } from "./real-estate/real-estate.read-model.schema.postgres";
 import {
   realEstateAppraisalsColumns,
   realEstateAssetsColumns,
@@ -37,6 +38,12 @@ export const realEstateAppraisals = realEstateFolder.table(
 export const realEstateValuations = realEstateFolder.table(
   "real_estate_valuations",
   realEstateValuationsColumns
+);
+
+// Add the new read model table definition
+export const realEstateSummaries = realEstateFolder.table(
+  "real_estate_summaries",
+  realEstateSummariesColumns
 );
 
 // The table for managing idempotency of commands.

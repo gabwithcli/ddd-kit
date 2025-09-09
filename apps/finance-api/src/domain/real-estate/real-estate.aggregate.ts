@@ -1,6 +1,5 @@
 // ## File: apps/finance-api/src/domain/real-estate/real-estate.aggregate.ts
 
-import { DomainEvent } from "ddd-kit";
 import { AggregateId, AggregateRoot, invariants } from "ddd-kit/domain";
 import { Money } from "../shared/money";
 import { RealEstateAppraisalAdded } from "./events/real-estate-appraisal-added.event";
@@ -13,6 +12,7 @@ import { RealEstateAssetPurchaseUpdated } from "./events/real-estate-asset-purch
 import { RealEstateValuationAdded } from "./events/real-estate-valuation-added.event";
 import { RealEstateValuationRemoved } from "./events/real-estate-valuation-removed.event";
 import { RealEstateValuationUpdated } from "./events/real-estate-valuation-updated.event";
+import { RealEstateEventName } from "./real-estate.events";
 import type {
   Appraisal,
   PricePoint,
@@ -34,7 +34,11 @@ type RealEstateProps = {
   deletedAt: Date | null;
 };
 
-export class RealEstate extends AggregateRoot {
+// Updated class definition to pass the event names as a generic argument
+export class RealEstate extends AggregateRoot<
+  AggregateId<"RealEstate">,
+  RealEstateEventName
+> {
   // The aggregate's state is held in a single `props` object.
   private props: RealEstateProps;
 
@@ -51,150 +55,12 @@ export class RealEstate extends AggregateRoot {
     this.props = props;
   }
 
-  // --- STATE TRANSITION ---
-
-  /**
-   * 1. A single, comprehensive `apply` method handles all state changes
-   *
-   * This centralized `apply` method is the ONLY place where
-   * the aggregate's state is allowed to change. It acts as a reducer,
-   * mutating state based on the event it receives.
-   */
-  protected apply(event: DomainEvent<unknown>): void {
-    // We use a switch on the event's static `type` property for organization.
-    switch (event.type) {
-      case RealEstateAssetCreated.type: {
-        // We need to cast the event to its specific type to access its data.
-        const ev = event as RealEstateAssetCreated;
-        this.props.userId = ev.data.userId;
-        this.props.details = {
-          name: ev.data.details.name,
-          address: Address.from(ev.data.details.address),
-          notes: ev.data.details.notes,
-          baseCurrency: ev.data.details.baseCurrency,
-        };
-        this.props.purchase = {
-          date: ev.data.purchase.date,
-          value: Money.from(
-            ev.data.purchase.value.amount,
-            ev.data.purchase.value.currency
-          ),
-        };
-        this.props.appraisals = [];
-        this.props.valuations = [];
-        this.props.deletedAt = null;
-        break;
-      }
-      case RealEstateAssetDetailsUpdated.type: {
-        const ev = event as RealEstateAssetDetailsUpdated;
-        this.props.details = {
-          ...this.props.details,
-          ...ev.data.changes,
-          address: ev.data.changes.address
-            ? Address.from(ev.data.changes.address)
-            : this.props.details.address,
-        };
-        break;
-      }
-      case RealEstateAssetPurchaseUpdated.type: {
-        const ev = event as RealEstateAssetPurchaseUpdated;
-        this.props.purchase = {
-          date: ev.data.purchase.date,
-          value: Money.from(
-            ev.data.purchase.value.amount,
-            ev.data.purchase.value.currency
-          ),
-        };
-        break;
-      }
-      case RealEstateAssetDeleted.type: {
-        const ev = event as RealEstateAssetDeleted;
-        this.props.deletedAt = ev.data.at;
-        break;
-      }
-      case RealEstateAppraisalAdded.type: {
-        const ev = event as RealEstateAppraisalAdded;
-        this.props.appraisals.push({
-          id: ev.data.appraisal.id,
-          date: ev.data.appraisal.date,
-          value: Money.from(
-            ev.data.appraisal.value.amount,
-            ev.data.appraisal.value.currency
-          ),
-        });
-        this.props.appraisals.sort((a, b) => a.date.localeCompare(b.date));
-        break;
-      }
-      case RealEstateAppraisalUpdated.type: {
-        const ev = event as RealEstateAppraisalUpdated;
-        const appraisalIndex = this.props.appraisals.findIndex(
-          (a) => a.id === ev.data.appraisal.id
-        );
-        if (appraisalIndex !== -1) {
-          this.props.appraisals[appraisalIndex] = {
-            ...this.props.appraisals[appraisalIndex],
-            date: ev.data.appraisal.date,
-            value: Money.from(
-              ev.data.appraisal.value.amount,
-              ev.data.appraisal.value.currency
-            ),
-          };
-          this.props.appraisals.sort((a, b) => a.date.localeCompare(b.date));
-        }
-        break;
-      }
-      case RealEstateAppraisalRemoved.type: {
-        const ev = event as RealEstateAppraisalRemoved;
-        this.props.appraisals = this.props.appraisals.filter(
-          (a) => a.id !== ev.data.appraisalId
-        );
-        break;
-      }
-      case RealEstateValuationAdded.type: {
-        const ev = event as RealEstateValuationAdded;
-        this.props.valuations.push({
-          id: ev.data.valuation.id,
-          date: ev.data.valuation.date,
-          value: Money.from(
-            ev.data.valuation.value.amount,
-            ev.data.valuation.value.currency
-          ),
-        });
-        this.props.valuations.sort((a, b) => a.date.localeCompare(b.date));
-        break;
-      }
-      case RealEstateValuationUpdated.type: {
-        const ev = event as RealEstateValuationUpdated;
-        const valuationIndex = this.props.valuations.findIndex(
-          (v) => v.id === ev.data.valuation.id
-        );
-        if (valuationIndex !== -1) {
-          this.props.valuations[valuationIndex] = {
-            ...this.props.valuations[valuationIndex],
-            date: ev.data.valuation.date,
-            value: Money.from(
-              ev.data.valuation.value.amount,
-              ev.data.valuation.value.currency
-            ),
-          };
-          this.props.valuations.sort((a, b) => a.date.localeCompare(b.date));
-        }
-        break;
-      }
-      case RealEstateValuationRemoved.type: {
-        const ev = event as RealEstateValuationRemoved;
-        this.props.valuations = this.props.valuations.filter(
-          (v) => v.id !== ev.data.valuationId
-        );
-        break;
-      }
-    }
-  }
-
   // --- FACTORIES ---
 
-  // 2. Factories for creating new aggregates or rehydrating from state
-  // validates and then calls this.raise()
+  /**
+   * The factory method for creating a new `RealEstate` aggregate.
+   * It enforces creation invariants and then raises the initial `RealEstateAssetCreated` event.
+   */
   static createAsset(args: {
     id: AggregateId<"RealEstate">;
     userId: string;
@@ -214,8 +80,8 @@ export class RealEstate extends AggregateRoot {
     // 2. Create a "blank" instance. It only has an ID for now.
     const agg = new RealEstate(args.id, {} as RealEstateProps);
 
-    // 3. Raise the creation event by instantiating the event class.
-    // This will call the `apply` method, which is now responsible for populating the initial state.
+    // 3. Raise the creation event. The private `apply` in the base class will dispatch this
+    // to the correct `applyRealEstateAssetCreated_V1` method below.
     agg.raise(
       new RealEstateAssetCreated({
         id: args.id,
@@ -238,9 +104,9 @@ export class RealEstate extends AggregateRoot {
   }
 
   /**
-   * The `fromState` factory for CRUD remains unchanged. It's our "snapshot"
-   * restoration mechanism and is key to keeping the aggregate persistence-agnostic.
-   * directly rehydrates state for CRUD repositories
+   * The `fromState` factory is used by CRUD-style repositories to "rehydrate"
+   * an aggregate from a database snapshot. It directly restores the state
+   * without raising any events.
    */
   static fromState(s: {
     id: AggregateId<"RealEstate">;
@@ -263,6 +129,140 @@ export class RealEstate extends AggregateRoot {
     const agg = new RealEstate(s.id, props);
     agg.version = s.version;
     return agg;
+  }
+
+  // --- STATE TRANSITION (APPLY METHODS) ---
+
+  /**
+   * These protected `apply<EventName>` methods are the ONLY places where state is mutated.
+   * The `private apply()` method in the `AggregateRoot` base class acts as a dispatcher,
+   * calling the correct method based on the event type. This pattern provides strong
+   * type safety for each state transition.
+   */
+  protected applyRealEstateAssetCreated_V1(event: RealEstateAssetCreated) {
+    this.props.userId = event.data.userId;
+    this.props.details = {
+      name: event.data.details.name,
+      address: Address.from(event.data.details.address),
+      notes: event.data.details.notes,
+      baseCurrency: event.data.details.baseCurrency,
+    };
+    this.props.purchase = {
+      date: event.data.purchase.date,
+      value: Money.from(
+        event.data.purchase.value.amount,
+        event.data.purchase.value.currency
+      ),
+    };
+    this.props.appraisals = [];
+    this.props.valuations = [];
+    this.props.deletedAt = null;
+  }
+
+  protected applyRealEstateAssetDetailsUpdated_V1(
+    event: RealEstateAssetDetailsUpdated
+  ) {
+    this.props.details = {
+      ...this.props.details,
+      ...event.data.changes,
+      address: event.data.changes.address
+        ? Address.from(event.data.changes.address)
+        : this.props.details.address,
+    };
+  }
+
+  protected applyRealEstateAssetPurchaseUpdated_V1(
+    event: RealEstateAssetPurchaseUpdated
+  ) {
+    this.props.purchase = {
+      date: event.data.purchase.date,
+      value: Money.from(
+        event.data.purchase.value.amount,
+        event.data.purchase.value.currency
+      ),
+    };
+  }
+
+  protected applyRealEstateAssetDeleted_V1(event: RealEstateAssetDeleted) {
+    this.props.deletedAt = event.data.at;
+  }
+
+  protected applyRealEstateAppraisalAdded_V1(event: RealEstateAppraisalAdded) {
+    this.props.appraisals.push({
+      id: event.data.appraisal.id,
+      date: event.data.appraisal.date,
+      value: Money.from(
+        event.data.appraisal.value.amount,
+        event.data.appraisal.value.currency
+      ),
+    });
+    this.props.appraisals.sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  protected applyRealEstateAppraisalUpdated_V1(
+    event: RealEstateAppraisalUpdated
+  ) {
+    const appraisalIndex = this.props.appraisals.findIndex(
+      (a) => a.id === event.data.appraisal.id
+    );
+    if (appraisalIndex !== -1) {
+      this.props.appraisals[appraisalIndex] = {
+        ...this.props.appraisals[appraisalIndex],
+        date: event.data.appraisal.date,
+        value: Money.from(
+          event.data.appraisal.value.amount,
+          event.data.appraisal.value.currency
+        ),
+      };
+      this.props.appraisals.sort((a, b) => a.date.localeCompare(b.date));
+    }
+  }
+
+  protected applyRealEstateAppraisalRemoved_V1(
+    event: RealEstateAppraisalRemoved
+  ) {
+    this.props.appraisals = this.props.appraisals.filter(
+      (a) => a.id !== event.data.appraisalId
+    );
+  }
+
+  protected applyRealEstateValuationAdded_V1(event: RealEstateValuationAdded) {
+    this.props.valuations.push({
+      id: event.data.valuation.id,
+      date: event.data.valuation.date,
+      value: Money.from(
+        event.data.valuation.value.amount,
+        event.data.valuation.value.currency
+      ),
+    });
+    this.props.valuations.sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  protected applyRealEstateValuationUpdated_V1(
+    event: RealEstateValuationUpdated
+  ) {
+    const valuationIndex = this.props.valuations.findIndex(
+      (v) => v.id === event.data.valuation.id
+    );
+    if (valuationIndex !== -1) {
+      this.props.valuations[valuationIndex] = {
+        ...this.props.valuations[valuationIndex],
+        date: event.data.valuation.date,
+        value: Money.from(
+          event.data.valuation.value.amount,
+          event.data.valuation.value.currency
+        ),
+      };
+      this.props.valuations.sort((a, b) => a.date.localeCompare(b.date));
+    }
+  }
+
+  protected applyRealEstateValuationRemoved_V1(
+    event: RealEstateValuationRemoved
+  ) {
+    this.props.valuations = this.props.valuations.filter(
+      (v) => v.id !== event.data.valuationId
+    );
   }
 
   // --- GETTERS ---
@@ -289,7 +289,12 @@ export class RealEstate extends AggregateRoot {
   }
 
   // --- COMMANDS ---
-  // 3. Thin, expressive command methods that only raise events
+
+  /**
+   * Command methods are the public API of the aggregate. They express business intent.
+   * Their only job is to check invariants and then `raise` an event to signify a state change.
+   * They do NOT mutate state directly.
+   */
   public updateDetails(
     newDetails: Partial<Omit<RealEstateDetails, "baseCurrency">>
   ) {

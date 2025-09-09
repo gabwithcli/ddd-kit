@@ -32,6 +32,10 @@ export * from "./application/command/handler";
 // Policies (application-layer contextual rules)
 export * from "./application/policies";
 
+// Projections (Read-side CQRS)
+export * from "./application/projection/manager";
+export * from "./application/projection/projector";
+
 // Aggregate primitives
 export * from "./application/repos";
 
