@@ -4,7 +4,6 @@ import { AggregateRepository, IdempotencyStore, UnitOfWork } from "ddd-kit";
 import { env } from "../../config";
 import { RealEstate } from "../../domain/real-estate/real-estate.aggregate";
 import { RealEstateKurrentRepo } from "./kurrent/real-estate/real-estate.repo.kurrent";
-import { KurrentUoW } from "./kurrent/uow.kurrent";
 import { PostgresIdempotencyStore } from "./postgres/idempotency.store.postgres";
 import { RealEstatePostgresRepo } from "./postgres/real-estate/real-estate.repo.postgres";
 import { PostgresUoW } from "./postgres/uow.postgres";
@@ -25,7 +24,13 @@ export function getPersistenceLayer(): PersistenceLayer {
   if (client === "kurrent") {
     // If configured for KurrentDB, we instantiate the event-sourcing stack.
     return {
-      uow: KurrentUoW,
+      // We use PostgresUoW for both scenarios.
+      // This is because our projectors, which run inside the same transaction
+      // as the command, need a REAL Postgres transaction (`tx`) to update the
+      // read models. The Kurrent repository doesn't use the `tx` object,
+      // so passing it a real Postgres one is perfectly safe.
+      // uow: KurrentUoW,
+      uow: PostgresUoW,
       // NOTE: Idempotency store still uses Postgres. This is a common pattern,
       // keeping transactional state separate from the event store.
       idempotencyStore: new PostgresIdempotencyStore(),

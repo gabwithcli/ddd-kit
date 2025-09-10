@@ -2,6 +2,7 @@
 
 import type { AggregateRoot } from "../../domain";
 import type { Tx } from "../../infra";
+import { DomainEvent } from "../command";
 
 /**
  * A universal port for aggregate persistence, abstracting over
@@ -30,22 +31,15 @@ export interface AggregateRepository<AR extends AggregateRoot> {
   findById(tx: Tx, id: string): Promise<AR | null>;
 
   /**
-   * Persists the aggregate's state changes within a transaction.
+   * Persists the aggregate's state changes within a transaction and returns the events that were persisted.
    *
    * This method is responsible for saving the outcome of a business operation.
-   *
-   * How implementations might differ:
-   * - In a CRUD implementation, this method will perform an `INSERT` for a new
-   * aggregate or an `UPDATE` for an existing one. It must also handle
-   * optimistic concurrency control, typically by checking a version number.
-   * - In an Event Sourcing implementation, this method will retrieve the pending
-   * domain events from the aggregate (using `aggregate.pullEvents()`) and append
-   * them to the corresponding event stream, also using an expected version
-   * for optimistic concurrency.
+   * By returning the events, it provides a definitive record of what was saved,
+   * which can then be reliably passed to an event publisher.
    *
    * @param tx - The transaction context to ensure atomicity.
    * @param agg - The aggregate instance with pending changes.
-   * @returns A promise that resolves when the save operation is complete.
+   * @returns A promise that resolves with an array of the domain events that were successfully persisted.
    */
-  save(tx: Tx, agg: AR): Promise<void>;
+  save(tx: Tx, agg: AR): Promise<DomainEvent<unknown>[]>;
 }

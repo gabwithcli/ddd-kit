@@ -4,16 +4,20 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm db:start && tsx watch --env-file .env src/server.ts",
+    "dev": "pnpm stack:start && tsx watch --env-file .env src/server.ts",
     "test": "vitest",
     "build": "tsup src/server.ts --format esm,cjs",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
-    "db:start": "docker-compose up -d",
-    "db:open": "pnpm drizzle-kit studio",
-    "db:stop": "docker-compose down --volumes",
-    "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
-    "db:migrate": "drizzle-kit migrate --config=drizzle.config.ts"
+    "pg:start": "docker-compose up -d postgres",
+    "pg:stop": "docker-compose stop postgres && docker-compose rm -f postgres && docker volume prune -f",
+    "pg:generate": "drizzle-kit generate --config=drizzle.config.ts",
+    "pg:migrate": "drizzle-kit migrate --config=drizzle.config.ts",
+    "pg:open": "pnpm drizzle-kit studio",
+    "kdb:start": "docker-compose up -d kurrentdb",
+    "kdb:stop": "docker-compose stop kurrentdb && docker-compose rm -f kurrentdb",
+    "stack:start": "docker-compose up -d",
+    "stack:stop": "docker-compose down --volumes"
   },
   "dependencies": {
     "@hono/node-server": "^1.4.0",

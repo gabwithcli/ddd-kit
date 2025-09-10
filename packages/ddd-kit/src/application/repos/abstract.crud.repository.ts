@@ -2,6 +2,7 @@
 
 import type { AggregateRoot } from "../../domain";
 import type { Tx } from "../../infra";
+import { DomainEvent } from "../command";
 import type { AggregateRepository } from "./aggregate.repository";
 
 /**
@@ -28,14 +29,14 @@ export abstract class AbstractCrudRepository<AR extends AggregateRoot>
    * @param tx - The transaction context.
    * @param agg - The aggregate instance to save.
    */
-  public async save(tx: Tx, agg: AR): Promise<void> {
+  public async save(tx: Tx, agg: AR): Promise<DomainEvent<unknown>[]> {
     if (agg.version === 0) {
-      // If the version is 0, it's a brand new aggregate.
       await this.insert(tx, agg);
     } else {
-      // Otherwise, it's an existing aggregate that needs updating.
       await this.update(tx, agg);
     }
+    // Pull and return the events after the insert/update operation.
+    return agg.pullEvents();
   }
 
   /**

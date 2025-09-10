@@ -5,16 +5,14 @@
  */
 import { AggregateRoot } from "../../domain/aggregate";
 import type { Result } from "../../shared/result";
-import type { DomainEvent } from "./types";
 
 /**
  * The result of a successful command execution.
- * It contains the next state of the aggregate, any domain events that were raised,
- * and the response DTO to be returned to the caller.
+ * It contains the next state of the aggregate and the response DTO to be returned to the caller.
+ * The responsibility of pulling events is delegated to the CommandHandler.
  */
 export type CommandOutput<T extends AggregateRoot, TResponse> = {
   aggregate: T;
-  events: DomainEvent<unknown>[];
   response: TResponse;
 };
 

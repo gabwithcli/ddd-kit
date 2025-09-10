@@ -116,7 +116,7 @@ export interface AggregateEvents {
  * in the augmented `AggregateEvents` interface.
  * If `AggregateEvents` has not been augmented, it safely defaults to `DomainEvent<unknown>`.
  */
-type EventUnion<T extends keyof AggregateEvents> = T extends any
+export type EventUnion<T extends keyof AggregateEvents> = T extends any
   ? AggregateEvents[T]
   : DomainEvent<unknown>;
 
