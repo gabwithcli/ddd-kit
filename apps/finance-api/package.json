@@ -17,7 +17,8 @@
     "kdb:start": "docker-compose up -d kurrentdb",
     "kdb:stop": "docker-compose stop kurrentdb && docker-compose rm -f kurrentdb",
     "stack:start": "docker-compose up -d",
-    "stack:stop": "docker-compose down --volumes"
+    "stack:stop": "docker-compose down --volumes",
+    "script:rebuild-projections": "tsx --env-file .env src/scripts/rebuild-projections.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.4.0",

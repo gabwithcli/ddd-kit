@@ -5,8 +5,6 @@
  * KurrentDB Event Sourcing Repository for the RealEstate Aggregate
  * ====================================================================================
  *
- * What is this file's purpose?
- * ----------------------------
  * This file acts as a persistence adapter, or a "translator," between our rich,
  * behavior-filled domain model (the `RealEstate` aggregate) and the KurrentDB
  * event store.
@@ -17,23 +15,22 @@
  *
  * Think of it like this:
  * - A CRUD repository takes a snapshot photo.
- * - An ES repository records a video of the entire history.
+ * - An ES repository records a video of the entire history. 📸
  *
  * This class implements the generic `AggregateRepository` interface from our `ddd-kit`,
  * meaning the application layer can use it without ever knowing it's talking to an
  * event store. This makes our architecture flexible and persistence-agnostic.
  */
 
-// Importing helpers from the KurrentDB client library.
-// - `jsonEvent` is a factory function that correctly formats our event data for KurrentDB.
-// - `START` and `FORWARDS` are constants for reading streams, making the code more readable.
-// - `NO_STREAM` is a crucial constant for creating new streams correctly.
+// We import the necessary helpers and types from the KurrentDB client library.
 import {
+  Filter,
   FORWARDS,
   jsonEvent,
   KurrentDBClient,
   NO_STREAM,
   START,
+  STREAM_NAME,
   StreamNotFoundError,
 } from "@kurrent/kurrentdb-client";
 // We depend on the abstract building blocks from our ddd-kit.
@@ -53,8 +50,7 @@ import { kurrentClient } from "../db.kurrent";
 import { AllRealEstateEvents } from "./real-estate.events.kurrent";
 
 export class RealEstateKurrentRepo extends AbstractEsRepository<RealEstate> {
-  // We'll hold a reference to the client instance.
-  // This is a small improvement for clarity and makes the class easier to test later if needed.
+  // We'll hold a reference to the client instance for all operations.
   private readonly client: KurrentDBClient;
 
   constructor() {
@@ -82,7 +78,7 @@ export class RealEstateKurrentRepo extends AbstractEsRepository<RealEstate> {
    * This process is called "rehydration" because we're rebuilding the aggregate's
    * current state from its past events, breathing life back into it.
    *
-   * @param tx The transaction context (in this case, a placeholder for KurrentDB).
+   * @param tx The transaction context (a placeholder for KurrentDB).
    * @param id The unique ID of the aggregate, which corresponds to the stream name.
    * @returns An `EventStream` object containing the list of historical events and the stream's current version.
    */
@@ -90,17 +86,12 @@ export class RealEstateKurrentRepo extends AbstractEsRepository<RealEstate> {
     // KurrentDB organizes events into "streams." By convention, we name the stream
     // after the aggregate type and its unique ID.
     const streamName = `real_estate-${id}`;
-    // LOG: Let's log what we're about to do. This is great for debugging reads.
     console.log(
       `[RealEstateKurrentRepo] 🔍 Attempting to load events from stream: ${streamName}`
     );
 
     try {
       // We ask the KurrentDB client to read the stream for our aggregate.
-      // - The `<RealEstateEvents>` generic provides strong typing for the events we'll receive.
-      // - `fromRevision: START` tells it to begin at the very first event.
-      // - `direction: FORWARDS` tells it to read in chronological order.
-      // We omit `maxCount` because to rehydrate an aggregate, we need its entire history.
       const streamIterator = this.client.readStream<RealEstateEvents>(
         streamName,
         {
@@ -114,17 +105,13 @@ export class RealEstateKurrentRepo extends AbstractEsRepository<RealEstate> {
 
       // The client returns an async iterator, which we loop through to get each event.
       for await (const resolvedEvent of streamIterator) {
-        if (!resolvedEvent.event) {
-          continue; // Skip empty or unresolved events.
-        }
+        if (!resolvedEvent.event) continue;
 
         const storedEvent = resolvedEvent.event;
         // This is the "deserialization" step. We look up the event's type string
         // (e.g., "RealEstateAssetCreated_V1") in our map to get the actual class constructor.
         const EventClass = AllRealEstateEvents[storedEvent.type];
         if (!EventClass) {
-          // It's crucial to handle unknown event types to prevent deserialization errors.
-          // This might happen during a deployment if an old server reads an event it doesn't know about yet.
           console.warn(
             `[RealEstateKurrentRepo] ⚠️ Unknown event type in stream '${streamName}': ${storedEvent.type}`
           );
@@ -134,12 +121,12 @@ export class RealEstateKurrentRepo extends AbstractEsRepository<RealEstate> {
         // We use the constructor to turn the raw data from the database back into a
         // rich, behavioral `DomainEvent` class instance.
         domainEvents.push(new EventClass(storedEvent.data));
+
         // The version of the aggregate is the *count* of events. The database revision
-        // is 0-indexed, so we add 1 to get the correct version number.
+        // is 0-indexed, so we add 1 to get the correct version number for our domain model.
         streamVersion = Number(resolvedEvent.event.revision) + 1;
       }
 
-      // LOG: Success! Let's report what we found.
       console.log(
         `[RealEstateKurrentRepo] ✅ Successfully loaded ${domainEvents.length} events from stream '${streamName}'. Version: ${streamVersion}`
       );
@@ -160,12 +147,11 @@ export class RealEstateKurrentRepo extends AbstractEsRepository<RealEstate> {
         return { events: [], version: 0 };
       }
 
-      // LOG: Something went wrong during the read operation.
+      // For any other type of error, we treat it as a genuine problem.
       console.error(
-        `[RealEstateKurrentRepo] ❌ Error loading events from stream '${streamName}':`,
+        `[RealEstateKurrentRepo] ❌ Unexpected error loading events from stream '${streamName}':`,
         error
       );
-      // Re-throw the error so the CommandHandler can catch it.
       throw error;
     }
   }
@@ -173,11 +159,6 @@ export class RealEstateKurrentRepo extends AbstractEsRepository<RealEstate> {
   /**
    * Appends a new batch of uncommitted events to an aggregate's stream.
    * This is the "save" operation in an Event Sourcing world.
-   *
-   * @param tx The transaction context.
-   * @param id The ID of the aggregate.
-   * @param expectedVersion The version of the stream we think we're writing to. This is for optimistic concurrency control.
-   * @param events The new domain events to be saved.
    */
   protected async appendEvents(
     tx: Tx,
@@ -186,7 +167,6 @@ export class RealEstateKurrentRepo extends AbstractEsRepository<RealEstate> {
     events: RealEstateEvents[]
   ): Promise<void> {
     const streamName = `real_estate-${id}`;
-    // LOG: This is the critical log for your current issue. Let's see exactly what we're trying to write.
     console.log(
       `[RealEstateKurrentRepo] 📝 Attempting to append ${events.length} event(s) to stream '${streamName}' with expected version ${expectedVersion}`
     );
@@ -196,8 +176,7 @@ export class RealEstateKurrentRepo extends AbstractEsRepository<RealEstate> {
     }
 
     // This is the "serialization" step. We map our rich domain event classes into the
-    // plain object format that the KurrentDB client expects. The `jsonEvent` helper
-    // handles creating a unique ID for each event and setting the correct content type.
+    // plain object format that the KurrentDB client expects.
     const eventsToAppend = events.map((event) =>
       jsonEvent({
         type: event.type,
@@ -210,7 +189,7 @@ export class RealEstateKurrentRepo extends AbstractEsRepository<RealEstate> {
     // about our expectations for the stream's state before we write.
     const streamState =
       // Case 1: Creating a new aggregate. The expected version in our domain is 0.
-      // We must tell the database we expect the stream NOT to exist.
+      // We must use the `NO_STREAM` constant to tell the database we expect the stream NOT to exist.
       expectedVersion === 0
         ? NO_STREAM
         : // Case 2: Updating an existing aggregate. Our domain version is a 1-indexed
@@ -222,29 +201,67 @@ export class RealEstateKurrentRepo extends AbstractEsRepository<RealEstate> {
       // This is the actual write operation to the database.
       await this.client.appendToStream(streamName, eventsToAppend, {
         // We pass our precisely calculated expectation. If the actual stream state
-        // doesn't match this, the database will reject the write, preventing corruption.
+        // doesn't match this, the database will reject the write.
         streamState,
       });
-      // LOG: If we get here, the write to KurrentDB was successful.
+
       console.log(
         `[RealEstateKurrentRepo] ✅ Successfully appended events to stream '${streamName}'.`
       );
     } catch (error) {
-      // LOG: This will capture any error from the client, such as a concurrency conflict
-      // or a connection issue, and provide rich context for debugging.
       console.error(
         `[RealEstateKurrentRepo] ❌ Error appending events to stream '${streamName}':`,
         {
           streamName,
           expectedVersion,
-          // Add the calculated stream state to the log for better debugging.
           expectedStreamState: streamState.toString(),
           numberOfEvents: eventsToAppend.length,
           error,
         }
       );
-      // Re-throw the original error to ensure the transaction fails and the API returns a 500.
       throw error;
     }
+  }
+
+  /**
+   * Scans the event store for all streams belonging to this aggregate type
+   * and returns a list of their unique IDs. This is essential for batch
+   * processes like rebuilding projections.
+   *
+   * @returns A promise that resolves to an array of aggregate IDs.
+   */
+  public async listAllIds(): Promise<string[]> {
+    const streamPrefix = "real_estate-";
+    const seenIds = new Set<string>();
+
+    console.log(
+      `[RealEstateKurrentRepo] 🔍 Scanning $all for streams starting with '${streamPrefix}'...`
+    );
+
+    const filter: Filter = {
+      filterOn: STREAM_NAME,
+      checkpointInterval: 64,
+      prefixes: [streamPrefix], // faster than regex when available
+      // regex: `^${streamPrefix}`,       // alternative if you prefer regex
+    };
+
+    const iterator = this.client.readAll({
+      resolveLinkTos: false, // we only need stream names
+      direction: FORWARDS,
+      fromPosition: START,
+      filter,
+    });
+
+    for await (const e of iterator) {
+      const ev = e.event; // AllStreamResolvedEvent.event
+      if (!ev) continue;
+
+      const streamId = ev.streamId;
+      if (streamId && streamId.startsWith(streamPrefix)) {
+        seenIds.add(streamId.slice(streamPrefix.length));
+      }
+    }
+
+    return Array.from(seenIds);
   }
 }
