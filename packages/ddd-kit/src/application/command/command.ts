@@ -7,14 +7,24 @@ import { AggregateRoot } from "../../domain/aggregate";
 import type { Result } from "../../shared/result";
 
 /**
+ * A utility type that ensures a type T has exactly the same keys as type Shape.
+ * If T has any extra keys, they are mapped to the 'never' type, causing a compile error.
+ * This is used to prevent accidental extra properties on return types, enforcing a strict contract.
+ */
+type Exact<T, Shape> = T & Record<Exclude<keyof T, keyof Shape>, never>;
+
+/**
  * The result of a successful command execution.
  * It contains the next state of the aggregate and the response DTO to be returned to the caller.
  * The responsibility of pulling events is delegated to the CommandHandler.
  */
-export type CommandOutput<T extends AggregateRoot, TResponse> = {
-  aggregate: T;
-  response: TResponse;
-};
+export type CommandOutput<T extends AggregateRoot, TResponse> = Exact<
+  {
+    aggregate: T;
+    response: TResponse;
+  },
+  { aggregate: T; response: TResponse }
+>;
 
 /**
  * ICommand Interface
