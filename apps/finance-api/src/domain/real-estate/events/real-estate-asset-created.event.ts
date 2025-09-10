@@ -28,7 +28,7 @@ export const RealEstateAssetCreatedV1Schema = z.object({
       currency: z.string(),
     }),
   }),
-  at: z.date(),
+  at: z.coerce.date(),
 });
 
 // The data payload type is inferred from the Zod schema.

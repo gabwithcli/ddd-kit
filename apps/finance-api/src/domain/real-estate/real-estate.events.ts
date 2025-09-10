@@ -45,7 +45,7 @@ import {
 // This reusable schema defines the structure of our event metadata.
 export const EventMetaV1Schema = z.object({
   version: z.literal(1).describe("The version of the event's data schema"),
-  timestamp: z.date(),
+  timestamp: z.coerce.date(),
 });
 
 // The event names now explicitly include the version number with an underscore.

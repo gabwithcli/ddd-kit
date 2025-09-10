@@ -5,7 +5,7 @@ import { RealEstateEventName } from "../real-estate.events";
 // 1. Define the Zod schema for the event's data payload.
 export const RealEstateAssetDeletedV1Schema = z.object({
   id: z.string().describe("The aggregate ID of the deleted asset"),
-  at: z.date().describe("The timestamp when the deletion occurred"),
+  at: z.coerce.date().describe("The timestamp when the deletion occurred"),
 });
 
 // 2. Infer the type from the schema.

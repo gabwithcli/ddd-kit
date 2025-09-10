@@ -24,14 +24,15 @@
  * event store. This makes our architecture flexible and persistence-agnostic.
  */
 
-// We import the necessary helpers and types from the KurrentDB client library.
+// Importing helpers from the KurrentDB client library.
 // - `jsonEvent` is a factory function that correctly formats our event data for KurrentDB.
 // - `START` and `FORWARDS` are constants for reading streams, making the code more readable.
-// - We also import the specific error type `StreamNotFoundError` to handle it gracefully.
+// - `NO_STREAM` is a crucial constant for creating new streams correctly.
 import {
   FORWARDS,
   jsonEvent,
   KurrentDBClient,
+  NO_STREAM,
   START,
   StreamNotFoundError,
 } from "@kurrent/kurrentdb-client";
@@ -89,6 +90,7 @@ export class RealEstateKurrentRepo extends AbstractEsRepository<RealEstate> {
     // KurrentDB organizes events into "streams." By convention, we name the stream
     // after the aggregate type and its unique ID.
     const streamName = `real_estate-${id}`;
+    // LOG: Let's log what we're about to do. This is great for debugging reads.
     console.log(
       `[RealEstateKurrentRepo] 🔍 Attempting to load events from stream: ${streamName}`
     );
@@ -132,10 +134,12 @@ export class RealEstateKurrentRepo extends AbstractEsRepository<RealEstate> {
         // We use the constructor to turn the raw data from the database back into a
         // rich, behavioral `DomainEvent` class instance.
         domainEvents.push(new EventClass(storedEvent.data));
-        // The version of the stream is the revision number of the last event we successfully processed.
-        streamVersion = Number(resolvedEvent.event.revision);
+        // The version of the aggregate is the *count* of events. The database revision
+        // is 0-indexed, so we add 1 to get the correct version number.
+        streamVersion = Number(resolvedEvent.event.revision) + 1;
       }
 
+      // LOG: Success! Let's report what we found.
       console.log(
         `[RealEstateKurrentRepo] ✅ Successfully loaded ${domainEvents.length} events from stream '${streamName}'. Version: ${streamVersion}`
       );
@@ -147,23 +151,18 @@ export class RealEstateKurrentRepo extends AbstractEsRepository<RealEstate> {
         version: streamVersion,
       };
     } catch (error) {
-      // We explicitly check if the error is a `StreamNotFoundError`.
-      // This is the expected and normal outcome when trying to read a stream
-      // for an aggregate that has not been created yet or does not exist.
+      // If the client throws a `StreamNotFoundError`, it's not a true error for us.
+      // It simply means the aggregate has no history yet, which is a valid state.
       if (error instanceof StreamNotFoundError) {
-        // If the stream doesn't exist, it simply means there are no events.
-        // We log this for clarity and return a valid, empty EventStream.
-        // This prevents the error from propagating up and crashing the request.
         console.log(
           `[RealEstateKurrentRepo] ℹ️ Stream '${streamName}' not found. Returning empty event stream.`
         );
         return { events: [], version: 0 };
       }
 
-      // For any other type of error (e.g., connection issues, permissions),
-      // we treat it as a genuine problem, log it, and re-throw it.
+      // LOG: Something went wrong during the read operation.
       console.error(
-        `[RealEstateKurrentRepo] ❌ Unexpected error loading events from stream '${streamName}':`,
+        `[RealEstateKurrentRepo] ❌ Error loading events from stream '${streamName}':`,
         error
       );
       // Re-throw the error so the CommandHandler can catch it.
@@ -187,6 +186,7 @@ export class RealEstateKurrentRepo extends AbstractEsRepository<RealEstate> {
     events: RealEstateEvents[]
   ): Promise<void> {
     const streamName = `real_estate-${id}`;
+    // LOG: This is the critical log for your current issue. Let's see exactly what we're trying to write.
     console.log(
       `[RealEstateKurrentRepo] 📝 Attempting to append ${events.length} event(s) to stream '${streamName}' with expected version ${expectedVersion}`
     );
@@ -206,29 +206,39 @@ export class RealEstateKurrentRepo extends AbstractEsRepository<RealEstate> {
       })
     );
 
+    // This is the key to correct optimistic concurrency. We must be precise
+    // about our expectations for the stream's state before we write.
+    const streamState =
+      // Case 1: Creating a new aggregate. The expected version in our domain is 0.
+      // We must tell the database we expect the stream NOT to exist.
+      expectedVersion === 0
+        ? NO_STREAM
+        : // Case 2: Updating an existing aggregate. Our domain version is a 1-indexed
+          // count of events. The database's revision is a 0-indexed number of the
+          // last event. We subtract 1 to align them.
+          BigInt(expectedVersion - 1);
+
     try {
       // This is the actual write operation to the database.
       await this.client.appendToStream(streamName, eventsToAppend, {
-        // This `streamState` option is the key to OPTIMISTIC CONCURRENCY.
-        // We are telling KurrentDB: "Only append these events if the stream currently
-        // has exactly `expectedVersion` events."
-        // If another process wrote to the stream after we read it, the versions won't
-        // match, KurrentDB will reject the write, and an error will be thrown.
-        // This prevents data corruption from "lost updates."
-        streamState: BigInt(expectedVersion),
+        // We pass our precisely calculated expectation. If the actual stream state
+        // doesn't match this, the database will reject the write, preventing corruption.
+        streamState,
       });
-
+      // LOG: If we get here, the write to KurrentDB was successful.
       console.log(
         `[RealEstateKurrentRepo] ✅ Successfully appended events to stream '${streamName}'.`
       );
     } catch (error) {
-      // This will capture any error from the client, such as a concurrency conflict
+      // LOG: This will capture any error from the client, such as a concurrency conflict
       // or a connection issue, and provide rich context for debugging.
       console.error(
         `[RealEstateKurrentRepo] ❌ Error appending events to stream '${streamName}':`,
         {
           streamName,
           expectedVersion,
+          // Add the calculated stream state to the log for better debugging.
+          expectedStreamState: streamState.toString(),
           numberOfEvents: eventsToAppend.length,
           error,
         }

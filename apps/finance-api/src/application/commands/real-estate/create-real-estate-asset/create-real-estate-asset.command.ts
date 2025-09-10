@@ -54,7 +54,6 @@ export class CreateRealEstateAssetCommand
 
     // The command's responsibility is now simpler. It just returns the aggregate
     // with the events still buffered inside. It no longer calls pullEvents().
-    // @ts-expect-error
     return ok({
       aggregate: newAggregate,
       response: { id: newAggregate.id },
