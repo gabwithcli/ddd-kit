@@ -35,7 +35,6 @@ export class DeleteRealEstateAssetCommand
     return ok({
       aggregate: aggregate,
       response: { id: aggregate.id, ok: true },
-      events: aggregate.pullEvents(),
     });
   }
 }

@@ -7,6 +7,7 @@ import { addValuationPayloadSchema } from "./add-valuation.command.schema";
 type CommandPayload = z.infer<typeof addValuationPayloadSchema>;
 type CommandResponse = { valuationId: string };
 type CommandDependencies = { newId(): string };
+type ReturnValue = CommandOutput<RealEstate, CommandResponse>;
 
 export class AddValuationCommand
   implements ICommand<CommandPayload, CommandResponse, RealEstate>
@@ -16,7 +17,7 @@ export class AddValuationCommand
   public execute(
     payload: CommandPayload,
     aggregate?: RealEstate
-  ): Result<CommandOutput<RealEstate, CommandResponse>> {
+  ): Result<ReturnValue> {
     if (!aggregate) {
       throw new Error("Cannot add a valuation to a non-existent asset.");
     }
@@ -26,10 +27,11 @@ export class AddValuationCommand
 
     aggregate.addValuation({ id: valuationId, date: payload.date, value });
 
-    return ok({
+    const output: ReturnValue = {
       aggregate: aggregate,
       response: { valuationId: valuationId },
-      events: aggregate.pullEvents(),
-    });
+    };
+
+    return ok(output);
   }
 }

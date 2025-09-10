@@ -31,7 +31,6 @@ export class AddAppraisalCommand
     return ok({
       aggregate: aggregate,
       response: { appraisalId: appraisalId },
-      events: aggregate.pullEvents(),
     });
   }
 }
