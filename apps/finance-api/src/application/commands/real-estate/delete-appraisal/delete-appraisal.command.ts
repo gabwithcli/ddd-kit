@@ -1,8 +1,8 @@
 import {
   CommandOutput,
-  err,
+  createCommandResultHelpers,
+  EdgeError,
   ICommand,
-  ok,
   Result,
   SuccessResponse,
 } from "ddd-kit";
@@ -13,6 +13,7 @@ import { deleteAppraisalPayloadSchema } from "./delete-appraisal.command.schema"
 type CommandPayload = z.infer<typeof deleteAppraisalPayloadSchema>;
 type CommandResponse = SuccessResponse;
 type CommandReturnValue = CommandOutput<RealEstate, CommandResponse>;
+const { ok, err } = createCommandResultHelpers<CommandReturnValue, EdgeError>();
 
 export class DeleteAppraisalCommand
   implements ICommand<CommandPayload, CommandResponse, RealEstate>
@@ -30,10 +31,9 @@ export class DeleteAppraisalCommand
 
     aggregate.removeAppraisal(payload.appraisalId);
 
-    const output: CommandReturnValue = {
+    return ok({
       aggregate: aggregate,
       response: { id: payload.appraisalId },
-    };
-    return ok(output);
+    });
   }
 }

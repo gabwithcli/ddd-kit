@@ -1,9 +1,9 @@
 import {
   CommandOutput,
   createAggregateId,
-  err,
+  createCommandResultHelpers,
+  EdgeError,
   ICommand,
-  ok,
   Result,
   SuccessResponse,
 } from "ddd-kit";
@@ -22,6 +22,7 @@ type CommandDependencies = {
 };
 type CommandResponse = SuccessResponse;
 type CommandReturnValue = CommandOutput<RealEstate, CommandResponse>;
+const { ok, err } = createCommandResultHelpers<CommandReturnValue, EdgeError>();
 
 export class CreateRealEstateAssetCommand
   implements ICommand<CommandPayload, CommandResponse, RealEstate>
@@ -58,10 +59,9 @@ export class CreateRealEstateAssetCommand
       createdAt: createdAt,
     });
 
-    const output: CommandReturnValue = {
+    return ok({
       aggregate: newAggregate,
       response: { id: newAggregate.id },
-    };
-    return ok(output);
+    });
   }
 }

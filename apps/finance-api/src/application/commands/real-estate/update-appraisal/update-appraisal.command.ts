@@ -1,8 +1,8 @@
 import {
   CommandOutput,
-  err,
+  createCommandResultHelpers,
+  EdgeError,
   ICommand,
-  ok,
   Result,
   SuccessResponse,
 } from "ddd-kit";
@@ -14,6 +14,7 @@ import { updateAppraisalPayloadSchema } from "./update-appraisal.command.schema"
 type CommandPayload = z.infer<typeof updateAppraisalPayloadSchema>;
 type CommandResponse = SuccessResponse;
 type CommandReturnValue = CommandOutput<RealEstate, CommandResponse>;
+const { ok, err } = createCommandResultHelpers<CommandReturnValue, EdgeError>();
 
 export class UpdateAppraisalCommand
   implements ICommand<CommandPayload, CommandResponse, RealEstate>
@@ -42,10 +43,9 @@ export class UpdateAppraisalCommand
 
     aggregate.updateAppraisal(payload.appraisalId, dataToUpdate);
 
-    const output: CommandReturnValue = {
+    return ok({
       aggregate: aggregate,
       response: { id: payload.appraisalId },
-    };
-    return ok(output);
+    });
   }
 }

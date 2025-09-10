@@ -1,8 +1,8 @@
 import {
   CommandOutput,
-  err,
+  createCommandResultHelpers,
+  EdgeError,
   ICommand,
-  ok,
   Result,
   SuccessResponse,
 } from "ddd-kit";
@@ -18,6 +18,7 @@ type CommandDependencies = {
 };
 type CommandResponse = SuccessResponse;
 type CommandReturnValue = CommandOutput<RealEstate, CommandResponse>;
+const { ok, err } = createCommandResultHelpers<CommandReturnValue, EdgeError>();
 
 export class DeleteRealEstateAssetCommand
   implements ICommand<CommandPayload, CommandResponse, RealEstate>
@@ -46,10 +47,9 @@ export class DeleteRealEstateAssetCommand
     // 1. Call the aggregate method, passing the current time.
     aggregate.deleteAsset(this.deps.now());
 
-    const output: CommandReturnValue = {
+    return ok({
       aggregate: aggregate,
       response: { id: aggregate.id },
-    };
-    return ok(output);
+    });
   }
 }
