@@ -1,4 +1,4 @@
-import { CommandOutput, ICommand, ok, Result } from "ddd-kit";
+import { CommandOutput, err, ICommand, ok, Result } from "ddd-kit";
 import { z } from "zod";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
 import { Money } from "../../../../domain/shared/money";
@@ -6,6 +6,7 @@ import { updateAppraisalPayloadSchema } from "./update-appraisal.command.schema"
 
 type CommandPayload = z.infer<typeof updateAppraisalPayloadSchema>;
 type CommandResponse = { appraisalId: string; ok: true };
+type CommandReturnValue = CommandOutput<RealEstate, CommandResponse>;
 
 export class UpdateAppraisalCommand
   implements ICommand<CommandPayload, CommandResponse, RealEstate>
@@ -13,9 +14,12 @@ export class UpdateAppraisalCommand
   public execute(
     payload: CommandPayload,
     aggregate?: RealEstate
-  ): Result<CommandOutput<RealEstate, CommandResponse>> {
+  ): Result<CommandReturnValue> {
     if (!aggregate) {
-      throw new Error("Cannot update an appraisal on a non-existent asset.");
+      return err({
+        kind: "BadRequest",
+        message: "Cannot update an appraisal on a non-existent asset.",
+      });
     }
 
     const dataToUpdate: Partial<{ date: string; value: Money }> = {};
@@ -31,10 +35,10 @@ export class UpdateAppraisalCommand
 
     aggregate.updateAppraisal(payload.appraisalId, dataToUpdate);
 
-    return ok({
+    const output: CommandReturnValue = {
       aggregate: aggregate,
       response: { appraisalId: payload.appraisalId, ok: true },
-      events: aggregate.pullEvents(),
-    });
+    };
+    return ok(output);
   }
 }

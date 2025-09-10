@@ -16,7 +16,7 @@
     "pg:open": "pnpm drizzle-kit studio",
     "kdb:start": "docker-compose up -d kurrentdb",
     "kdb:stop": "docker-compose stop kurrentdb && docker-compose rm -f kurrentdb",
-    "stack:start": "docker-compose up -d",
+    "stack:start": "docker-compose up -d && pnpm pg:generate && pnpm pg:migrate",
     "stack:stop": "docker-compose down --volumes",
     "script:rebuild-projections": "tsx --env-file .env src/scripts/rebuild-projections.ts"
   },
@@ -26,7 +26,7 @@
     "@hono/zod-openapi": "^1.1.0",
     "@kurrent/kurrentdb-client": "^1.0.4",
     "@scalar/hono-api-reference": "^0.9.13",
-    "ddd-kit": "^0.0.25",
+    "ddd-kit": "^0.0.26",
     "drizzle-orm": "^0.44.5",
     "hono": "^4.4.0",
     "pg": "^8.12.0",

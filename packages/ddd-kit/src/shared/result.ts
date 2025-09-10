@@ -1,3 +1,5 @@
+// ## File: packages/ddd-kit/src/shared/result.ts
+
 /**
  * Result type helpers
  * -------------------
@@ -11,6 +13,8 @@
  */
 
 import z from "zod";
+// Import the single source of truth for error kinds.
+import { EDGE_ERROR_KINDS } from "./errors";
 
 export type Ok<T> = { ok: true; value: T };
 export type Err<E> = { ok: false; error: E };
@@ -38,18 +42,23 @@ export const SuccessResponseSchema = z.object({
  * This is used for generating consistent OpenAPI documentation for HTTP 4xx/5xx responses.
  */
 export const ErrorResponseSchema = z.object({
-  // The 'kind' enum is derived directly from the possible values in the EdgeError type,
-  // ensuring our documentation and type system never drift apart.
-  kind: z
-    .enum([
-      "Unauthorized",
-      "BadRequest",
-      "NotFound",
-      "InvariantViolation",
-      "Conflict",
-      "Infrastructure",
-    ])
-    .describe("The category of the error."),
+  // By using the imported EDGE_ERROR_KINDS constant, this enum will now
+  // update automatically whenever you change the source array in errors.ts.
+  kind: z.enum(EDGE_ERROR_KINDS).describe("The category of the error."),
   message: z.string().describe("A human-readable error message."),
   details: z.any().optional().describe("Optional structured error details."),
 });
+
+// --- EXPORTED TYPES ---
+
+/**
+ * A TypeScript type representing a standardized successful API response payload.
+ * Inferred directly from the Zod schema for 100% consistency.
+ */
+export type SuccessResponse = z.infer<typeof SuccessResponseSchema>;
+
+/**
+ * A TypeScript type representing a standardized error API response payload.
+ * Inferred directly from the Zod schema.
+ */
+export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;

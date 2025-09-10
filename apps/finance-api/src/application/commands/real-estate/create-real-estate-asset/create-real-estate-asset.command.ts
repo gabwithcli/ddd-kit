@@ -1,6 +1,7 @@
 import {
   CommandOutput,
   createAggregateId,
+  err,
   ICommand,
   ok,
   Result,
@@ -14,11 +15,12 @@ import { createRealEstateAssetPayloadSchema } from "./create-real-estate-asset.c
 type CommandPayload = z.infer<typeof createRealEstateAssetPayloadSchema> & {
   userId: string;
 };
-type CommandResponse = { id: string };
 type CommandDependencies = {
   newId(): string;
   now(): Date;
 };
+type CommandResponse = { id: string };
+type CommandReturnValue = CommandOutput<RealEstate, CommandResponse>;
 
 export class CreateRealEstateAssetCommand
   implements ICommand<CommandPayload, CommandResponse, RealEstate>
@@ -28,9 +30,12 @@ export class CreateRealEstateAssetCommand
   public execute(
     payload: CommandPayload,
     aggregate?: RealEstate
-  ): Result<CommandOutput<RealEstate, CommandResponse>> {
+  ): Result<CommandReturnValue> {
     if (aggregate) {
-      throw new Error("Cannot create a RealEstate asset that already exists.");
+      return err({
+        kind: "BadRequest",
+        message: "Cannot create a RealEstate asset that already exists.",
+      });
     }
 
     const newId = createAggregateId<"RealEstate">(this.deps.newId(), "re");
@@ -52,11 +57,10 @@ export class CreateRealEstateAssetCommand
       createdAt: createdAt,
     });
 
-    // The command's responsibility is now simpler. It just returns the aggregate
-    // with the events still buffered inside. It no longer calls pullEvents().
-    return ok({
+    const output: CommandReturnValue = {
       aggregate: newAggregate,
       response: { id: newAggregate.id },
-    });
+    };
+    return ok(output);
   }
 }

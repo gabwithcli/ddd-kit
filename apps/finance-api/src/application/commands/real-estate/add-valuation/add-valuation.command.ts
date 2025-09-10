@@ -1,13 +1,13 @@
-import { CommandOutput, ICommand, ok, Result } from "ddd-kit";
+import { CommandOutput, err, ICommand, ok, Result } from "ddd-kit";
 import { z } from "zod";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
 import { Money } from "../../../../domain/shared/money";
 import { addValuationPayloadSchema } from "./add-valuation.command.schema";
 
 type CommandPayload = z.infer<typeof addValuationPayloadSchema>;
-type CommandResponse = { valuationId: string };
 type CommandDependencies = { newId(): string };
-type ReturnValue = CommandOutput<RealEstate, CommandResponse>;
+type CommandResponse = { valuationId: string };
+type CommandReturnValue = CommandOutput<RealEstate, CommandResponse>;
 
 export class AddValuationCommand
   implements ICommand<CommandPayload, CommandResponse, RealEstate>
@@ -17,9 +17,12 @@ export class AddValuationCommand
   public execute(
     payload: CommandPayload,
     aggregate?: RealEstate
-  ): Result<ReturnValue> {
+  ): Result<CommandReturnValue> {
     if (!aggregate) {
-      throw new Error("Cannot add a valuation to a non-existent asset.");
+      return err({
+        kind: "BadRequest",
+        message: "Cannot add a valuation to a non-existent asset.",
+      });
     }
 
     const valuationId = `val_${this.deps.newId()}`;
@@ -27,11 +30,10 @@ export class AddValuationCommand
 
     aggregate.addValuation({ id: valuationId, date: payload.date, value });
 
-    const output: ReturnValue = {
+    const output: CommandReturnValue = {
       aggregate: aggregate,
       response: { valuationId: valuationId },
     };
-
     return ok(output);
   }
 }

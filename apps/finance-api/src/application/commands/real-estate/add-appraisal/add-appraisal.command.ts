@@ -1,14 +1,13 @@
-import { CommandOutput, ICommand, ok, Result } from "ddd-kit";
+import { CommandOutput, err, ICommand, ok, Result } from "ddd-kit";
 import { z } from "zod";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
 import { Money } from "../../../../domain/shared/money";
 import { addAppraisalPayloadSchema } from "./add-appraisal.command.schema";
 
 type CommandPayload = z.infer<typeof addAppraisalPayloadSchema>;
-
-type CommandResponse = { appraisalId: string };
-
 type CommandDependencies = { newId(): string };
+type CommandResponse = { appraisalId: string };
+type CommandReturnValue = CommandOutput<RealEstate, CommandResponse>;
 
 export class AddAppraisalCommand
   implements ICommand<CommandPayload, CommandResponse, RealEstate>
@@ -18,9 +17,12 @@ export class AddAppraisalCommand
   public execute(
     payload: CommandPayload,
     aggregate?: RealEstate
-  ): Result<CommandOutput<RealEstate, CommandResponse>> {
+  ): Result<CommandReturnValue> {
     if (!aggregate) {
-      throw new Error("Cannot add an appraisal to a non-existent asset.");
+      return err({
+        kind: "BadRequest",
+        message: "Cannot add an appraisal to a non-existent asset.",
+      });
     }
 
     const appraisalId = `appr_${this.deps.newId()}`;
@@ -28,9 +30,10 @@ export class AddAppraisalCommand
 
     aggregate.addAppraisal({ id: appraisalId, date: payload.date, value });
 
-    return ok({
+    const output: CommandReturnValue = {
       aggregate: aggregate,
       response: { appraisalId: appraisalId },
-    });
+    };
+    return ok(output);
   }
 }

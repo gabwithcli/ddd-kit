@@ -1,10 +1,11 @@
-import { CommandOutput, ICommand, ok, Result } from "ddd-kit";
+import { CommandOutput, err, ICommand, ok, Result } from "ddd-kit";
 import { z } from "zod";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
 import { deleteValuationPayloadSchema } from "./delete-valuation.command.schema";
 
 type CommandPayload = z.infer<typeof deleteValuationPayloadSchema>;
 type CommandResponse = { valuationId: string; ok: true };
+type CommandReturnValue = CommandOutput<RealEstate, CommandResponse>;
 
 export class DeleteValuationCommand
   implements ICommand<CommandPayload, CommandResponse, RealEstate>
@@ -12,17 +13,20 @@ export class DeleteValuationCommand
   public execute(
     payload: CommandPayload,
     aggregate?: RealEstate
-  ): Result<CommandOutput<RealEstate, CommandResponse>> {
+  ): Result<CommandReturnValue> {
     if (!aggregate) {
-      throw new Error("Cannot delete a valuation on a non-existent asset.");
+      return err({
+        kind: "BadRequest",
+        message: "Cannot delete a valuation on a non-existent asset.",
+      });
     }
 
     aggregate.removeValuation(payload.valuationId);
 
-    return ok({
+    const output: CommandReturnValue = {
       aggregate: aggregate,
       response: { valuationId: payload.valuationId, ok: true },
-      events: aggregate.pullEvents(),
-    });
+    };
+    return ok(output);
   }
 }

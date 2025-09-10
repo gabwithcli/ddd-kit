@@ -1,11 +1,12 @@
-import { CommandOutput, ICommand, ok, Result } from "ddd-kit";
+import { CommandOutput, err, ICommand, ok, Result } from "ddd-kit";
 import { z } from "zod";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
 import { Address } from "../../../../domain/real-estate/types";
 import { updateRealEstateDetailsPayloadSchema } from "./update-real-estate-details.command.schema";
 
 type CommandPayload = z.infer<typeof updateRealEstateDetailsPayloadSchema>;
-type CommandResponse = { id: string; ok: true };
+type CommandResponse = { id: string };
+type CommandReturnValue = CommandOutput<RealEstate, CommandResponse>;
 
 export class UpdateRealEstateDetailsCommand
   implements ICommand<CommandPayload, CommandResponse, RealEstate>
@@ -13,28 +14,28 @@ export class UpdateRealEstateDetailsCommand
   public execute(
     payload: CommandPayload,
     aggregate?: RealEstate
-  ): Result<CommandOutput<RealEstate, CommandResponse>> {
+  ): Result<CommandReturnValue> {
     if (!aggregate) {
-      throw new Error("Cannot update details on a non-existent asset.");
+      return err({
+        kind: "BadRequest",
+        message: "Cannot update details on a non-existent asset.",
+      });
     }
 
-    // 1. Separate the aggregate ID from the data to be updated.
     const { id, ...details } = payload;
 
-    // 2. Prepare the data for the aggregate, creating Value Objects as needed.
     const detailsToUpdate = {
       name: details.name,
       notes: details.notes,
       address: details.address ? Address.from(details.address) : undefined,
     };
 
-    // 3. Call the aggregate method.
     aggregate.updateDetails(detailsToUpdate);
 
-    return ok({
+    const output: CommandReturnValue = {
       aggregate: aggregate,
-      response: { id: payload.id, ok: true },
-      events: aggregate.pullEvents(),
-    });
+      response: { id: aggregate.id },
+    };
+    return ok(output);
   }
 }
