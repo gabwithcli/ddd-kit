@@ -1,11 +1,11 @@
 import {
   CommandOutput,
   err,
-  ErrorResponseSchema,
+  ErrorResponse,
   ICommand,
   ok,
   Result,
-  SuccessResponseSchema,
+  SuccessResponse,
 } from "ddd-kit";
 import { z } from "zod";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
@@ -13,7 +13,7 @@ import { Money } from "../../../../domain/shared/money";
 import { updateRealEstatePurchasePayloadSchema } from "./update-real-estate-purchase.command.schema";
 
 type CommandPayload = z.infer<typeof updateRealEstatePurchasePayloadSchema>;
-type CommandResponse = typeof SuccessResponseSchema;
+type CommandResponse = SuccessResponse;
 type CommandReturnValue = CommandOutput<RealEstate, CommandResponse>;
 
 export class UpdateRealEstatePurchaseCommand
@@ -24,8 +24,7 @@ export class UpdateRealEstatePurchaseCommand
     aggregate?: RealEstate
   ): Result<CommandReturnValue> {
     if (!aggregate) {
-      const error: typeof ErrorResponseSchema = {
-        // @ts-expect-error
+      const error: ErrorResponse = {
         kind: "BadRequest",
         message: "Cannot update purchase on a non-existent asset.",
       };
@@ -47,7 +46,6 @@ export class UpdateRealEstatePurchaseCommand
 
     const output: CommandReturnValue = {
       aggregate: aggregate,
-      // @ts-expect-error
       response: { id: aggregate.id },
     };
     return ok(output);

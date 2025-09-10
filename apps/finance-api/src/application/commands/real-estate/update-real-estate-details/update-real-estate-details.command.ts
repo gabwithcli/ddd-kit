@@ -1,11 +1,18 @@
-import { CommandOutput, err, ICommand, ok, Result } from "ddd-kit";
+import {
+  CommandOutput,
+  err,
+  ICommand,
+  ok,
+  Result,
+  SuccessResponse,
+} from "ddd-kit";
 import { z } from "zod";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
 import { Address } from "../../../../domain/real-estate/types";
 import { updateRealEstateDetailsPayloadSchema } from "./update-real-estate-details.command.schema";
 
 type CommandPayload = z.infer<typeof updateRealEstateDetailsPayloadSchema>;
-type CommandResponse = { id: string };
+type CommandResponse = SuccessResponse;
 type CommandReturnValue = CommandOutput<RealEstate, CommandResponse>;
 
 export class UpdateRealEstateDetailsCommand

@@ -1,4 +1,11 @@
-import { CommandOutput, err, ICommand, ok, Result } from "ddd-kit";
+import {
+  CommandOutput,
+  err,
+  ICommand,
+  ok,
+  Result,
+  SuccessResponse,
+} from "ddd-kit";
 import z from "zod";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
 import { deleteRealEstateAssetPayloadSchema } from "./delete-real-estate-asset.command.schema";
@@ -9,7 +16,7 @@ type CommandPayload = z.infer<typeof deleteRealEstateAssetPayloadSchema> & {
 type CommandDependencies = {
   now(): Date;
 };
-type CommandResponse = { id: string };
+type CommandResponse = SuccessResponse;
 type CommandReturnValue = CommandOutput<RealEstate, CommandResponse>;
 
 export class DeleteRealEstateAssetCommand

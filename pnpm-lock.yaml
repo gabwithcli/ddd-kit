@@ -41,8 +41,8 @@ importers:
         specifier: ^0.9.13
         version: 0.9.13(hono@4.9.1)
       ddd-kit:
-        specifier: ^0.0.26
-        version: 0.0.26(@asteasolutions/zod-to-openapi@8.1.0(zod@4.1.5))(hono@4.9.1)(openapi3-ts@4.5.0)(zod@4.1.5)
+        specifier: ^0.0.27
+        version: 0.0.27(@asteasolutions/zod-to-openapi@8.1.0(zod@4.1.5))(hono@4.9.1)(openapi3-ts@4.5.0)(zod@4.1.5)
       drizzle-orm:
         specifier: ^0.44.5
         version: 0.44.5(@types/better-sqlite3@7.6.13)(@types/pg@8.15.5)(better-sqlite3@12.2.0)(pg@8.16.3)
@@ -980,8 +980,8 @@ packages:
     resolution: {integrity: sha512-wAV9QHOsNbwnWdNW2FYvE1P56wtgSbM+3SZcdGiWQILwVjACCXDCI3Ai8QlCjMDB8YK5zySiXZYBiwGmNY3lnw==}
     engines: {node: '>=12'}
 
-  ddd-kit@0.0.26:
-    resolution: {integrity: sha512-/jijJ3j2ulEXk1c+l5pxcosatAA7WbTJW+ybvKov4zw/jFOmnmLVRGWpEZPK+WW+BvLBl+ZyvSZpfUPi/Zj7Ew==}
+  ddd-kit@0.0.27:
+    resolution: {integrity: sha512-tQxm9COIVKaInYS0ou7S8qEe06X6is3tMyObkpESdkiBqTBgsHyahlKIVlqTWX8oSuZqhe4CHxvlypg/MFT48g==}
     engines: {node: '>=18.17'}
     peerDependencies:
       zod: ^4.1.5
@@ -2707,7 +2707,7 @@ snapshots:
 
   dargs@8.1.0: {}
 
-  ddd-kit@0.0.26(@asteasolutions/zod-to-openapi@8.1.0(zod@4.1.5))(hono@4.9.1)(openapi3-ts@4.5.0)(zod@4.1.5):
+  ddd-kit@0.0.27(@asteasolutions/zod-to-openapi@8.1.0(zod@4.1.5))(hono@4.9.1)(openapi3-ts@4.5.0)(zod@4.1.5):
     dependencies:
       '@hono/zod-openapi': 1.1.0(hono@4.9.1)(zod@4.1.5)
       stoker: 2.0.1(@asteasolutions/zod-to-openapi@8.1.0(zod@4.1.5))(@hono/zod-openapi@1.1.0(hono@4.9.1)(zod@4.1.5))(hono@4.9.1)(openapi3-ts@4.5.0)

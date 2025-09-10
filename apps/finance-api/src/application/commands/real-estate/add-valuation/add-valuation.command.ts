@@ -1,4 +1,11 @@
-import { CommandOutput, err, ICommand, ok, Result } from "ddd-kit";
+import {
+  CommandOutput,
+  err,
+  ICommand,
+  ok,
+  Result,
+  SuccessResponse,
+} from "ddd-kit";
 import { z } from "zod";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
 import { Money } from "../../../../domain/shared/money";
@@ -6,7 +13,7 @@ import { addValuationPayloadSchema } from "./add-valuation.command.schema";
 
 type CommandPayload = z.infer<typeof addValuationPayloadSchema>;
 type CommandDependencies = { newId(): string };
-type CommandResponse = { valuationId: string };
+type CommandResponse = SuccessResponse;
 type CommandReturnValue = CommandOutput<RealEstate, CommandResponse>;
 
 export class AddValuationCommand
@@ -32,7 +39,7 @@ export class AddValuationCommand
 
     const output: CommandReturnValue = {
       aggregate: aggregate,
-      response: { valuationId: valuationId },
+      response: { id: valuationId },
     };
     return ok(output);
   }

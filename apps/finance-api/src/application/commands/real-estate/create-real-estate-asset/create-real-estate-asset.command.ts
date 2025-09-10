@@ -5,6 +5,7 @@ import {
   ICommand,
   ok,
   Result,
+  SuccessResponse,
 } from "ddd-kit";
 import { z } from "zod";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
@@ -19,7 +20,7 @@ type CommandDependencies = {
   newId(): string;
   now(): Date;
 };
-type CommandResponse = { id: string };
+type CommandResponse = SuccessResponse;
 type CommandReturnValue = CommandOutput<RealEstate, CommandResponse>;
 
 export class CreateRealEstateAssetCommand

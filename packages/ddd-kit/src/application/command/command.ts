@@ -3,7 +3,7 @@
  * A command encapsulates the logic for a single atomic business operation.
  * It is decoupled from infrastructure concerns like persistence and transactions.
  */
-import { AggregateRoot } from "../../domain/aggregate";
+import { AggregateRoot, EdgeError } from "../../domain/aggregate";
 import type { Result } from "../../shared/result";
 
 /**
@@ -31,11 +31,13 @@ export type CommandOutput<T extends AggregateRoot, TResponse> = Exact<
  * @template TPayload - The data transfer object (DTO) for the command's input.
  * @template TResponse - The data transfer object (DTO) for the successful response.
  * @template TAggregate - The type of Aggregate Root this command operates on.
+ * @template TError - The type of the error object this command can return. Defaults to EdgeError.
  */
 export interface ICommand<
   TPayload,
   TResponse,
-  TAggregate extends AggregateRoot
+  TAggregate extends AggregateRoot,
+  TError = EdgeError
 > {
   /**
    * Executes the command's logic.
@@ -47,6 +49,6 @@ export interface ICommand<
     payload: TPayload,
     aggregate?: TAggregate
   ):
-    | Promise<Result<CommandOutput<TAggregate, TResponse>>>
-    | Result<CommandOutput<TAggregate, TResponse>>;
+    | Promise<Result<CommandOutput<TAggregate, TResponse>, TError>>
+    | Result<CommandOutput<TAggregate, TResponse>, TError>;
 }

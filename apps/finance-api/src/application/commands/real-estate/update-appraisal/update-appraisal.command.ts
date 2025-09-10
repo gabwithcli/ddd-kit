@@ -1,11 +1,18 @@
-import { CommandOutput, err, ICommand, ok, Result } from "ddd-kit";
+import {
+  CommandOutput,
+  err,
+  ICommand,
+  ok,
+  Result,
+  SuccessResponse,
+} from "ddd-kit";
 import { z } from "zod";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
 import { Money } from "../../../../domain/shared/money";
 import { updateAppraisalPayloadSchema } from "./update-appraisal.command.schema";
 
 type CommandPayload = z.infer<typeof updateAppraisalPayloadSchema>;
-type CommandResponse = { appraisalId: string; ok: true };
+type CommandResponse = SuccessResponse;
 type CommandReturnValue = CommandOutput<RealEstate, CommandResponse>;
 
 export class UpdateAppraisalCommand
@@ -37,7 +44,7 @@ export class UpdateAppraisalCommand
 
     const output: CommandReturnValue = {
       aggregate: aggregate,
-      response: { appraisalId: payload.appraisalId, ok: true },
+      response: { id: payload.appraisalId },
     };
     return ok(output);
   }

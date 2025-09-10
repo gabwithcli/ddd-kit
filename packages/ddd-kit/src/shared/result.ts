@@ -62,3 +62,18 @@ export type SuccessResponse = z.infer<typeof SuccessResponseSchema>;
  * Inferred directly from the Zod schema.
  */
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
+
+/**
+ * Creates specialized `ok` and `err` helper functions with pre-defined types.
+ * This is a factory that you call once per command to get helpers that
+ * understand the specific success (TValue) and error (TError) shapes for that command.
+ * This allows for strong type-checking of return values without explicit annotation.
+ *
+ * @returns An object with typed `ok` and `err` functions.
+ */
+export const createCommandResultHelpers = <TValue, TError>() => {
+  return {
+    ok: (value: TValue): Ok<TValue> => ({ ok: true, value }),
+    err: (error: TError): Err<TError> => ({ ok: false, error }),
+  };
+};
