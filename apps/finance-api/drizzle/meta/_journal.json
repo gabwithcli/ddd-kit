@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1756022183041,
-      "tag": "0000_majestic_roulette",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1756842031408,
-      "tag": "0001_many_anita_blake",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1757318906429,
-      "tag": "0002_outgoing_captain_america",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1757411077031,
-      "tag": "0003_blue_mauler",
+      "when": 1757552987414,
+      "tag": "0000_charming_vin_gonzales",
       "breakpoints": true
     }
   ]

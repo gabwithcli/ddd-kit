@@ -1,6 +1,6 @@
 import type { Tx } from "ddd-kit";
 import { eq } from "drizzle-orm";
-import { realEstateSummaries } from "../../../infra/persistence/postgres/schema.postgres";
+import { realEstateSummaries } from "src/infra/persistence/postgres/projections/projections.schema.postgres";
 import { asPostgres } from "../../../infra/persistence/postgres/uow.postgres";
 
 export type RealEstateAssetSummary = {

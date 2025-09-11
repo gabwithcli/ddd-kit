@@ -13,7 +13,7 @@ import {
   realEstateAppraisals,
   realEstateAssets,
   realEstateValuations,
-} from "../schema.postgres";
+} from "./real-estate.schema.postgres";
 // A small helper to cast the generic `Tx` type to the Drizzle-specific transaction type.
 import { asPostgres } from "../uow.postgres";
 

@@ -4,8 +4,8 @@ import { IStateProjector, Tx } from "ddd-kit";
 import { eq } from "drizzle-orm";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
 import { Valuation } from "../../../../domain/real-estate/types";
-import { realEstateSummaries } from "../schema.postgres";
 import { asPostgres } from "../uow.postgres";
+import { realEstateSummaries } from "./projections.schema.postgres";
 
 /**
  * A state-based projector that rebuilds the `real_estate_summaries` read model

@@ -9,6 +9,7 @@
 .idea/shelf
 dist/
 tmp/
+*_snapshot.json
 
 # deps
 node_modules/

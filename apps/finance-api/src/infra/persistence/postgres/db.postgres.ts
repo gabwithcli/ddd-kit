@@ -1,15 +1,24 @@
-// apps/finance-api/src/infra/persistence/postgres/db.ts
+// apps/finance-api/src/infra/persistence/postgres/db.postgres.ts
 
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
-import * as schema from "./schema.postgres";
+
+// Import schemas from different domains
+import * as realEstateSchema from "./real-estate/real-estate.schema.postgres";
+import * as utilitiesSchema from "./utilities.schema.postgres";
+
+// Merge them into a single schema object
+const schema = {
+  ...utilitiesSchema,
+  ...realEstateSchema,
+};
 
 export const pool = new Pool({
   connectionString: process.env.POSTGRES_DB_URL!,
 });
 
-// Give Drizzle the schema => enables db.query.<table> with types
+// Pass merged schema to Drizzle => enables db.query.<table> with types
 export const db: NodePgDatabase<typeof schema> = drizzle(pool, { schema });
 
-// Re-export the schema type if you want to use it elsewhere
+// Handy type alias for usage elsewhere
 export type DB = typeof db;

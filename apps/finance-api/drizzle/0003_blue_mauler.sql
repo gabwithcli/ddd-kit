@@ -1,2 +1,0 @@
-ALTER TABLE "real_estate"."real_estate_summaries" ADD COLUMN "latest_valuation_date" date;--> statement-breakpoint
-ALTER TABLE "real_estate"."real_estate_summaries" ADD COLUMN "latest_valuation_value" numeric(14, 2);

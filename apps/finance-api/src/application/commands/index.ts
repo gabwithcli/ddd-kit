@@ -9,7 +9,7 @@ import {
   Tx,
 } from "ddd-kit";
 import { DomainEvents } from "src/domain/aggregate-events";
-import { RealEstateSummaryEventProjector } from "src/infra/persistence/postgres/real-estate/real-estate-assets-summaries.event-projector.postgres";
+import { RealEstateSummaryEventProjector } from "src/infra/persistence/postgres/projections/real-estate-assets-summaries.event-projector.postgres";
 import { AppEnv } from "../../adapters/hono/types";
 import { RealEstate } from "../../domain/real-estate/real-estate.aggregate";
 import { PersistenceLayer } from "../../infra/persistence";

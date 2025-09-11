@@ -4,7 +4,7 @@ import { IdempotencyStore, Tx } from "ddd-kit";
 import { and, eq } from "drizzle-orm";
 import { asPostgres } from "./uow.postgres";
 // We import the table definition from our central schema file.
-import { idempotencyKeys } from "./schema.postgres";
+import { idempotencyKeys } from "./utilities.schema.postgres";
 
 /**
  * A PostgreSQL implementation of the IdempotencyStore.
