@@ -31,7 +31,7 @@ type HandlerDependencies = {
   now: () => Date;
 };
 
-// This type definition remains the same.
+// Define a mapping from command names to their implementations.
 type Commands = Record<RealEstateCommandsList, ICommand<any, any, RealEstate>>;
 
 /**

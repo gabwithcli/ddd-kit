@@ -1,7 +1,7 @@
 import { AggregateRepository, AllEventUnion, IProjector, Tx } from "ddd-kit";
 import { RealEstate } from "../../../../domain/real-estate/real-estate.aggregate";
 import { realEstateEventsList } from "../../../../domain/real-estate/real-estate.events";
-import { RealEstateStateProjector } from "./real-estate-assets-summaries.projector.postgres";
+import { RealEstateStateProjector } from "./real-estate-assets-summaries.state-projector.postgres";
 
 /**
  * An event-driven projector that updates the `real_estate_summaries` read model.

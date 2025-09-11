@@ -2,7 +2,7 @@
 
 import { getPersistenceLayer } from "src/infra/persistence";
 import { RealEstateKurrentRepo } from "src/infra/persistence/kurrent/real-estate/real-estate.repo.kurrent";
-import { RealEstateStateProjector } from "src/infra/persistence/postgres/projections/real-estate-assets-summaries.projector.postgres";
+import { RealEstateStateProjector } from "src/infra/persistence/postgres/projections/real-estate-assets-summaries.state-projector.postgres";
 
 /**
  * ============================================================================

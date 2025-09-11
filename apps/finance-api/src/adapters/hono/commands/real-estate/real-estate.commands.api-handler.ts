@@ -58,9 +58,6 @@ export const realEstateApiHandler = makeRequestHandler<
    * successful command response or a structured error.
    */
   map: ({ c, auth, body }) => {
-    // Get the idempotency key from the request header. It's optional and can be null.
-    const idempotencyKey = c.req.header("Idempotency-Key") || null;
-
     // Get all necessary infrastructure dependencies from the Hono context.
     const handler = c.var.handlers.real_estate;
     const uow = c.var.persistence.uow;
@@ -68,6 +65,9 @@ export const realEstateApiHandler = makeRequestHandler<
 
     // Enrich the client payload with server-side context like the authenticated userId.
     const payloadWithAuth = { ...body.payload, userId: auth.userId };
+
+    // Get the idempotency key from the request header. It's optional and can be null.
+    const idempotencyKey = c.req.header("Idempotency-Key") || null;
 
     // Execute the command, now wrapped with our idempotency logic.
     return withIdempotency(
